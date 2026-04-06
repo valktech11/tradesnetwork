@@ -19,6 +19,8 @@ export default function DashboardPage() {
   const [reviews, setReviews] = useState<Review[]>([])
   const [proData, setProData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
 
   useEffect(() => {
     const raw = sessionStorage.getItem('tn_pro')
@@ -37,6 +39,23 @@ export default function DashboardPage() {
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [])
+
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !session) return
+    setUploading(true); setUploadError('')
+    const form = new FormData()
+    form.append('file', file)
+    form.append('pro_id', session.id)
+    const r = await fetch('/api/upload', { method: 'POST', body: form })
+    const d = await r.json()
+    setUploading(false)
+    if (r.ok) {
+      setProData((prev: any) => ({ ...prev, profile_photo_url: d.url }))
+    } else {
+      setUploadError(d.error || 'Upload failed')
+    }
+  }
 
   function logout() {
     sessionStorage.removeItem('tn_pro')
@@ -181,8 +200,19 @@ export default function DashboardPage() {
             <div className="bg-white border border-gray-100 rounded-2xl p-6">
               <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5">Your profile</div>
               <div className="text-center mb-5">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center font-serif text-xl mx-auto mb-3"
-                  style={{ background: bg, color: fg }}>{initials(session.name)}</div>
+                <div className="relative w-16 h-16 mx-auto mb-3 group cursor-pointer" onClick={() => document.getElementById('avatar-input')?.click()}>
+                  {proData?.profile_photo_url ? (
+                    <img src={proData.profile_photo_url} alt={session.name} className="w-16 h-16 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center font-serif text-xl"
+                      style={{ background: bg, color: fg }}>{initials(session.name)}</div>
+                  )}
+                  <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-white text-xs font-medium">{uploading ? '...' : 'Edit'}</span>
+                  </div>
+                </div>
+                <input id="avatar-input" type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleAvatarUpload} />
+                {uploadError && <div className="text-xs text-red-500 mb-2">{uploadError}</div>}
                 <div className="font-semibold text-gray-900">{session.name}</div>
                 <div className="text-sm text-teal-700 font-medium">{session.trade || '—'}</div>
                 <div className="text-xs text-gray-400">{[session.city, session.state].filter(Boolean).join(', ') || '—'}</div>
