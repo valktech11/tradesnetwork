@@ -28,15 +28,21 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  // Sorting
-  if (sort === 'rating')     query = query.order('avg_rating', { ascending: false, nullsFirst: false })
-  if (sort === 'experience') query = query.order('years_experience', { ascending: false, nullsFirst: false })
-  if (sort === 'reviews')    query = query.order('review_count', { ascending: false, nullsFirst: false })
-  if (sort === 'name')       query = query.order('full_name', { ascending: true })
+  // Sorting — all columns now exist on pros table
+  switch (sort) {
+    case 'rating':
+      query = query.order('avg_rating', { ascending: false, nullsFirst: false }); break
+    case 'reviews':
+      query = query.order('review_count', { ascending: false, nullsFirst: false }); break
+    case 'experience':
+      query = query.order('years_experience', { ascending: false, nullsFirst: false }); break
+    case 'name':
+      query = query.order('full_name', { ascending: true }); break
+    default:
+      query = query.order('is_verified', { ascending: false }); break
+  }
 
-  // Always secondary sort by verified + plan tier
   query = query
-    .order('is_verified', { ascending: false })
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)
 
@@ -48,8 +54,8 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json({
-    pros:   data || [],
-    total:  count || 0,
+    pros:    data || [],
+    total:   count || 0,
     offset,
     limit,
     hasMore: (count || 0) > offset + limit,
@@ -64,7 +70,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'full_name and email are required' }, { status: 400 })
   }
 
-  // Check duplicate email
   const { data: existing } = await getSupabaseAdmin()
     .from('pros')
     .select('id')
