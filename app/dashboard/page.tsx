@@ -233,6 +233,10 @@ export default function DashboardPage() {
                 className="mt-5 block w-full py-2 text-center text-sm font-medium border border-gray-200 rounded-lg text-gray-600 hover:bg-teal-50 hover:border-teal-200 hover:text-teal-700 transition-colors">
                 View public profile →
               </Link>
+              <Link href="/edit-profile"
+                className="mt-2 block w-full py-2 text-center text-sm font-medium bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">
+                Edit profile
+              </Link>
             </div>
 
             {/* Upgrade card */}
