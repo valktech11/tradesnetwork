@@ -199,7 +199,7 @@ export default function CommunityProfilePage() {
                 </div>
                 {post.photo_url && (
                   <div className="px-5 pb-4">
-                    <img src={post.photo_url} alt="Post" className="w-full rounded-xl object-cover max-h-72" />
+                    <img src={post.photo_url} alt="Post" className="w-full rounded-xl object-contain bg-stone-50" style={{ maxHeight: '500px' }} />
                   </div>
                 )}
                 <div className="flex items-center gap-4 px-5 py-3 border-t border-gray-50">
@@ -228,7 +228,7 @@ export default function CommunityProfilePage() {
                 {portfolio.map(item => (
                   <div key={item.id} className="bg-white border border-gray-100 rounded-xl overflow-hidden cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all"
                     onClick={() => setLightbox(item)}>
-                    <img src={item.photo_url} alt={item.title} className="w-full h-44 object-cover" />
+                    <img src={item.photo_url} alt={item.title} className="w-full h-48 object-cover" />
                     <div className="p-3">
                       <div className="text-sm font-semibold text-gray-900 truncate">{item.title}</div>
                       {item.trade && <div className="text-xs text-teal-600 mt-0.5">{item.trade}</div>}
@@ -246,7 +246,7 @@ export default function CommunityProfilePage() {
       {lightbox && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setLightbox(null)}>
           <div className="bg-white rounded-2xl overflow-hidden max-w-2xl w-full" onClick={e => e.stopPropagation()}>
-            <img src={lightbox.photo_url} alt={lightbox.title} className="w-full max-h-96 object-cover" />
+            <img src={lightbox.photo_url} alt={lightbox.title} className="w-full object-contain bg-stone-900" style={{ maxHeight: '70vh' }} />
             <div className="p-5">
               <div className="font-semibold text-gray-900 mb-1">{lightbox.title}</div>
               {lightbox.trade && <div className="text-xs text-teal-600 mb-2">{lightbox.trade}</div>}

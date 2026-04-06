@@ -84,7 +84,7 @@ function PostCard({ post, session, onLike, onDelete }: { post: Post; session: Se
       {/* Photo */}
       {post.photo_url && (
         <div className="px-5 pb-4">
-          <img src={post.photo_url} alt="Post" className="w-full rounded-xl object-cover max-h-80" />
+          <img src={post.photo_url} alt="Post" className="w-full rounded-xl object-contain bg-stone-50" style={{ maxHeight: '600px' }} />
         </div>
       )}
 
