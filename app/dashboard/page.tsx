@@ -19,6 +19,9 @@ export default function DashboardPage() {
   const [reviews, setReviews] = useState<Review[]>([])
   const [proData, setProData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [tradeStats, setTradeStats] = useState<any[]>([])
+  const [tradeTotal, setTradeTotal] = useState(0)
+  const [statsLoading, setStatsLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
 
@@ -27,6 +30,25 @@ export default function DashboardPage() {
     if (!raw) { router.replace('/login'); return }
     const s: Session = JSON.parse(raw)
     setSession(s)
+
+    // Load trade stats with 5-min sessionStorage cache
+    const cachedStats = sessionStorage.getItem('tn_trade_stats')
+    const cacheTime   = sessionStorage.getItem('tn_trade_stats_ts')
+    const cacheAge    = cacheTime ? Date.now() - parseInt(cacheTime) : Infinity
+    if (cachedStats && cacheAge < 5 * 60 * 1000) {
+      const parsed = JSON.parse(cachedStats)
+      setTradeStats(parsed.trades)
+      setTradeTotal(parsed.total)
+      setStatsLoading(false)
+    } else {
+      fetch('/api/stats/trades').then(r => r.json()).then(d => {
+        setTradeStats(d.trades || [])
+        setTradeTotal(d.total || 0)
+        setStatsLoading(false)
+        sessionStorage.setItem('tn_trade_stats', JSON.stringify(d))
+        sessionStorage.setItem('tn_trade_stats_ts', String(Date.now()))
+      })
+    }
 
     Promise.all([
       fetch(`/api/pros/${s.id}`).then(r => r.json()),
@@ -129,6 +151,29 @@ export default function DashboardPage() {
           </div>
           <span className="text-sm font-medium opacity-80 group-hover:opacity-100">View →</span>
         </Link>
+
+        {/* Trade summary chips bar */}
+        <div className="bg-white border border-gray-100 rounded-2xl px-6 py-4 mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Pros by trade</div>
+            <div className="text-xs text-gray-400">{tradeTotal} total</div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {statsLoading ? (
+              Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="h-7 w-24 rounded-full animate-shimmer" />
+              ))
+            ) : tradeStats.filter(t => t.pro_count > 0).map((t: any) => (
+              <a key={t.id} href={`/?trade=${t.id}`}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-gray-200 hover:border-teal-300 hover:bg-teal-50 transition-all group">
+                <span className="text-xs font-medium text-gray-700 group-hover:text-teal-700">{t.category_name}</span>
+                <span className="text-xs font-bold text-white bg-teal-600 rounded-full px-1.5 py-0.5 min-w-[20px] text-center leading-none group-hover:bg-teal-700">
+                  {t.pro_count}
+                </span>
+              </a>
+            ))}
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -272,6 +317,39 @@ export default function DashboardPage() {
                   <span className="text-base">📸</span> Manage portfolio
                 </Link>
               </div>
+            </div>
+
+            {/* Trade breakdown panel */}
+            <div className="bg-white border border-gray-100 rounded-2xl p-5 mb-4">
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Network breakdown</div>
+              {statsLoading ? (
+                <div className="space-y-2">
+                  {[1,2,3,4,5].map(i => <div key={i} className="h-6 animate-shimmer rounded" />)}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {tradeStats.filter(t => t.pro_count > 0).slice(0, 8).map((t: any) => {
+                    const pct = tradeTotal > 0 ? Math.round((t.pro_count / tradeTotal) * 100) : 0
+                    return (
+                      <div key={t.id}>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-xs text-gray-600 truncate flex-1">{t.category_name}</span>
+                          <span className="text-xs font-semibold text-gray-900 ml-2">{t.pro_count}</span>
+                        </div>
+                        <div className="w-full bg-gray-100 rounded-full h-1.5">
+                          <div className="bg-teal-500 h-1.5 rounded-full transition-all"
+                            style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                  {tradeStats.filter(t => t.pro_count > 0).length > 8 && (
+                    <div className="text-xs text-gray-400 text-center pt-1">
+                      +{tradeStats.filter(t => t.pro_count > 0).length - 8} more trades
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Upgrade card */}
