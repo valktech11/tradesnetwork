@@ -71,7 +71,8 @@ export default function EditProfilePage() {
     })
   }, [])
 
-  const cities = state ? getCities(state) : []
+  const [cities, setCities] = useState<string[]>([])
+  const [citiesLoading, setCitiesLoading] = useState(false)
 
   async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -301,7 +302,7 @@ export default function EditProfilePage() {
 
                 <Field label="City">
                   <select value={city} onChange={e => setCity(e.target.value)} disabled={!state} className={inp()}>
-                    <option value="">{state ? 'Select city...' : 'Select state first'}</option>
+                    <option value="">{!state ? 'Select state first' : citiesLoading ? 'Loading cities...' : 'Select city...'}</option>
                     {cities.map(c => <option key={c} value={c}>{c}</option>)}
                     <option value="__other__">Other (type below)</option>
                   </select>

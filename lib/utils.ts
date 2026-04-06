@@ -95,7 +95,35 @@ export const CITIES_BY_STATE: Record<string, string[]> = {
   CO: ['Denver','Colorado Springs','Aurora','Fort Collins','Lakewood','Thornton','Arvada','Westminster','Pueblo','Boulder'],
 }
 
-// Default cities for states not in the map
+// Default cities for states not in the map (fallback only)
 export function getCities(state: string): string[] {
-  return CITIES_BY_STATE[state] || ['Other']
+  return CITIES_BY_STATE[state] || []
+}
+
+// Fetch cities from free API for any state
+// Returns array of city names sorted alphabetically
+export async function fetchCitiesForState(stateCode: string): Promise<string[]> {
+  // Map state code to full name for the API
+  const stateEntry = US_STATES.find(([code]) => code === stateCode)
+  if (!stateEntry) return []
+  const stateName = stateEntry[1]
+
+  // First try hardcoded list (instant)
+  const hardcoded = CITIES_BY_STATE[stateCode]
+  if (hardcoded && hardcoded.length > 0) return hardcoded
+
+  // Fall back to free API
+  try {
+    const r = await fetch('https://countriesnow.space/api/v0.1/countries/state/cities', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ country: 'United States', state: stateName }),
+    })
+    if (!r.ok) throw new Error('API error')
+    const d = await r.json()
+    if (d.error || !d.data) return []
+    return (d.data as string[]).sort()
+  } catch {
+    return [] // empty → show "Other (type below)" option
+  }
 }

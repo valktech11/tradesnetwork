@@ -3,7 +3,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { TradeCategory, Session } from '@/types'
-import { US_STATES, getCities } from '@/lib/utils'
+import { US_STATES, fetchCitiesForState } from '@/lib/utils'
 
 function LoginPageInner() {
   const router = useRouter()
@@ -134,7 +134,18 @@ function SignupForm({ onSwitchTab, router }: { onSwitchTab: () => void; router: 
     fetch('/api/categories').then(r => r.json()).then(d => setCats(d.categories || []))
   }, [])
 
-  const cities = state ? getCities(state) : []
+  useEffect(() => {
+    if (!state) { setCities([]); return }
+    setCitiesLoading(true)
+    setCity('')
+    fetchCitiesForState(state).then(list => {
+      setCities(list)
+      setCitiesLoading(false)
+    })
+  }, [state])
+
+  const [cities, setCities] = useState<string[]>([])
+  const [citiesLoading, setCitiesLoading] = useState(false)
 
   async function handleSignup() {
     if (!fname || !lname || !email || !phone || !trade || !city) {
@@ -226,7 +237,7 @@ function SignupForm({ onSwitchTab, router }: { onSwitchTab: () => void; router: 
       <div className="mb-4">
         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">City</label>
         <select value={city} onChange={e => setCity(e.target.value)} disabled={!state} className={inp()}>
-          <option value="">{state ? 'Select city...' : 'Select state first'}</option>
+          <option value="">{!state ? 'Select state first' : citiesLoading ? 'Loading cities...' : 'Select city...'}</option>
           {cities.map(c => <option key={c} value={c}>{c}</option>)}
           <option value="__other__">Other (type below)</option>
         </select>

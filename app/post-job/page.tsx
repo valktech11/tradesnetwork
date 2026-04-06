@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/layout/Navbar'
 import { TradeCategory } from '@/types'
-import { US_STATES, getCities } from '@/lib/utils'
+import { US_STATES, fetchCitiesForState } from '@/lib/utils'
 
 const BUDGETS = ['Under $500', '$500–$2K', '$2K–$10K', '$10K+', 'Negotiable']
 
@@ -34,7 +34,18 @@ export default function PostJobPage() {
     fetch('/api/categories').then(r => r.json()).then(d => setCategories(d.categories || []))
   }, [])
 
-  const cities = state ? getCities(state) : []
+  useEffect(() => {
+    if (!state) { setCities([]); return }
+    setCitiesLoading(true)
+    setCity('')
+    fetchCitiesForState(state).then(list => {
+      setCities(list)
+      setCitiesLoading(false)
+    })
+  }, [state])
+
+  const [cities, setCities] = useState<string[]>([])
+  const [citiesLoading, setCitiesLoading] = useState(false)
 
   function validate1() {
     const e: Record<string, string> = {}
@@ -188,7 +199,7 @@ export default function PostJobPage() {
                   <Field label="City" required error={errors.city}>
                     <select value={city} onChange={e => { setCity(e.target.value); setErrors(p => ({...p, city: ''})) }}
                       disabled={!state} className={input(errors.city)}>
-                      <option value="">{state ? 'Select city...' : 'Select state first'}</option>
+                      <option value="">{!state ? 'Select state first' : citiesLoading ? 'Loading cities...' : 'Select city...'}</option>
                       {cities.map(c => <option key={c} value={c}>{c}</option>)}
                       <option value="__other__">Other (type below)</option>
                     </select>

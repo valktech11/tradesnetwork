@@ -237,7 +237,7 @@ export default function CommunityPage() {
     const s = raw ? JSON.parse(raw) : null
     setSession(s)
 
-    const feedUrl = s ? `/api/posts?feed_for=${s.id}&limit=30` : '/api/posts?limit=30'
+    const feedUrl = s ? `/api/posts?feed_for=${s.id}&limit=30` : `/api/posts?limit=30`
 
     Promise.all([
       fetch(feedUrl).then(r => r.json()),

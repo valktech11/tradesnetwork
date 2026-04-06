@@ -29,9 +29,14 @@ export default function CommunityEditPage() {
     Promise.all([
       fetch(`/api/portfolio?pro_id=${s.id}`).then(r => r.json()),
       fetch('/api/categories').then(r => r.json()),
-    ]).then(([portData, catsData]) => {
+      fetch(`/api/pros/${s.id}`).then(r => r.json()),
+    ]).then(([portData, catsData, proData]) => {
       setPortfolio(portData.items || [])
       setCategories(catsData.categories || [])
+      // Pre-select pro's own trade — no need to choose another
+      if (proData.pro?.trade_category?.category_name) {
+        setNewTrade(proData.pro.trade_category.category_name)
+      }
       setLoading(false)
     })
   }, [])
@@ -128,12 +133,19 @@ export default function CommunityEditPage() {
           </div>
 
           <div className="mb-4">
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">Trade (optional)</label>
-            <select value={newTrade} onChange={e => setNewTrade(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-stone-50 focus:outline-none focus:border-teal-400 focus:bg-white transition-colors">
-              <option value="">Select trade...</option>
-              {categories.map(c => <option key={c.id} value={c.category_name}>{c.category_name}</option>)}
-            </select>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">Trade</label>
+            {newTrade ? (
+              <div className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-stone-50 text-gray-700 flex items-center justify-between">
+                <span>{newTrade}</span>
+                <span className="text-xs text-gray-400">Your trade</span>
+              </div>
+            ) : (
+              <select value={newTrade} onChange={e => setNewTrade(e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-stone-50 focus:outline-none focus:border-teal-400 focus:bg-white transition-colors">
+                <option value="">Select trade...</option>
+                {categories.map(c => <option key={c.id} value={c.category_name}>{c.category_name}</option>)}
+              </select>
+            )}
           </div>
 
           <div className="mb-5">
