@@ -1,53 +1,94 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Navbar from '@/components/layout/Navbar'
-import { Pro, Review, Session } from '@/types'
-import { initials, avatarColor, starsHtml, timeAgo, formatDate, isPaid, isElite, planLabel } from '@/lib/utils'
+import { Session, Pro } from '@/types'
+import { initials, avatarColor, starsHtml, timeAgo, isPaid, isElite } from '@/lib/utils'
+
+function Avatar({ pro, size = 'lg' }: { pro: any; size?: 'sm'|'md'|'lg'|'xl' }) {
+  const [bg, fg] = avatarColor(pro?.full_name || 'A')
+  const sz = { sm: 'w-8 h-8 text-xs', md: 'w-12 h-12 text-sm', lg: 'w-20 h-20 text-2xl', xl: 'w-28 h-28 text-3xl' }[size]
+  if (pro?.profile_photo_url)
+    return <img src={pro.profile_photo_url} alt={pro.full_name} className={`${sz} rounded-full object-cover flex-shrink-0 ring-4 ring-white shadow-md`} />
+  return (
+    <div className={`${sz} rounded-full flex items-center justify-center font-serif flex-shrink-0 ring-4 ring-white shadow-md`}
+      style={{ background: bg, color: fg }}>{initials(pro?.full_name || 'A')}</div>
+  )
+}
+
+function StarDisplay({ rating, count }: { rating: number; count: number }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-amber-400 text-sm">{starsHtml(rating)}</span>
+      <span className="font-semibold text-gray-900 text-sm">{rating.toFixed(1)}</span>
+      <span className="text-gray-400 text-sm">({count} review{count !== 1 ? 's' : ''})</span>
+    </div>
+  )
+}
+
+// Extract keywords from reviews
+function extractKeywords(reviews: any[]) {
+  const positive = ['professional','responsive','reliable','quality','excellent','great','clean','fast','honest','affordable','knowledgeable','friendly','thorough','efficient','expert']
+  const counts: Record<string, number> = {}
+  for (const r of reviews) {
+    const text = (r.review_text || '').toLowerCase()
+    for (const kw of positive) {
+      if (text.includes(kw)) counts[kw] = (counts[kw] || 0) + 1
+    }
+  }
+  return Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0,6).map(([kw]) => kw)
+}
+
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+const DEFAULT_HOURS = { Monday: '8:00 AM – 5:00 PM', Tuesday: '8:00 AM – 5:00 PM', Wednesday: '8:00 AM – 5:00 PM', Thursday: '8:00 AM – 5:00 PM', Friday: '8:00 AM – 5:00 PM', Saturday: 'Closed', Sunday: 'Closed' }
 
 export default function ProProfilePage() {
-  const { id } = useParams<{ id: string }>()
-  const [pro, setPro]         = useState<Pro | null>(null)
-  const [reviews, setReviews] = useState<Review[]>([])
-  const [session, setSession]   = useState<Session | null>(null)
-  const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState('')
-  const [isFollowing, setIsFollowing] = useState(false)
+  const { id }   = useParams<{ id: string }>()
+  const router   = useRouter()
 
-  // Contact form
-  const [name, setName]           = useState('')
-  const [email, setEmail]         = useState('')
-  const [phone, setPhone]         = useState('')
-  const [message, setMessage]     = useState('')
+  const [session, setSession]       = useState<Session | null>(null)
+  const [pro, setPro]               = useState<Pro | null>(null)
+  const [reviews, setReviews]       = useState<any[]>([])
+  const [portfolio, setPortfolio]   = useState<any[]>([])
+  const [loading, setLoading]       = useState(true)
+  const [error, setError]           = useState('')
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [activeTab, setActiveTab]   = useState<'about'|'reviews'|'photos'>('about')
+  const [lightbox, setLightbox]     = useState<string|null>(null)
+  const [showHours, setShowHours]   = useState(false)
+  const [showShareToast, setShowShareToast] = useState(false)
+
+  // Lead form
+  const [name, setName]       = useState('')
+  const [email, setEmail]     = useState('')
+  const [phone, setPhone]     = useState('')
+  const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
-  const [formError, setFormError] = useState('')
+  const [submitted, setSubmitted]   = useState(false)
+  const [formError, setFormError]   = useState('')
 
   useEffect(() => {
-    // Get logged-in session
     const raw = sessionStorage.getItem('tn_pro')
     const s = raw ? JSON.parse(raw) : null
     if (s) setSession(s)
 
-    if (!id) return
     Promise.all([
       fetch(`/api/pros/${id}`).then(r => r.json()),
       fetch(`/api/reviews?pro_id=${id}`).then(r => r.json()),
+      fetch(`/api/portfolio?pro_id=${id}`).then(r => r.json()),
       s ? fetch(`/api/follows?pro_id=${id}`).then(r => r.json()) : Promise.resolve(null),
-    ]).then(([proData, reviewData, followData]) => {
+    ]).then(([proData, reviewData, portfolioData, followData]) => {
       if (proData.error) { setError(proData.error); setLoading(false); return }
       setPro(proData.pro)
       setReviews(reviewData.reviews || [])
-      if (followData && s) {
-        setIsFollowing((followData.followers || []).some((f: any) => f?.id === s.id))
-      }
+      setPortfolio(portfolioData.items || [])
+      if (followData && s) setIsFollowing((followData.followers||[]).some((f:any) => f?.id === s.id))
       setLoading(false)
     }).catch(() => { setError('Could not load profile'); setLoading(false) })
   }, [id])
 
   async function toggleFollow() {
-    if (!session) return
+    if (!session) { router.push('/login'); return }
     const r = await fetch('/api/follows', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -57,8 +98,8 @@ export default function ProProfilePage() {
     if (r.ok) setIsFollowing(d.following)
   }
 
-  const handleSubmit = async () => {
-    if (!name || !email || !message) { setFormError('Please fill in name, email and message.'); return }
+  async function handleLead() {
+    if (!name || !email || !message) { setFormError('Please fill in all required fields'); return }
     setSubmitting(true); setFormError('')
     const r = await fetch('/api/leads', {
       method: 'POST',
@@ -70,316 +111,415 @@ export default function ProProfilePage() {
     else setFormError('Could not send message. Please try again.')
   }
 
+  function shareProfile() {
+    const url = window.location.href
+    if (navigator.share) {
+      navigator.share({ title: `${pro?.full_name} on TradesNetwork`, url })
+    } else {
+      navigator.clipboard.writeText(url)
+      setShowShareToast(true)
+      setTimeout(() => setShowShareToast(false), 2500)
+    }
+  }
+
   if (loading) return (
-    <>
-      <Navbar />
-      <div className="max-w-5xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-4">
-          {[200, 300, 200].map((h, i) => <div key={i} className="bg-white rounded-2xl animate-shimmer" style={{ height: h }} />)}
-        </div>
-        <div className="bg-white rounded-2xl animate-shimmer h-96" />
-      </div>
-    </>
+    <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-teal-600 border-t-transparent rounded-full animate-spin" />
+    </div>
   )
-
   if (error || !pro) return (
-    <>
-      <Navbar />
-      <div className="max-w-xl mx-auto px-6 py-24 text-center">
-        <div className="text-5xl mb-4 opacity-20">👤</div>
-        <h2 className="font-serif text-2xl text-gray-900 mb-3">Pro not found</h2>
-        <p className="text-gray-400 mb-6">{error}</p>
-        <Link href="/" className="px-6 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-semibold hover:bg-teal-700 transition-colors">
-          Back to search
-        </Link>
-      </div>
-    </>
+    <div className="min-h-screen bg-stone-50 flex items-center justify-center text-center">
+      <div><div className="font-serif text-2xl text-gray-900 mb-3">Pro not found</div><Link href="/" className="text-teal-600 text-sm">← Back to search</Link></div>
+    </div>
   )
 
-  const [bg, fg]  = avatarColor(pro.full_name)
-  const rating    = pro.avg_rating || 0
-  const trade     = pro.trade_category?.category_name || '—'
-  const location  = [pro.city, pro.state].filter(Boolean).join(', ')
+  const isOwner   = session?.id === id
   const paid      = isPaid(pro.plan_tier)
   const elite     = isElite(pro.plan_tier)
-  const isOwner   = session?.id === id  // ← key check
-
-  // Phone visible if: viewer is the owner OR viewer is on a paid plan
-  const showPhone = isOwner || paid
+  const trade     = (pro as any).trade_category?.category_name || '—'
+  const location  = [pro.city, pro.state].filter(Boolean).join(', ')
+  const rating    = pro.avg_rating || 0
+  const reviewCnt = pro.review_count || reviews.length || 0
+  const keywords  = extractKeywords(reviews)
+  const hours     = DEFAULT_HOURS
 
   return (
-    <>
-      <Navbar />
+    <div className="min-h-screen bg-stone-50">
 
-      {/* ── OWNER BANNER — only shown to the pro viewing their own profile ── */}
+      {/* Lightbox */}
+      {lightbox && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onClick={() => setLightbox(null)}>
+          <img src={lightbox} className="max-h-[90vh] max-w-[90vw] rounded-xl object-contain" />
+          <button className="absolute top-4 right-4 text-white text-2xl">✕</button>
+        </div>
+      )}
+
+      {/* Share toast */}
+      {showShareToast && (
+        <div className="fixed top-4 right-4 bg-gray-900 text-white text-sm px-4 py-2 rounded-xl shadow-lg z-50">
+          Link copied to clipboard ✓
+        </div>
+      )}
+
+      {/* Owner banner */}
       {isOwner && (
         <div className="bg-teal-50 border-b border-teal-100">
-          <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between gap-4 flex-wrap">
+          <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-2 text-sm text-teal-700">
-              <span>👁</span>
-              <span className="font-medium">This is how your profile looks to homeowners</span>
+              <span>👁</span> <span className="font-medium">This is how your profile looks to homeowners</span>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Link href="/dashboard"
-                className="text-xs font-semibold px-3 py-1.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">
-                ← Dashboard
-              </Link>
-              <Link href="/edit-profile"
-                className="text-xs font-semibold px-3 py-1.5 border border-teal-300 text-teal-700 rounded-lg hover:bg-teal-100 transition-colors">
-                Edit profile
-              </Link>
-              <Link href="/community/edit"
-                className="text-xs font-semibold px-3 py-1.5 border border-teal-300 text-teal-700 rounded-lg hover:bg-teal-100 transition-colors">
-                Community profile
-              </Link>
+            <div className="flex items-center gap-2">
+              <Link href="/dashboard" className="text-xs font-semibold px-3 py-1.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">← Dashboard</Link>
+              <Link href="/edit-profile" className="text-xs font-semibold px-3 py-1.5 border border-teal-300 text-teal-700 rounded-lg hover:bg-teal-100 transition-colors">Edit profile</Link>
+              <Link href="/community/edit" className="text-xs font-semibold px-3 py-1.5 border border-teal-300 text-teal-700 rounded-lg hover:bg-teal-100 transition-colors">Community profile</Link>
             </div>
           </div>
         </div>
       )}
 
-      <div className="max-w-5xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+      {/* Navbar */}
+      <nav className="bg-white border-b border-gray-100 px-6 h-[60px] flex items-center justify-between sticky top-0 z-40">
+        <Link href="/" className="font-serif text-xl text-gray-900">Trades<span className="text-teal-600">Network</span></Link>
+        <div className="flex items-center gap-3">
+          <Link href="/" className="text-sm text-gray-400 hover:text-gray-700 transition-colors">← Find a pro</Link>
+          {session && !isOwner && (
+            <button onClick={toggleFollow}
+              className={`text-sm font-semibold px-4 py-2 rounded-lg border transition-all ${isFollowing ? 'border-gray-200 text-gray-500' : 'bg-teal-600 text-white border-teal-600 hover:bg-teal-700'}`}>
+              {isFollowing ? '✓ Following' : '+ Follow'}
+            </button>
+          )}
+        </div>
+      </nav>
 
-        {/* LEFT */}
-        <div className="lg:col-span-2 space-y-5">
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-          {/* Header card */}
-          <div className="bg-white border border-gray-100 rounded-2xl p-8">
-            <div className="flex gap-5 items-start mb-6">
-              {pro.profile_photo_url ? (
-                <img src={pro.profile_photo_url} alt={pro.full_name} className="w-20 h-20 rounded-full object-cover flex-shrink-0" />
-              ) : (
-                <div className="w-20 h-20 rounded-full flex items-center justify-center font-serif text-2xl flex-shrink-0" style={{ background: bg, color: fg }}>
-                  {initials(pro.full_name)}
+          {/* LEFT — main profile */}
+          <div className="lg:col-span-2 space-y-5">
+
+            {/* Hero card */}
+            <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
+              {/* Cover strip */}
+              <div className="h-20 bg-gradient-to-r from-teal-600 to-teal-500" />
+              <div className="px-8 pb-6">
+                {/* Avatar + share */}
+                <div className="flex items-end justify-between -mt-10 mb-4">
+                  <div className="relative">
+                    <Avatar pro={pro} size="xl" />
+                    {pro.available_for_work && (
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white" title="Available for work" />
+                    )}
+                  </div>
+                  <button onClick={shareProfile}
+                    className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 border border-gray-200 rounded-lg text-gray-500 hover:border-teal-300 hover:text-teal-600 transition-colors">
+                    🔗 Share
+                  </button>
                 </div>
-              )}
-              <div className="flex-1">
+
+                {/* Name + trade */}
                 <h1 className="font-serif text-3xl text-gray-900 mb-1">{pro.full_name}</h1>
                 <div className="text-base font-medium text-teal-700 mb-1">{trade}</div>
-                <div className="text-sm text-gray-400 mb-3">
-                  {location}{pro.years_experience ? ` · ${pro.years_experience} years experience` : ''}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {pro.is_verified && <span className="text-xs font-semibold px-3 py-1 rounded-full bg-teal-50 text-teal-800">✓ Verified</span>}
-                  {elite && <span className="text-xs font-semibold px-3 py-1 rounded-full bg-purple-50 text-purple-800">Verified Elite</span>}
-                  {paid && !elite && <span className="text-xs font-semibold px-3 py-1 rounded-full bg-green-50 text-green-800">Pro member</span>}
+                <div className="text-sm text-gray-400 mb-3">{location}{pro.years_experience ? ` · ${pro.years_experience} yrs experience` : ''}</div>
+
+                {/* Badges */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {pro.is_verified && <span className="flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-teal-50 text-teal-800">✓ License Verified</span>}
+                  {elite && <span className="text-xs font-semibold px-3 py-1 rounded-full bg-purple-50 text-purple-800">Elite Pro</span>}
+                  {paid && !elite && <span className="text-xs font-semibold px-3 py-1 rounded-full bg-green-50 text-green-800">Pro Member</span>}
                   {pro.license_number && <span className="text-xs font-semibold px-3 py-1 rounded-full bg-amber-50 text-amber-800">Licensed · {pro.license_number}</span>}
                   {pro.available_for_work && (
                     <span className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-green-50 text-green-700 border border-green-200">
                       <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse inline-block" />
-                      Available for work{pro.available_note ? ` · ${pro.available_note}` : ''}
+                      Available{(pro as any).available_note ? ` · ${(pro as any).available_note}` : ''}
                     </span>
                   )}
+                </div>
+
+                {/* Rating */}
+                {rating > 0 && <StarDisplay rating={rating} count={reviewCnt} />}
+
+                {/* Stats row */}
+                <div className="grid grid-cols-3 gap-3 mt-5 pt-5 border-t border-gray-100">
+                  {[
+                    { label: 'Reviews', value: reviewCnt },
+                    { label: 'Yrs exp', value: pro.years_experience || '—' },
+                    { label: 'Enquiries', value: (pro as any).lead_count || 0 },
+                  ].map(s => (
+                    <div key={s.label} className="text-center">
+                      <div className="text-xl font-semibold text-teal-600">{s.value}</div>
+                      <div className="text-xs text-gray-400">{s.label}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
 
-            {rating > 0 && (
-              <div className="flex items-center gap-3 mb-6">
-                <span className="font-serif text-4xl text-gray-900">{rating.toFixed(1)}</span>
-                <div>
-                  <div className="text-amber-500 text-lg tracking-wide">{starsHtml(rating)}</div>
-                  <div className="text-xs text-gray-400">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</div>
+            {/* Tabs */}
+            <div className="flex gap-1 bg-white border border-gray-100 rounded-2xl p-1.5">
+              {(['about','reviews','photos'] as const).map(tab => (
+                <button key={tab} onClick={() => setActiveTab(tab)}
+                  className={`flex-1 py-2 text-sm font-medium rounded-xl capitalize transition-colors ${activeTab === tab ? 'bg-teal-600 text-white' : 'text-gray-500 hover:text-gray-900'}`}>
+                  {tab === 'reviews' ? `Reviews (${reviewCnt})` : tab === 'photos' ? `Photos (${portfolio.length})` : 'About'}
+                </button>
+              ))}
+            </div>
+
+            {/* ── ABOUT TAB ── */}
+            {activeTab === 'about' && (
+              <div className="space-y-4">
+                {pro.bio && (
+                  <div className="bg-white border border-gray-100 rounded-2xl p-7">
+                    <h2 className="font-semibold text-gray-900 mb-3">About</h2>
+                    <p className="text-gray-600 leading-relaxed">{pro.bio}</p>
+                  </div>
+                )}
+
+                {/* Details */}
+                <div className="bg-white border border-gray-100 rounded-2xl p-7">
+                  <h2 className="font-semibold text-gray-900 mb-4">Details</h2>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { label: 'Trade',       value: trade },
+                      { label: 'Location',    value: location },
+                      { label: 'Experience',  value: pro.years_experience ? `${pro.years_experience} years` : '—' },
+                      { label: 'Plan',        value: pro.plan_tier || 'Free' },
+                      { label: 'License',     value: pro.license_number || '—' },
+                      { label: 'Verified',    value: pro.is_verified ? 'Yes — state database' : 'Not yet' },
+                    ].map(d => (
+                      <div key={d.label}>
+                        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-0.5">{d.label}</div>
+                        <div className="text-sm font-medium text-gray-900">{d.value}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Business hours */}
+                <div className="bg-white border border-gray-100 rounded-2xl p-7">
+                  <button onClick={() => setShowHours(h => !h)} className="w-full flex items-center justify-between">
+                    <h2 className="font-semibold text-gray-900">Business hours</h2>
+                    <span className="text-gray-400 text-sm">{showHours ? '▲' : '▼'}</span>
+                  </button>
+                  {showHours && (
+                    <div className="mt-4 space-y-2">
+                      {DAYS.map(day => (
+                        <div key={day} className="flex justify-between text-sm">
+                          <span className="text-gray-500 w-28">{day}</span>
+                          <span className={`font-medium ${hours[day as keyof typeof hours] === 'Closed' ? 'text-gray-400' : 'text-gray-900'}`}>
+                            {hours[day as keyof typeof hours]}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {!showHours && (
+                    <p className="text-sm text-gray-400 mt-2">Mon–Fri: 8:00 AM – 5:00 PM · Click to see full schedule</p>
+                  )}
                 </div>
               </div>
             )}
 
-            <div className="flex border-t border-gray-100 pt-5">
-              {[
-                { n: reviews.length,                 l: 'Reviews'   },
-                { n: pro.years_experience || '—',    l: 'Yrs exp'   },
-                { n: pro.lead_count || 0,            l: 'Enquiries' },
-              ].map(s => (
-                <div key={s.l} className="flex-1 text-center border-r border-gray-100 last:border-0">
-                  <div className="font-serif text-2xl text-teal-600">{s.n}</div>
-                  <div className="text-xs text-gray-400 mt-1">{s.l}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Bio */}
-          {pro.bio && (
-            <div className="bg-white border border-gray-100 rounded-2xl p-7">
-              <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">About</div>
-              <p className="text-gray-600 leading-relaxed font-light">{pro.bio}</p>
-            </div>
-          )}
-
-          {/* Details */}
-          <div className="bg-white border border-gray-100 rounded-2xl p-7">
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Details</div>
-            <div className="grid grid-cols-2 gap-4">
-              {(
-                [
-                  ['Trade',      trade],
-                  ['Location',   location || '—'],
-                  ...(pro.years_experience ? [['Experience', `${pro.years_experience} years`]] : []),
-                  ...(pro.zip_code ? [['Zip code', pro.zip_code]] : []),
-                  ['Plan',       planLabel(pro.plan_tier)],
-                  ['Verified',   pro.is_verified ? 'Yes' : 'Not yet'],
-                ] as string[][]
-              ).map(([l, v]) => (
-                <div key={l}>
-                  <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">{l}</div>
-                  <div className="text-sm font-medium text-gray-700">{v}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Reviews */}
-          <div className="bg-white border border-gray-100 rounded-2xl p-7">
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5">
-              Reviews ({reviews.length})
-            </div>
-            {reviews.length === 0 ? (
-              <div className="text-center py-8 text-gray-400 text-sm">
-              {isOwner ? 'No reviews yet. Homeowners will leave reviews after jobs.' : 'No reviews yet.'}
-            </div>
-            ) : (
+            {/* ── REVIEWS TAB ── */}
+            {activeTab === 'reviews' && (
               <div className="space-y-4">
-                {reviews.map(rev => (
-                  <div key={rev.id} className="border border-gray-100 rounded-xl p-5">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="font-semibold text-sm text-gray-900">{rev.reviewer_name}</span>
-                      <span className="text-xs text-gray-400">{formatDate(rev.reviewed_at)}</span>
+                {/* Rating summary */}
+                {rating > 0 && (
+                  <div className="bg-white border border-gray-100 rounded-2xl p-7">
+                    <div className="flex items-center gap-6 mb-4">
+                      <div className="text-center">
+                        <div className="text-5xl font-serif font-bold text-gray-900">{rating.toFixed(1)}</div>
+                        <div className="text-amber-400 text-lg mt-1">{starsHtml(rating)}</div>
+                        <div className="text-xs text-gray-400 mt-1">{reviewCnt} reviews</div>
+                      </div>
+                      {/* Star bars */}
+                      <div className="flex-1 space-y-1.5">
+                        {[5,4,3,2,1].map(star => {
+                          const cnt = reviews.filter(r => Math.round(r.rating) === star).length
+                          const pct = reviewCnt > 0 ? (cnt / reviewCnt) * 100 : 0
+                          return (
+                            <div key={star} className="flex items-center gap-2 text-xs">
+                              <span className="text-gray-400 w-4">{star}</span>
+                              <div className="flex-1 bg-gray-100 rounded-full h-1.5">
+                                <div className="bg-amber-400 h-1.5 rounded-full" style={{ width: `${pct}%` }} />
+                              </div>
+                              <span className="text-gray-400 w-4">{cnt}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
                     </div>
-                    <div className="text-amber-500 text-sm mb-2">{starsHtml(rev.rating)} {rev.rating}/5</div>
-                    {rev.comment && <p className="text-sm text-gray-600 leading-relaxed">{rev.comment}</p>}
+                    {/* Keywords */}
+                    {keywords.length > 0 && (
+                      <div>
+                        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Customers mention</div>
+                        <div className="flex flex-wrap gap-2">
+                          {keywords.map(kw => (
+                            <span key={kw} className="text-xs px-3 py-1 bg-teal-50 text-teal-700 rounded-full font-medium capitalize">{kw}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Individual reviews */}
+                {reviews.length === 0 ? (
+                  <div className="bg-white border border-gray-100 rounded-2xl py-12 text-center text-gray-400 text-sm">
+                    {isOwner ? 'No reviews yet. Homeowners will leave reviews after jobs.' : 'No reviews yet.'}
+                  </div>
+                ) : reviews.map(rev => (
+                  <div key={rev.id} className="bg-white border border-gray-100 rounded-2xl p-6">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <div className="font-semibold text-gray-900">{rev.reviewer_name || 'Anonymous'}</div>
+                        <div className="text-amber-400 text-sm">{starsHtml(rev.rating)}</div>
+                      </div>
+                      <div className="text-xs text-gray-400">{timeAgo(rev.created_at)}</div>
+                    </div>
+                    <p className="text-sm text-gray-600 leading-relaxed">{rev.review_text}</p>
                   </div>
                 ))}
               </div>
             )}
+
+            {/* ── PHOTOS TAB ── */}
+            {activeTab === 'photos' && (
+              <div className="bg-white border border-gray-100 rounded-2xl p-6">
+                <h2 className="font-semibold text-gray-900 mb-4">Projects & Photos</h2>
+                {portfolio.length === 0 ? (
+                  <div className="py-12 text-center text-gray-400 text-sm">
+                    {isOwner ? <><Link href="/community/edit" className="text-teal-600 font-medium">Add photos</Link> to showcase your work</> : 'No photos yet.'}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {portfolio.map(item => (
+                      <div key={item.id} onClick={() => setLightbox(item.image_url)}
+                        className="aspect-square rounded-xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
+                        <img src={item.image_url} alt={item.title || 'Portfolio'} className="w-full h-full object-cover" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        </div>
 
-        {/* RIGHT — Contact */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-7 sticky top-20">
+          {/* RIGHT — contact sidebar */}
+          <div className="space-y-4">
 
-          {/* Follow + Message buttons for non-owners */}
-          {!isOwner && session && (
-            <div className="flex gap-2 mb-5">
-              <button onClick={toggleFollow}
-                className={`flex-1 py-2 text-sm font-semibold rounded-lg border transition-all ${
-                  isFollowing
-                    ? 'border-gray-200 text-gray-500 hover:border-red-200 hover:text-red-500'
-                    : 'bg-teal-600 text-white hover:bg-teal-700 border-teal-600'
-                }`}>
-                {isFollowing ? '✓ Following' : '+ Follow'}
-              </button>
-              <a href={`/messages?with=${id}`}
-                className="flex-1 py-2 text-sm font-semibold text-center rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-teal-300 hover:text-teal-700 transition-all">
-                💬 Message
-              </a>
-            </div>
-          )}
-
-          {/* Owner sees their own contact info, not the form */}
-          {isOwner ? (
-            <div className="text-center">
-              <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5">Your contact info</div>
-              <div className="space-y-3 text-left">
-                {pro.email && (
-                  <div className="flex items-center gap-3 bg-stone-50 rounded-xl p-3">
-                    <span className="text-lg">✉️</span>
-                    <div>
-                      <div className="text-xs text-gray-400">Email</div>
-                      <div className="text-sm font-medium text-gray-800">{pro.email}</div>
-                    </div>
-                  </div>
-                )}
-                {pro.phone && (
-                  <div className="flex items-center gap-3 bg-stone-50 rounded-xl p-3">
-                    <span className="text-lg">📞</span>
-                    <div>
-                      <div className="text-xs text-gray-400">Phone</div>
-                      <div className="text-sm font-medium text-gray-800">{pro.phone}</div>
-                    </div>
-                  </div>
-                )}
+            {/* Follow + Message (non-owner) */}
+            {!isOwner && session && (
+              <div className="flex gap-2">
+                <button onClick={toggleFollow}
+                  className={`flex-1 py-2.5 text-sm font-semibold rounded-xl border transition-all ${isFollowing ? 'border-gray-200 text-gray-500' : 'bg-teal-600 text-white border-teal-600 hover:bg-teal-700'}`}>
+                  {isFollowing ? '✓ Following' : '+ Follow'}
+                </button>
+                <a href={`/messages?with=${id}`}
+                  className="flex-1 py-2.5 text-sm font-semibold text-center rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-teal-300 hover:text-teal-700 transition-all">
+                  💬 Message
+                </a>
               </div>
-              <Link href="/edit-profile" className="mt-5 block w-full py-2.5 text-center text-sm font-semibold bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-colors">
-                Edit profile
-              </Link>
-              <Link href="/dashboard" className="mt-2 block w-full py-2.5 text-center text-sm font-medium border border-gray-200 text-gray-500 rounded-xl hover:bg-gray-50 transition-colors">
-                ← Back to dashboard
-              </Link>
-            </div>
-          ) : submitted ? (
-            <div className="text-center py-6">
-              <div className="w-14 h-14 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl text-teal-700 font-semibold">✓</div>
-              <h3 className="font-serif text-xl text-gray-900 mb-2">Message sent!</h3>
-              <p className="text-sm text-gray-400">
-                Your message has been sent to {pro.full_name.split(' ')[0]}. They'll be in touch soon.
-              </p>
-            </div>
-          ) : (
-            <>
-              <h2 className="font-serif text-xl text-gray-900 mb-1">
-                Contact {pro.full_name.split(' ')[0]}
-              </h2>
-              <p className="text-sm text-gray-400 mb-6">Send a message and they'll get back to you directly.</p>
+            )}
 
-              {formError && <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg">{formError}</div>}
-
-              {[
-                { id: 'c-name',  label: 'Your name',        value: name,  set: setName,  placeholder: 'John Smith',        type: 'text'  },
-                { id: 'c-email', label: 'Email',             value: email, set: setEmail, placeholder: 'john@example.com',   type: 'email' },
-                { id: 'c-phone', label: 'Phone (optional)',  value: phone, set: setPhone, placeholder: '(555) 000-0000',     type: 'tel'   },
-              ].map(f => (
-                <div key={f.id} className="mb-4">
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">{f.label}</label>
-                  <input type={f.type} value={f.value} onChange={e => f.set(e.target.value)} placeholder={f.placeholder}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 bg-stone-50 focus:outline-none focus:border-teal-400 focus:bg-white transition-colors" />
-                </div>
-              ))}
-
-              <div className="mb-5">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">Message</label>
-                <textarea value={message} onChange={e => setMessage(e.target.value)}
-                  placeholder="Describe what you need help with..." rows={4}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 bg-stone-50 focus:outline-none focus:border-teal-400 focus:bg-white transition-colors resize-none" />
-              </div>
-
-              <button onClick={handleSubmit} disabled={submitting}
-                className="w-full py-3 bg-teal-600 text-white text-sm font-semibold rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                {submitting ? 'Sending...' : 'Send message'}
+            {/* Request a call button */}
+            {!isOwner && (
+              <button className="w-full py-2.5 border border-teal-300 text-teal-700 text-sm font-semibold rounded-xl hover:bg-teal-50 transition-colors">
+                📞 Request a call
               </button>
-              <p className="text-xs text-gray-400 text-center mt-3">
-                Your details are only shared with {pro.full_name.split(' ')[0]}.
-              </p>
+            )}
 
-              {/* Phone — visible to owner always, visible to paid viewers, blurred for free */}
-              {pro.phone && (
+            {/* Contact form / owner card */}
+            <div className="bg-white border border-gray-100 rounded-2xl p-6">
+              {isOwner ? (
                 <>
-                  <div className="border-t border-gray-100 my-5" />
-                  <div className="flex items-center gap-3 bg-stone-50 rounded-xl p-3">
-                    <div className="w-9 h-9 bg-teal-50 rounded-full flex items-center justify-center text-sm">📞</div>
-                    <div>
-                      <div className="text-xs text-gray-400">Phone</div>
-                      {showPhone ? (
-                        <div className="text-sm font-semibold text-gray-800">{pro.phone}</div>
-                      ) : (
-                        <Link href="/upgrade" className="text-sm text-teal-600 font-medium hover:underline">
-                          Upgrade to Pro to view
-                        </Link>
-                      )}
+                  <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Your contact info</div>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg">📧</span>
+                      <div><div className="text-xs text-gray-400">Email</div><div className="text-sm font-medium text-gray-900">{pro.email}</div></div>
                     </div>
+                    {pro.phone && (
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg">📱</span>
+                        <div><div className="text-xs text-gray-400">Phone</div><div className="text-sm font-medium text-gray-900">{pro.phone}</div></div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-4 space-y-2">
+                    <Link href="/edit-profile" className="block w-full py-2.5 text-center bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 transition-colors">Edit profile</Link>
+                    <Link href="/dashboard" className="block w-full py-2.5 text-center border border-gray-200 text-gray-600 text-sm font-medium rounded-xl hover:bg-gray-50 transition-colors">← Dashboard</Link>
                   </div>
                 </>
+              ) : submitted ? (
+                <div className="text-center py-6">
+                  <div className="text-3xl mb-3">✓</div>
+                  <div className="font-semibold text-gray-900 mb-1">Message sent!</div>
+                  <div className="text-sm text-gray-400">{pro.full_name} will be in touch soon.</div>
+                </div>
+              ) : (
+                <>
+                  <div className="font-semibold text-gray-900 mb-1">Contact {pro.full_name.split(' ')[0]}</div>
+                  <div className="text-xs text-gray-400 mb-4">Free — no per-lead fees ever</div>
+                  {formError && <div className="mb-3 p-2.5 bg-red-50 text-red-600 text-xs rounded-lg">{formError}</div>}
+                  <div className="space-y-3">
+                    {[
+                      { label: 'Your name *',    val: name,    set: setName,    type: 'text',  ph: 'James Smith' },
+                      { label: 'Email *',        val: email,   set: setEmail,   type: 'email', ph: 'james@example.com' },
+                      { label: 'Phone',          val: phone,   set: setPhone,   type: 'tel',   ph: '(555) 000-0000' },
+                    ].map(f => (
+                      <div key={f.label}>
+                        <label className="text-xs font-semibold text-gray-500 block mb-1">{f.label}</label>
+                        <input type={f.type} value={f.val} onChange={e => f.set(e.target.value)} placeholder={f.ph}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-stone-50 focus:outline-none focus:border-teal-400 transition-colors" />
+                      </div>
+                    ))}
+                    <div>
+                      <label className="text-xs font-semibold text-gray-500 block mb-1">Message *</label>
+                      <textarea value={message} onChange={e => setMessage(e.target.value)} rows={3}
+                        placeholder="Describe the job you need done..."
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-stone-50 focus:outline-none focus:border-teal-400 resize-none transition-colors" />
+                    </div>
+                    <button onClick={handleLead} disabled={submitting}
+                      className="w-full py-2.5 bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 disabled:opacity-50 transition-colors">
+                      {submitting ? 'Sending...' : 'Send message →'}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-400 text-center mt-3">Zero per-lead fees · Direct contact · No middleman</p>
+                </>
               )}
-            </>
-          )}
+            </div>
+
+            {/* Quick info card */}
+            <div className="bg-white border border-gray-100 rounded-2xl p-5 space-y-3">
+              {[
+                { icon: '✓', label: 'License verified', sub: 'State database check' },
+                { icon: '💰', label: 'Free to contact', sub: 'No per-lead fees ever' },
+                { icon: '⭐', label: rating > 0 ? `${rating.toFixed(1)} rating` : 'New pro', sub: rating > 0 ? `${reviewCnt} verified reviews` : 'Be the first to review' },
+              ].map(item => (
+                <div key={item.label} className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-teal-50 rounded-lg flex items-center justify-center text-sm flex-shrink-0">{item.icon}</div>
+                  <div>
+                    <div className="text-xs font-semibold text-gray-900">{item.label}</div>
+                    <div className="text-xs text-gray-400">{item.sub}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Floating edit button — owner only, visible when scrolled past banner */}
-      {isOwner && (
-        <Link href="/edit-profile"
-          className="fixed bottom-6 right-6 bg-teal-600 text-white text-sm font-semibold px-5 py-3 rounded-full shadow-lg hover:bg-teal-700 transition-all hover:scale-105 flex items-center gap-2 z-50">
-          ✏️ Edit profile
-        </Link>
-      )}
-    </>
+      {/* Footer */}
+      <footer className="border-t border-gray-100 mt-12 py-8">
+        <div className="max-w-5xl mx-auto px-6 flex flex-wrap items-center justify-between gap-4">
+          <div className="text-sm text-gray-400">© 2026 TradesNetwork</div>
+          <div className="flex gap-5 text-sm">
+            {[['/','/about','About'],['/contact','Contact'],['/privacy','Privacy'],['/terms','Terms']].map(([,,label,href]) => (
+              <a key={label} href={href || label} className="text-gray-400 hover:text-teal-600 transition-colors">{label}</a>
+            ))}
+          </div>
+        </div>
+      </footer>
+    </div>
   )
 }

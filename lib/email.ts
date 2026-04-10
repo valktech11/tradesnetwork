@@ -1,3 +1,6 @@
+import { Resend } from 'resend'
+const resend = new Resend(process.env.RESEND_API_KEY)
+
 interface LeadEmailProps {
   proName: string
   proEmail: string
@@ -149,4 +152,44 @@ export function leadNotificationEmail({
 </table>
 </body>
 </html>`
+}
+
+export async function sendClaimEmail(pro: {
+  id: string; full_name: string; email: string;
+  city?: string | null; state?: string | null;
+  license_number?: string | null; trade_category?: any;
+}) {
+  const claimUrl = `${process.env.NEXT_PUBLIC_URL || 'https://tradesnetwork.vercel.app'}/claim/${pro.id}`
+  const tradeName = pro.trade_category?.category_name || 'trade professional'
+  const location  = [pro.city, pro.state].filter(Boolean).join(', ')
+
+  return resend.emails.send({
+    from:    'TradesNetwork <hello@tradesnetwork.com>',
+    to:      pro.email,
+    subject: `${pro.full_name}, your verified profile is waiting on TradesNetwork`,
+    html: `
+      <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; color: #1a1a1a;">
+        <div style="background: #0d9488; padding: 24px 32px; border-radius: 12px 12px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 22px;">TradesNetwork</h1>
+        </div>
+        <div style="background: white; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+          <h2 style="font-size: 20px; margin-top: 0;">Hi ${pro.full_name},</h2>
+          <p style="color: #6b7280; line-height: 1.6;">
+            We found your ${tradeName} license in the Florida state database and created a verified profile for you on TradesNetwork — the professional platform for America's trades workforce.
+          </p>
+          ${pro.license_number ? `<p style="color: #6b7280;">License: <strong>${pro.license_number}</strong>${location ? ` · ${location}` : ''}</p>` : ''}
+          <p style="color: #6b7280; line-height: 1.6;">
+            Claim your free profile in 2 minutes to start receiving leads directly — with <strong>zero per-lead fees, ever</strong>.
+          </p>
+          <a href="${claimUrl}" style="display: inline-block; background: #0d9488; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin: 16px 0;">
+            Claim my profile →
+          </a>
+          <p style="color: #9ca3af; font-size: 13px; margin-top: 24px;">
+            TradesNetwork · Zero per-lead fees · License verified · Direct leads<br/>
+            <a href="${process.env.NEXT_PUBLIC_URL || 'https://tradesnetwork.vercel.app'}" style="color: #0d9488;">tradesnetwork.vercel.app</a>
+          </p>
+        </div>
+      </div>
+    `,
+  })
 }

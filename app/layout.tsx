@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import MaintenanceBanner from '@/components/layout/MaintenanceBanner'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -15,7 +16,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet" />
       </head>
       <body className="bg-stone-50 text-gray-900 antialiased" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-        {children}
+        <MaintenanceBanner />
+      {children}
       </body>
     </html>
   )
