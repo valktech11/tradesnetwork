@@ -1,5 +1,8 @@
 import { Resend } from 'resend'
-const resend = new Resend(process.env.RESEND_API_KEY)
+
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY || 'placeholder')
+}
 
 interface LeadEmailProps {
   proName: string
@@ -163,7 +166,7 @@ export async function sendClaimEmail(pro: {
   const tradeName = pro.trade_category?.category_name || 'trade professional'
   const location  = [pro.city, pro.state].filter(Boolean).join(', ')
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from:    'TradesNetwork <hello@tradesnetwork.com>',
     to:      pro.email,
     subject: `${pro.full_name}, your verified profile is waiting on TradesNetwork`,

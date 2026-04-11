@@ -1,5 +1,6 @@
 'use client'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import ProCard from '@/components/ui/ProCard'
 import { Pro, TradeCategory } from '@/types'
@@ -23,7 +24,8 @@ function SkeletonCard() {
   )
 }
 
-export default function HomePage() {
+function HomePageInner() {
+  const searchParams = useSearchParams()
   const [pros, setPros]           = useState<Pro[]>([])
   const [categories, setCategories] = useState<TradeCategory[]>([])
   const [stats, setStats]         = useState({ pros: 0, trades: 0, reviews: 0 })
@@ -34,7 +36,7 @@ export default function HomePage() {
   const [error, setError]         = useState('')
   const [search, setSearch]       = useState('')
   const [appliedSearch, setAppliedSearch] = useState('')
-  const [activeTrade, setActiveTrade] = useState('')
+  const [activeTrade, setActiveTrade] = useState(() => searchParams.get('trade') || '')
   const [sort, setSort]           = useState('rating')
   const offset = useRef(0)
 
@@ -309,5 +311,13 @@ export default function HomePage() {
         </div>
       </footer>
     </>
+  )
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-stone-50 flex items-center justify-center"><div className="w-8 h-8 border-2 border-teal-600 border-t-transparent rounded-full animate-spin" /></div>}>
+      <HomePageInner />
+    </Suspense>
   )
 }

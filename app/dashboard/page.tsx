@@ -425,6 +425,19 @@ export default function DashboardPage() {
                   </Link>
                 ))}
               </div>
+
+              <div className="border-t border-gray-100 pt-4">
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Career tools</div>
+                {[
+                  { href: '/apprenticeship', icon: '📋', label: 'Apprenticeship tracker' },
+                  { href: '/edit-profile',   icon: '🦺', label: 'OSHA & equipment' },
+                ].map((item, i) => (
+                  <Link key={item.href} href={item.href}
+                    className={`flex items-center gap-2 py-2 text-sm text-gray-600 hover:text-teal-600 transition-colors ${i > 0 ? 'border-t border-gray-50' : ''}`}>
+                    <span className="text-base">{item.icon}</span> {item.label}
+                  </Link>
+                ))}
+              </div>
             </div>
 
             {/* Upgrade card — free users only */}

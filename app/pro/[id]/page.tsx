@@ -452,11 +452,11 @@ export default function ProProfilePage() {
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {portfolio.map(item => (
-                      <div key={item.id} onClick={() => item.image_url && setLightbox(item.image_url)}
+                      <div key={item.id} onClick={() => item.photo_url && setLightbox(item.photo_url)}
                         className="aspect-square rounded-xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity bg-stone-100">
-                        {item.image_url ? (
+                        {item.photo_url ? (
                           <img
-                            src={item.image_url}
+                            src={item.photo_url}
                             alt={item.title || 'Portfolio'}
                             className="w-full h-full object-cover"
                             onError={e => {

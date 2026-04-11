@@ -146,6 +146,12 @@ export default function AdminPage() {
 
   const cfg = data?.config || {}
 
+  if (loading && !accessDenied) return (
+    <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+
   if (accessDenied) return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-10 max-w-md text-center">

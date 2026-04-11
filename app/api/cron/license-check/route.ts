@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY || 'placeholder')
+}
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
@@ -35,7 +37,7 @@ export async function GET(req: NextRequest) {
     await sb.from('pros').update({ license_status: 'expiring_soon' }).eq('id', pro.id)
     if (daysLeft === 30 || daysLeft === 7) {
       try {
-        await resend.emails.send({
+        await getResend().emails.send({
           from: 'TradesNetwork <alerts@tradesnetwork.com>',
           to: pro.email,
           subject: `⚠️ Your license expires in ${daysLeft} days`,

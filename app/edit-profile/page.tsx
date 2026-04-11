@@ -148,8 +148,13 @@ export default function EditProfilePage() {
         zip_code:           zip.trim() || null,
         years_experience:   yrs ? parseInt(yrs) : null,
         license_number:     license.trim() || null,
-        available_for_work: available,
-        available_note:     availableNote.trim() || null,
+        available_for_work:  available,
+        available_note:      availableNote.trim() || null,
+        license_expiry_date: licenseExpiry || null,
+        osha_card_type:      oshaType || null,
+        osha_card_number:    oshaNumber.trim() || null,
+        osha_card_expiry:    oshaExpiry || null,
+        preferred_language:  language,
       }),
     })
     const d = await r.json()
@@ -357,6 +362,166 @@ export default function EditProfilePage() {
                   {availableNote && <span className="text-xs text-green-600">· {availableNote}</span>}
                 </div>
               )}
+            </div>
+
+            {/* ── LICENSE EXPIRY ── */}
+            <div className="bg-white border border-gray-100 rounded-2xl p-7">
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">License expiry</div>
+              <Field label="License expiry date" hint="We'll alert you before it expires">
+                <input
+                  type="date"
+                  value={licenseExpiry}
+                  onChange={e => setLicenseExpiry(e.target.value)}
+                  className={inp()}
+                />
+              </Field>
+              {licenseExpiry && (
+                <div className="mt-3 text-xs text-gray-400">
+                  Expires: <span className="font-semibold text-gray-700">{new Date(licenseExpiry).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                </div>
+              )}
+            </div>
+
+            {/* ── OSHA CARD ── */}
+            <div className="bg-white border border-gray-100 rounded-2xl p-7">
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">OSHA certification (self-reported)</div>
+              <div className="space-y-4">
+                <Field label="OSHA card type">
+                  <select value={oshaType} onChange={e => setOshaType(e.target.value)} className={inp()}>
+                    <option value="">None / not certified</option>
+                    <option value="OSHA-10">OSHA-10</option>
+                    <option value="OSHA-30">OSHA-30</option>
+                    <option value="OSHA-500">OSHA-500</option>
+                    <option value="OSHA-510">OSHA-510</option>
+                  </select>
+                </Field>
+                {oshaType && (
+                  <>
+                    <Field label="Card number" hint="Optional — for your records">
+                      <input
+                        type="text"
+                        value={oshaNumber}
+                        onChange={e => setOshaNumber(e.target.value)}
+                        placeholder="e.g. 12345678"
+                        className={inp()}
+                      />
+                    </Field>
+                    <Field label="Expiry date">
+                      <input
+                        type="date"
+                        value={oshaExpiry}
+                        onChange={e => setOshaExpiry(e.target.value)}
+                        className={inp()}
+                      />
+                    </Field>
+                  </>
+                )}
+              </div>
+              {oshaType && (
+                <div className="mt-4 flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5 w-fit">
+                  <span className="text-base">🦺</span>
+                  <span className="text-sm font-semibold text-blue-700">{oshaType} certified</span>
+                </div>
+              )}
+            </div>
+
+            {/* ── EQUIPMENT PROFICIENCY ── */}
+            <div className="bg-white border border-gray-100 rounded-2xl p-7">
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">Equipment &amp; tool proficiency</div>
+              <p className="text-xs text-gray-400 mb-4">Add equipment and tools you're proficient with. These show on your public profile.</p>
+
+              {/* Add new tag */}
+              <div className="flex gap-2 mb-4">
+                <input
+                  type="text"
+                  value={newEquip}
+                  onChange={e => setNewEquip(e.target.value)}
+                  onKeyDown={async e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      if (!newEquip.trim() || !session) return
+                      setAddingEquip(true)
+                      const r = await fetch('/api/equipment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ pro_id: session.id, name: newEquip.trim(), certified: false }),
+                      })
+                      const d = await r.json()
+                      if (r.ok) { setEquipment(eq => [...eq, d.item]); setNewEquip('') }
+                      setAddingEquip(false)
+                    }
+                  }}
+                  placeholder="e.g. Nail gun, Laser level, Skid steer..."
+                  className={inp() + ' flex-1'}
+                />
+                <button
+                  onClick={async () => {
+                    if (!newEquip.trim() || !session) return
+                    setAddingEquip(true)
+                    const r = await fetch('/api/equipment', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ pro_id: session.id, name: newEquip.trim(), certified: false }),
+                    })
+                    const d = await r.json()
+                    if (r.ok) { setEquipment(eq => [...eq, d.item]); setNewEquip('') }
+                    setAddingEquip(false)
+                  }}
+                  disabled={addingEquip || !newEquip.trim()}
+                  className="px-4 py-2 bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 disabled:opacity-40 transition-colors whitespace-nowrap"
+                >
+                  {addingEquip ? '...' : '+ Add'}
+                </button>
+              </div>
+
+              {/* Tag list */}
+              {equipment.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {equipment.map(eq => (
+                    <span key={eq.id} className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full border bg-stone-50 text-gray-700 border-gray-200">
+                      {eq.name}
+                      <button
+                        onClick={async () => {
+                          if (!session) return
+                          await fetch('/api/equipment', {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ pro_id: session.id, id: eq.id }),
+                          })
+                          setEquipment(prev => prev.filter(e => e.id !== eq.id))
+                        }}
+                        className="text-gray-400 hover:text-red-500 transition-colors text-xs font-bold ml-0.5"
+                        title="Remove"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-300">No equipment added yet. Type above and press Enter or + Add.</p>
+              )}
+            </div>
+
+            {/* ── PREFERRED LANGUAGE ── */}
+            <div className="bg-white border border-gray-100 rounded-2xl p-7">
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">Preferred language</div>
+              <p className="text-xs text-gray-400 mb-4">Sets the default language for your TradesNetwork interface.</p>
+              <div className="flex gap-3">
+                {[{ code: 'en', label: '🇺🇸 English' }, { code: 'es', label: '🇲🇽 Español' }].map(lang => (
+                  <button
+                    key={lang.code}
+                    onClick={() => setLanguage(lang.code)}
+                    className={`flex-1 py-3 text-sm font-semibold rounded-xl border transition-all ${
+                      language === lang.code
+                        ? 'bg-teal-600 text-white border-teal-600'
+                        : 'border-gray-200 text-gray-600 hover:border-teal-300'
+                    }`}
+                  >
+                    {lang.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Save */}
