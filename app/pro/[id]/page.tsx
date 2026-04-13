@@ -58,6 +58,8 @@ export default function ProProfilePage() {
   const [showHours, setShowHours]   = useState(false)
   const [showShareToast, setShowShareToast] = useState(false)
   const [equipment, setEquipment] = useState<any[]>([])
+  const [proLicenses, setProLicenses] = useState<any[]>([])
+  const [memberships, setMemberships] = useState<any[]>([])
 
   // Lead form
   const [name, setName]       = useState('')
@@ -87,6 +89,8 @@ export default function ProProfilePage() {
       setLoading(false)
       // Load equipment
       fetch(`/api/equipment?pro_id=${id}`).then(r => r.json()).then(d => setEquipment(d.equipment || []))
+      fetch(`/api/pro-licenses?pro_id=${id}`).then(r => r.json()).then(d => setProLicenses(d.licenses || []))
+      fetch(`/api/memberships?pro_id=${id}`).then(r => r.json()).then(d => setMemberships(d.memberships || []))
     }).catch(() => { setError('Could not load profile'); setLoading(false) })
   }, [id])
 
@@ -221,6 +225,9 @@ export default function ProProfilePage() {
 
                 {/* Name + trade */}
                 <h1 className="font-serif text-3xl text-gray-900 mb-1">{pro.full_name}</h1>
+                {(pro as any).business_name && (pro as any).business_name !== pro.full_name && (
+                  <div className="text-sm text-gray-500 mb-0.5">{(pro as any).business_name}</div>
+                )}
                 <div className="text-base font-medium text-teal-700 mb-1">{trade}</div>
                 <div className="text-sm text-gray-400 mb-3">{location}{pro.years_experience ? ` · ${pro.years_experience} yrs experience` : ''}</div>
 
@@ -229,7 +236,30 @@ export default function ProProfilePage() {
                   {pro.is_verified && <span className="flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-teal-50 text-teal-800">✓ License Verified</span>}
                   {elite && <span className="text-xs font-semibold px-3 py-1 rounded-full bg-purple-50 text-purple-800">Elite Pro</span>}
                   {paid && !elite && <span className="text-xs font-semibold px-3 py-1 rounded-full bg-green-50 text-green-800">Pro Member</span>}
-                  {pro.license_number && <span className="text-xs font-semibold px-3 py-1 rounded-full bg-amber-50 text-amber-800">Licensed · {pro.license_number}</span>}
+                  {/* Multi-license badges — use pro_licenses table if available, fallback to single */}
+                  {proLicenses.length > 0 ? proLicenses.map(lic => {
+                    const expiry = lic.license_expiry_date
+                    const expiryStr = expiry ? new Date(expiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null
+                    const daysLeft = expiry ? Math.ceil((new Date(expiry).getTime() - Date.now()) / 86400000) : null
+                    const colors = lic.license_status === 'active' ? 'bg-green-50 text-green-700 border-green-200'
+                      : lic.license_status === 'expiring_soon' ? 'bg-amber-50 text-amber-700 border-amber-200'
+                      : lic.license_status === 'expired'       ? 'bg-red-50 text-red-700 border-red-200'
+                      :                                          'bg-amber-50 text-amber-800 border-amber-200'
+                    const dot = lic.license_status === 'active' ? '🟢' : lic.license_status === 'expiring_soon' ? '🟡' : lic.license_status === 'expired' ? '🔴' : '⚪'
+                    const tip = expiryStr
+                      ? (lic.license_status === 'expired' ? `Expired ${expiryStr}` : daysLeft !== null && daysLeft <= 30 ? `${daysLeft}d left — expires ${expiryStr}` : `Expires ${expiryStr}`)
+                      : lic.trade_name
+                    return (
+                      <span key={lic.id} title={tip}
+                        className={`relative group flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full border cursor-default ${colors}`}>
+                        {dot} {lic.trade_name} · {lic.license_number}
+                        {expiryStr && <span className="font-normal opacity-70">· {expiryStr}</span>}
+                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-xs rounded-lg px-3 py-1.5 whitespace-nowrap shadow-lg z-10">{tip}</span>
+                      </span>
+                    )
+                  }) : pro.license_number && (
+                    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-amber-50 text-amber-800">Licensed · {pro.license_number}</span>
+                  )}
                   {/* License status badge with expiry date + hover tooltip */}
                   {(pro as any).license_status === 'active' && (() => {
                     const expiry = (pro as any).license_expiry_date
@@ -342,6 +372,7 @@ export default function ProProfilePage() {
                       { label: 'Plan',        value: pro.plan_tier || 'Free' },
                       { label: 'License',     value: pro.license_number || '—' },
                       { label: 'Verified',    value: pro.is_verified ? 'Yes — state database' : 'Not yet' },
+                      ...((pro as any).counties_served?.length ? [{ label: 'Counties served', value: (pro as any).counties_served.join(', ') }] : []),
                     ].map(d => (
                       <div key={d.label}>
                         <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-0.5">{d.label}</div>
@@ -364,6 +395,20 @@ export default function ProProfilePage() {
                       ))}
                     </div>
                     <p className="text-xs text-gray-400 mt-3">✓ = certified · Unverified items are self-reported</p>
+                  </div>
+                )}
+
+                {/* Memberships */}
+                {memberships.length > 0 && (
+                  <div className="bg-white border border-gray-100 rounded-2xl p-7">
+                    <h2 className="font-semibold text-gray-900 mb-4">Associations & memberships</h2>
+                    <div className="flex flex-wrap gap-2">
+                      {memberships.map(m => (
+                        <span key={m.id} className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full border bg-blue-50 text-blue-700 border-blue-100">
+                          🏛️ {m.name}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 )}
 

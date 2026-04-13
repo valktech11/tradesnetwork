@@ -58,6 +58,23 @@ export default function EditProfilePage() {
   const [addingEquip, setAddingEquip] = useState(false)
   // Language
   const [language, setLanguage] = useState('en')
+  // Business / contact
+  const [businessName, setBusinessName] = useState('')
+  const [phoneCell, setPhoneCell]   = useState('')
+  const [phoneWork, setPhoneWork]   = useState('')
+  const [phoneCell2, setPhoneCell2] = useState('')
+  const [countiesInput, setCountiesInput] = useState('')
+  const [countiesServed, setCountiesServed] = useState<string[]>([])
+  // Multiple licenses
+  const [proLicenses, setProLicenses] = useState<any[]>([])
+  const [newLicTrade, setNewLicTrade] = useState('')
+  const [newLicNumber, setNewLicNumber] = useState('')
+  const [newLicExpiry, setNewLicExpiry] = useState('')
+  const [addingLic, setAddingLic] = useState(false)
+  // Memberships
+  const [memberships, setMemberships] = useState<any[]>([])
+  const [newMembership, setNewMembership] = useState('')
+  const [addingMembership, setAddingMembership] = useState(false)
 
   // Cities
   const [cities, setCities]         = useState<string[]>([])
@@ -91,9 +108,16 @@ export default function EditProfilePage() {
       setOshaNumber(p.osha_card_number || '')
       setOshaExpiry(p.osha_card_expiry || '')
       setLanguage(p.preferred_language || 'en')
+      setBusinessName(p.business_name || '')
+      setPhoneCell(p.phone_cell || '')
+      setPhoneWork(p.phone_work || '')
+      setPhoneCell2(p.phone_cell2 || '')
+      setCountiesServed(p.counties_served || [])
       setLoading(false)
-      // Load equipment
+      // Load equipment, licenses, memberships
       fetch(`/api/equipment?pro_id=${s.id}`).then(r => r.json()).then(d => setEquipment(d.equipment || []))
+      fetch(`/api/pro-licenses?pro_id=${s.id}`).then(r => r.json()).then(d => setProLicenses(d.licenses || []))
+      fetch(`/api/memberships?pro_id=${s.id}`).then(r => r.json()).then(d => setMemberships(d.memberships || []))
     })
   }, [])
 
@@ -155,6 +179,11 @@ export default function EditProfilePage() {
         osha_card_number:    oshaNumber.trim() || null,
         osha_card_expiry:    oshaExpiry || null,
         preferred_language:  language,
+        business_name:       businessName.trim() || null,
+        phone_cell:          phoneCell.trim() || null,
+        phone_work:          phoneWork.trim() || null,
+        phone_cell2:         phoneCell2.trim() || null,
+        counties_served:     countiesServed.length > 0 ? countiesServed : null,
       }),
     })
     const d = await r.json()
@@ -261,10 +290,31 @@ export default function EditProfilePage() {
                 <input value={fullName} onChange={e => { setFullName(e.target.value); setErrors(p => ({ ...p, fullName: '' })) }}
                   placeholder="James Harrington" className={inp(errors.fullName)} />
               </Field>
-              <Field label="Phone" error={errors.phone} hint="Shown to Pro and Elite plan subscribers">
+              <Field label="Business name" hint="Your company or trading name (optional)">
+                <input value={businessName} onChange={e => setBusinessName(e.target.value)}
+                  placeholder="e.g. Johnson Electrical LLC" className={inp()} />
+              </Field>
+              <Field label="Phone (primary)" error={errors.phone} hint="Shown to Pro and Elite plan subscribers">
                 <input type="tel" value={phone} onChange={e => { setPhone(e.target.value); setErrors(p => ({ ...p, phone: '' })) }}
                   placeholder="(555) 000-0000" className={inp(errors.phone)} />
               </Field>
+              <div className="grid grid-cols-3 gap-3 mb-5">
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">Cell</label>
+                  <input value={phoneCell} onChange={e => setPhoneCell(e.target.value)}
+                    placeholder="Cell number" className={inp()} />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">Work / Office</label>
+                  <input value={phoneWork} onChange={e => setPhoneWork(e.target.value)}
+                    placeholder="Office number" className={inp()} />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">Cell 2</label>
+                  <input value={phoneCell2} onChange={e => setPhoneCell2(e.target.value)}
+                    placeholder="Alt cell" className={inp()} />
+                </div>
+              </div>
               <Field label="Trade" hint="Your primary trade category">
                 <select value={trade} onChange={e => setTrade(e.target.value)} className={inp()}>
                   <option value="">Select your trade...</option>
@@ -522,6 +572,175 @@ export default function EditProfilePage() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* ── COUNTIES SERVED ── */}
+            <div className="bg-white border border-gray-100 rounded-2xl p-7">
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">Counties served</div>
+              <p className="text-xs text-gray-400 mb-4">Add Florida counties you serve. These help homeowners find you.</p>
+              <div className="flex gap-2 mb-4">
+                <input
+                  type="text"
+                  value={countiesInput}
+                  onChange={e => setCountiesInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      const val = countiesInput.trim()
+                      if (val && !countiesServed.includes(val)) {
+                        setCountiesServed(prev => [...prev, val])
+                      }
+                      setCountiesInput('')
+                    }
+                  }}
+                  placeholder="e.g. Duval, Miami-Dade, Hillsborough..."
+                  className={inp() + ' flex-1'}
+                />
+                <button
+                  onClick={() => {
+                    const val = countiesInput.trim()
+                    if (val && !countiesServed.includes(val)) setCountiesServed(prev => [...prev, val])
+                    setCountiesInput('')
+                  }}
+                  disabled={!countiesInput.trim()}
+                  className="px-4 py-2 bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 disabled:opacity-40 transition-colors whitespace-nowrap"
+                >+ Add</button>
+              </div>
+              {countiesServed.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {countiesServed.map(c => (
+                    <span key={c} className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full border bg-stone-50 text-gray-700 border-gray-200">
+                      📍 {c}
+                      <button onClick={() => setCountiesServed(prev => prev.filter(x => x !== c))}
+                        className="text-gray-400 hover:text-red-500 transition-colors text-xs font-bold">×</button>
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-300">No counties added yet.</p>
+              )}
+            </div>
+
+            {/* ── MULTIPLE LICENSES ── */}
+            <div className="bg-white border border-gray-100 rounded-2xl p-7">
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">Licenses</div>
+              <p className="text-xs text-gray-400 mb-4">Add all your DBPR licenses. Each appears with its own badge on your profile.</p>
+
+              {/* Existing licenses */}
+              {proLicenses.length > 0 && (
+                <div className="space-y-2 mb-4">
+                  {proLicenses.map(lic => (
+                    <div key={lic.id} className="flex items-center justify-between p-3 bg-stone-50 border border-gray-100 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${lic.license_status === 'active' ? 'bg-green-500' : lic.license_status === 'expiring_soon' ? 'bg-amber-400' : lic.license_status === 'expired' ? 'bg-red-500' : 'bg-gray-300'}`} />
+                        <div>
+                          <div className="text-sm font-semibold text-gray-900">{lic.trade_name}</div>
+                          <div className="text-xs text-gray-400">{lic.license_number}{lic.license_expiry_date ? ` · exp ${new Date(lic.license_expiry_date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})}` : ''}</div>
+                        </div>
+                        {lic.is_primary && <span className="text-xs px-2 py-0.5 bg-teal-50 text-teal-700 rounded-full font-semibold">Primary</span>}
+                      </div>
+                      <button
+                        onClick={async () => {
+                          if (!session) return
+                          await fetch('/api/pro-licenses', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pro_id: session.id, id: lic.id }) })
+                          setProLicenses(prev => prev.filter(l => l.id !== lic.id))
+                        }}
+                        className="text-gray-300 hover:text-red-500 transition-colors text-lg leading-none">×</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Add new license */}
+              <div className="space-y-3 p-4 bg-stone-50 border border-gray-100 rounded-xl">
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Add a license</div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-gray-500 block mb-1">Trade / service</label>
+                    <input value={newLicTrade} onChange={e => setNewLicTrade(e.target.value)}
+                      placeholder="e.g. Air conditioning" className={inp()} />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500 block mb-1">License number</label>
+                    <input value={newLicNumber} onChange={e => setNewLicNumber(e.target.value)}
+                      placeholder="e.g. CAC1817585" className={inp()} />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 block mb-1">Expiry date (optional)</label>
+                  <input type="date" value={newLicExpiry} onChange={e => setNewLicExpiry(e.target.value)} className={inp() + ' max-w-xs'} />
+                </div>
+                <button
+                  disabled={addingLic || !newLicTrade.trim() || !newLicNumber.trim()}
+                  onClick={async () => {
+                    if (!session) return
+                    setAddingLic(true)
+                    const r = await fetch('/api/pro-licenses', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ pro_id: session.id, trade_name: newLicTrade.trim(), license_number: newLicNumber.trim(), license_expiry_date: newLicExpiry || null, is_primary: proLicenses.length === 0 }),
+                    })
+                    const d = await r.json()
+                    if (r.ok) { setProLicenses(prev => [...prev, d.license]); setNewLicTrade(''); setNewLicNumber(''); setNewLicExpiry('') }
+                    setAddingLic(false)
+                  }}
+                  className="px-4 py-2 bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 disabled:opacity-40 transition-colors"
+                >{addingLic ? 'Adding...' : '+ Add license'}</button>
+              </div>
+            </div>
+
+            {/* ── MEMBERSHIPS ── */}
+            <div className="bg-white border border-gray-100 rounded-2xl p-7">
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">Associations & memberships</div>
+              <p className="text-xs text-gray-400 mb-4">List trade associations you belong to. These build trust with homeowners.</p>
+              <div className="flex gap-2 mb-4">
+                <input
+                  type="text"
+                  value={newMembership}
+                  onChange={e => setNewMembership(e.target.value)}
+                  onKeyDown={async e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      if (!newMembership.trim() || !session) return
+                      setAddingMembership(true)
+                      const r = await fetch('/api/memberships', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pro_id: session.id, name: newMembership.trim() }) })
+                      const d = await r.json()
+                      if (r.ok) { setMemberships(m => [...m, d.membership]); setNewMembership('') }
+                      setAddingMembership(false)
+                    }
+                  }}
+                  placeholder="e.g. Florida Roofing & Sheet Metal Assoc., NARI..."
+                  className={inp() + ' flex-1'}
+                />
+                <button
+                  onClick={async () => {
+                    if (!newMembership.trim() || !session) return
+                    setAddingMembership(true)
+                    const r = await fetch('/api/memberships', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pro_id: session.id, name: newMembership.trim() }) })
+                    const d = await r.json()
+                    if (r.ok) { setMemberships(m => [...m, d.membership]); setNewMembership('') }
+                    setAddingMembership(false)
+                  }}
+                  disabled={addingMembership || !newMembership.trim()}
+                  className="px-4 py-2 bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 disabled:opacity-40 transition-colors whitespace-nowrap"
+                >{addingMembership ? '...' : '+ Add'}</button>
+              </div>
+              {memberships.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {memberships.map(m => (
+                    <span key={m.id} className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full border bg-blue-50 text-blue-700 border-blue-100">
+                      🏛️ {m.name}
+                      <button onClick={async () => {
+                        if (!session) return
+                        await fetch('/api/memberships', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pro_id: session.id, id: m.id }) })
+                        setMemberships(prev => prev.filter(x => x.id !== m.id))
+                      }} className="text-blue-400 hover:text-red-500 transition-colors text-xs font-bold ml-0.5">×</button>
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-300">No memberships added yet.</p>
+              )}
             </div>
 
             {/* Save */}

@@ -53,6 +53,12 @@ export interface Pro {
   is_claimed: boolean
   email_sent: boolean
   claimed_at: string | null
+  business_name: string | null
+  phone_cell: string | null
+  phone_work: string | null
+  phone_cell2: string | null
+  counties_served: string[] | null
+  address_line1: string | null
   // joined
   trade_category?: TradeCategory
 }
@@ -208,5 +214,26 @@ export interface Follow {
   id: string
   follower_id: string
   following_id: string
+  created_at: string
+}
+
+export type LicenseStatus = 'active' | 'expiring_soon' | 'expired' | 'unknown'
+
+export interface ProLicense {
+  id: string
+  pro_id: string
+  trade_name: string
+  license_number: string
+  license_expiry_date: string | null
+  license_status: LicenseStatus
+  is_primary: boolean
+  created_at: string
+}
+
+export interface ProMembership {
+  id: string
+  pro_id: string
+  name: string
+  url: string | null
   created_at: string
 }

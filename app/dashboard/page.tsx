@@ -440,6 +440,57 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {/* ── DIGITAL BUSINESS CARD ── */}
+            <div className="bg-white border border-gray-100 rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-9 h-9 bg-teal-50 rounded-xl flex items-center justify-center text-lg">📇</div>
+                <div>
+                  <div className="text-sm font-semibold text-gray-900">Digital Business Card</div>
+                  <div className="text-xs text-gray-400">Share your profile via QR code</div>
+                </div>
+              </div>
+
+              {/* QR code — generated via free QR API */}
+              <div className="flex flex-col items-center mb-4">
+                <div className="p-3 bg-white border border-gray-200 rounded-2xl shadow-sm">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(`https://tradesnetwork.vercel.app/card/${session.id}`)}&color=0f766e&bgcolor=ffffff&margin=6`}
+                    alt="Your QR code"
+                    width={140}
+                    height={140}
+                    className="rounded-lg"
+                  />
+                </div>
+                <p className="text-xs text-gray-400 mt-2 text-center">
+                  Show this to homeowners or paste<br/>the link in messages
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <a
+                  href={`/card/${session.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full py-2.5 text-center bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 transition-colors"
+                >
+                  Preview my card →
+                </a>
+                <button
+                  onClick={() => {
+                    const url = `https://tradesnetwork.vercel.app/card/${session.id}`
+                    if (navigator.share) {
+                      navigator.share({ title: `${session.name} — TradesNetwork`, url })
+                    } else {
+                      navigator.clipboard.writeText(url)
+                    }
+                  }}
+                  className="block w-full py-2.5 text-center border border-gray-200 text-gray-600 text-sm font-medium rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                  🔗 Copy card link
+                </button>
+              </div>
+            </div>
+
             {/* Upgrade card — free users only */}
             {!paid && (
               <div className="bg-teal-600 rounded-2xl p-6 text-white">

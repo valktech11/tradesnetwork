@@ -30,39 +30,40 @@ const DATA_DIR      = path.join(__dirname, 'dcn-data')
 // ── DCN TRADE → TradesNetwork category slug mapping ──────────────────────────
 // Keys match DCN Services field text (case-insensitive prefix match)
 const TRADE_MAP = {
-  'air conditioning':              'hvac-technician',
-  'alarm contractor':              'handyman',
-  'building demolition':           'general-contractor',
-  'building':                      'general-contractor',
-  'carpentry':                     'carpenter',
-  'doors/windows':                 'handyman',
-  'drywall (non-structural)':      'handyman',
-  'drywall':                       'handyman',
-  'electrical contractor':         'electrician',
-  'flooring':                      'flooring',
-  'gas line':                      'plumber',
-  'general':                       'general-contractor',
-  'glass and glazing':             'handyman',
-  'gutters':                       'roofer',
-  'gypsum drywall':                'handyman',
-  'industrial facility':           'general-contractor',
-  'irrigation':                    'landscaper',
-  'marine':                        'handyman',
-  'mechanical':                    'hvac-technician',
-  'painting':                      'painter',
-  'plumbing':                      'plumber',
-  'pollutant storage system':      'general-contractor',
-  'residential pool/spa servicing':'handyman',
-  'residential solar water heating':'solar-installer',
-  'residential':                   'general-contractor',
-  'roofing':                       'roofer',
-  'screening':                     'handyman',
-  'shutters':                      'handyman',
-  'solar':                         'solar-installer',
-  'specialty':                     'general-contractor',
-  'structure contractor':          'general-contractor',
-  'tower':                         'general-contractor',
-  'underground utility and excavation': 'general-contractor',
+  'air conditioning':               'hvac-technician',
+  'alarm contractor':               'alarm-security',
+  'building demolition':            'general-contractor',
+  'building':                       'general-contractor',
+  'carpentry':                      'carpenter',
+  'doors/windows':                  'windows-doors',
+  'drywall (non-structural)':       'drywall',
+  'drywall':                        'drywall',
+  'electrical contractor':          'electrician',
+  'flooring':                       'flooring',
+  'gas line':                       'plumber',
+  'general':                        'general-contractor',
+  'glass and glazing':              'glass-glazing',
+  'gutters':                        'gutters',
+  'gypsum drywall':                 'drywall',
+  'industrial facility':            'industrial-facility',
+  'irrigation':                     'irrigation',
+  'marine':                         'marine-contractor',
+  'mechanical':                     'hvac-technician',
+  'painting':                       'painter',
+  'plumbing':                       'plumber',
+  'pollutant storage system':       'other-trades',
+  'residential pool/spa servicing': 'pool-spa',
+  'residential solar water heating':'solar-energy',
+  'residential':                    'general-contractor',
+  'roofing':                        'roofing',
+  'screening':                      'screening-sheet-metal',
+  'sheet metal':                    'screening-sheet-metal',
+  'shutters':                       'windows-doors',
+  'solar':                          'solar-energy',
+  'specialty':                      'other-trades',
+  'structure contractor':           'structural-contractor',
+  'tower':                          'other-trades',
+  'underground utility and excavation': 'other-trades',
 }
 
 // ── ARGS ──────────────────────────────────────────────────────────────────────
@@ -233,14 +234,8 @@ async function main() {
 
       const proData = {
         full_name:          fullName,
-        email:              `unclaimed_dcn_${email.replace('@','_at_')}@placeholder.tradesnetwork`,
-        // Store real email separately in phone field temporarily? No —
-        // Real email goes into a separate column. For now use placeholder pattern
-        // so they can't log in, but real email stored for outreach.
-        // We store real email in a way that lets claim emails reach them:
-        // Actually, store real email directly — unclaimed pros have placeholder login
-        // but the claim email system needs their real email.
-        // Override: store real email directly for claimed outreach
+        business_name:      businessName || null,
+        email:              email,  // real email — auth blocks login until is_claimed=true
         phone:              phone,
         city:               city,
         state:              state,
@@ -262,21 +257,25 @@ async function main() {
       seenThisRun.add(email)
 
       if (DRY_RUN) {
-        console.log(`   [DRY] ${fullName} | ${email} | ${city}, ${state} | ${tradeSlug} | lic:${licenseNumber || 'none'}`)
+        console.log(`   [DRY] ${businessName || fullName} | ${email} | ${city}, ${state} | ${tradeSlug} | lic:${licenseNumber || 'none'}`)
         fileInserted++
         totalInserted++
         continue
       }
 
-      // Use real email directly — unclaimed pros need real email for claim campaigns
-      // Override email field with real email, mark is_claimed=false so they can't log in
-      // The auth route checks is_claimed before allowing login
-      proData.email = email
-
-      const { error } = await supabase.from('pros').insert(proData)
+      const { data: insertedPro, error } = await supabase.from('pros').insert(proData).select('id').single()
       if (error) {
-        // Unique constraint on email — skip silently
         if (error.code === '23505') {
+          // Email exists — check if we should add a license to existing pro
+          if (licenseNumber) {
+            const { data: existingPro } = await supabase.from('pros').select('id').eq('email', email).single()
+            if (existingPro) {
+              await supabase.from('pro_licenses').upsert({
+                pro_id: existingPro.id, trade_name: tradeName || tradeSlug || 'General', license_number: licenseNumber,
+                license_status: 'active', is_primary: false,
+              }, { onConflict: 'pro_id,license_number' })
+            }
+          }
           fileSkipped++
           totalSkipped++
         } else {
@@ -285,6 +284,17 @@ async function main() {
           totalSkipped++
         }
         continue
+      }
+
+      // Also write to pro_licenses table if license number present
+      if (insertedPro && licenseNumber) {
+        await supabase.from('pro_licenses').insert({
+          pro_id: insertedPro.id,
+          trade_name: tradeName || tradeSlug || 'General',
+          license_number: licenseNumber,
+          license_status: 'active',
+          is_primary: true,
+        })
       }
 
       existingEmails.add(email)
