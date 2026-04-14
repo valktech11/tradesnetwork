@@ -25,29 +25,29 @@ export default function UpgradePage() {
 
   useEffect(() => {
     const raw = sessionStorage.getItem('tn_pro')
-    if (raw) { const s = JSON.parse(raw); setSession(s); setName(s.name || '') }
+    if (raw) { const s = JSON.parse(raw); setSession(s) }
     const interval = setInterval(() => setSpots(s => Math.random() < 0.08 && s > 40 ? s - 1 : s), 9000)
     return () => clearInterval(interval)
   }, [])
 
   async function pay() {
-    if (!name || card.replace(/\s/g,'').length < 16 || !expiry || !cvc) { alert('Please fill in all card details.'); return }
-    setPaying(true)
-    await new Promise(r => setTimeout(r, 1800))
+    if (!session) { window.location.href = '/login'; return }
     const plan = modal === 'pro'
       ? (annual ? 'Pro_Founding_Annual' : 'Pro_Founding')
       : (annual ? 'Elite_Founding_Annual' : 'Elite_Founding')
-    if (session) {
-      await fetch(`/api/pros/${session.id}`, {
-        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan_tier: plan }),
-      })
-      const updated = { ...session, plan: plan as Session['plan'] }
-      sessionStorage.setItem('tn_pro', JSON.stringify(updated))
-      setSession(updated)
+    setPaying(true)
+    const r = await fetch('/api/stripe/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pro_id: session.id, plan_tier: plan }),
+    })
+    const d = await r.json()
+    setPaying(false)
+    if (r.ok && d.url) {
+      window.location.href = d.url
+    } else {
+      alert(d.error || 'Could not start checkout. Please try again.')
     }
-    setSpots(s => Math.max(s - 1, 0))
-    setPaying(false); setDone(true)
   }
 
   return (

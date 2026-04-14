@@ -76,6 +76,14 @@ export default function EditProfilePage() {
   const [newMembership, setNewMembership] = useState('')
   const [addingMembership, setAddingMembership] = useState(false)
 
+  // COI Insurance
+  const [insurance, setInsurance] = useState<any[]>([])
+  const [uploadingCOI, setUploadingCOI] = useState(false)
+  const [coiError, setCOIError] = useState('')
+
+  // Active tab for tabbed layout
+  const [activeTab, setActiveTab] = useState<'basic'|'credentials'|'preferences'>('basic')
+
   // Cities
   const [cities, setCities]         = useState<string[]>([])
   const [citiesLoading, setCitiesLoading] = useState(false)
@@ -118,6 +126,7 @@ export default function EditProfilePage() {
       fetch(`/api/equipment?pro_id=${s.id}`).then(r => r.json()).then(d => setEquipment(d.equipment || []))
       fetch(`/api/pro-licenses?pro_id=${s.id}`).then(r => r.json()).then(d => setProLicenses(d.licenses || []))
       fetch(`/api/memberships?pro_id=${s.id}`).then(r => r.json()).then(d => setMemberships(d.memberships || []))
+      fetch(`/api/insurance?pro_id=${s.id}`).then(r => r.json()).then(d => setInsurance(d.insurance || []))
     })
   }, [])
 
@@ -223,10 +232,26 @@ export default function EditProfilePage() {
         </div>
       </nav>
 
-      <div className="max-w-3xl mx-auto px-6 py-10">
-        <div className="mb-8">
+      <div className="max-w-3xl mx-auto px-6 py-8">
+        <div className="mb-6">
           <h1 className="font-serif text-3xl text-gray-900 mb-1">Edit profile</h1>
           <p className="text-gray-400 font-light">Keep your profile up to date to attract more homeowners.</p>
+        </div>
+
+        {/* Tab navigation */}
+        <div className="flex bg-white border border-gray-100 rounded-2xl p-1.5 mb-6 sticky top-[60px] z-40 shadow-sm">
+          {([
+            { key: 'basic',       label: '📋 Basic info' },
+            { key: 'credentials', label: '🏅 Credentials' },
+            { key: 'preferences', label: '⚙️ Preferences' },
+          ] as const).map(tab => (
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+              className={`flex-1 py-2 text-sm font-medium rounded-xl transition-colors ${
+                activeTab === tab.key ? 'bg-teal-600 text-white' : 'text-gray-500 hover:text-gray-900'
+              }`}>
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {saved && (
@@ -550,74 +575,6 @@ export default function EditProfilePage() {
                 </div>
               ) : (
                 <p className="text-xs text-gray-300">No equipment added yet. Type above and press Enter or + Add.</p>
-              )}
-            </div>
-
-            {/* ── PREFERRED LANGUAGE ── */}
-            <div className="bg-white border border-gray-100 rounded-2xl p-7">
-              <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">Preferred language</div>
-              <p className="text-xs text-gray-400 mb-4">Sets the default language for your TradesNetwork interface.</p>
-              <div className="flex gap-3">
-                {[{ code: 'en', label: '🇺🇸 English' }, { code: 'es', label: '🇲🇽 Español' }].map(lang => (
-                  <button
-                    key={lang.code}
-                    onClick={() => setLanguage(lang.code)}
-                    className={`flex-1 py-3 text-sm font-semibold rounded-xl border transition-all ${
-                      language === lang.code
-                        ? 'bg-teal-600 text-white border-teal-600'
-                        : 'border-gray-200 text-gray-600 hover:border-teal-300'
-                    }`}
-                  >
-                    {lang.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* ── COUNTIES SERVED ── */}
-            <div className="bg-white border border-gray-100 rounded-2xl p-7">
-              <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">Counties served</div>
-              <p className="text-xs text-gray-400 mb-4">Add Florida counties you serve. These help homeowners find you.</p>
-              <div className="flex gap-2 mb-4">
-                <input
-                  type="text"
-                  value={countiesInput}
-                  onChange={e => setCountiesInput(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      const val = countiesInput.trim()
-                      if (val && !countiesServed.includes(val)) {
-                        setCountiesServed(prev => [...prev, val])
-                      }
-                      setCountiesInput('')
-                    }
-                  }}
-                  placeholder="e.g. Duval, Miami-Dade, Hillsborough..."
-                  className={inp() + ' flex-1'}
-                />
-                <button
-                  onClick={() => {
-                    const val = countiesInput.trim()
-                    if (val && !countiesServed.includes(val)) setCountiesServed(prev => [...prev, val])
-                    setCountiesInput('')
-                  }}
-                  disabled={!countiesInput.trim()}
-                  className="px-4 py-2 bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 disabled:opacity-40 transition-colors whitespace-nowrap"
-                >+ Add</button>
-              </div>
-              {countiesServed.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {countiesServed.map(c => (
-                    <span key={c} className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full border bg-stone-50 text-gray-700 border-gray-200">
-                      📍 {c}
-                      <button onClick={() => setCountiesServed(prev => prev.filter(x => x !== c))}
-                        className="text-gray-400 hover:text-red-500 transition-colors text-xs font-bold">×</button>
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-gray-300">No counties added yet.</p>
               )}
             </div>
 

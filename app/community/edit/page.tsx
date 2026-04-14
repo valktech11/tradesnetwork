@@ -20,6 +20,7 @@ export default function CommunityEditPage() {
   const [newTrade, setNewTrade]   = useState('')
   const [saving, setSaving]       = useState(false)
   const [error, setError]         = useState('')
+  const [markAsJobSite, setMarkAsJobSite] = useState(false)
 
   useEffect(() => {
     const raw = sessionStorage.getItem('tn_pro')
@@ -60,16 +61,39 @@ export default function CommunityEditPage() {
   async function addItem() {
     if (!newPhoto || !newTitle.trim() || !session) { setError('Please add a photo and title'); return }
     setSaving(true); setError('')
+
+    // Attempt geo capture for Proof of Work
+    let geoData: { latitude?: number; longitude?: number; location_label?: string; captured_at?: string; is_job_site?: boolean } = {}
+    if (markAsJobSite && navigator.geolocation) {
+      try {
+        const pos = await new Promise<GeolocationPosition>((res, rej) =>
+          navigator.geolocation.getCurrentPosition(res, rej, { timeout: 8000 })
+        )
+        geoData = {
+          latitude:      pos.coords.latitude,
+          longitude:     pos.coords.longitude,
+          captured_at:   new Date().toISOString(),
+          is_job_site:   true,
+        }
+        // Reverse geocode using free API
+        try {
+          const geo = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`)
+          const gd = await geo.json()
+          geoData.location_label = [gd.address?.city || gd.address?.town || gd.address?.village, gd.address?.state].filter(Boolean).join(', ')
+        } catch {}
+      } catch { /* geo not available — continue without */ }
+    }
+
     const r = await fetch('/api/portfolio', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pro_id: session.id, photo_url: newPhoto, title: newTitle, description: newDesc || null, trade: newTrade || null }),
+      body: JSON.stringify({ pro_id: session.id, photo_url: newPhoto, title: newTitle, description: newDesc || null, trade: newTrade || null, ...geoData }),
     })
     const d = await r.json()
     setSaving(false)
     if (r.ok) {
       setPortfolio(p => [d.item, ...p])
-      setNewPhoto(''); setNewTitle(''); setNewDesc('')
+      setNewPhoto(''); setNewTitle(''); setNewDesc(''); setMarkAsJobSite(false)
     } else {
       setError(d.error || 'Could not add item')
     }
@@ -153,6 +177,15 @@ export default function CommunityEditPage() {
             <textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} rows={3}
               placeholder="Describe the project — scope of work, materials used, challenges solved..."
               className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-stone-50 focus:outline-none focus:border-teal-400 focus:bg-white resize-none transition-colors" />
+          </div>
+
+          <div className="flex items-center gap-3 mb-4">
+            <button onClick={() => setMarkAsJobSite(j => !j)}
+              className={`flex items-center gap-2 text-sm px-4 py-2 rounded-xl border transition-all ${markAsJobSite ? 'bg-teal-50 text-teal-700 border-teal-300' : 'border-gray-200 text-gray-500'}`}>
+              <span>{markAsJobSite ? '📍' : '📷'}</span>
+              {markAsJobSite ? 'Job site photo — will capture GPS' : 'Mark as job site photo'}
+            </button>
+            {markAsJobSite && <span className="text-xs text-gray-400">GPS captured at upload time</span>}
           </div>
 
           <button onClick={addItem} disabled={saving || uploading || !newPhoto || !newTitle.trim()}

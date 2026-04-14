@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const { pro_id, photo_url, title, description, trade } = body
+  const { pro_id, photo_url, title, description, trade, latitude, longitude, location_label, captured_at, is_job_site } = body
 
   if (!pro_id || !photo_url || !title?.trim()) {
     return NextResponse.json({ error: 'pro_id, photo_url and title are required' }, { status: 400 })
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await getSupabaseAdmin()
     .from('portfolio_items')
-    .insert({ pro_id, photo_url, title: title.trim(), description: description || null, trade: trade || null })
+    .insert({ pro_id, photo_url, title: title.trim(), description: description || null, trade: trade || null, latitude: latitude || null, longitude: longitude || null, location_label: location_label || null, captured_at: captured_at || null, is_job_site: is_job_site || false })
     .select()
     .single()
 

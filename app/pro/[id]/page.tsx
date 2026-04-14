@@ -260,8 +260,8 @@ export default function ProProfilePage() {
                   }) : pro.license_number && (
                     <span className="text-xs font-semibold px-3 py-1 rounded-full bg-amber-50 text-amber-800">Licensed · {pro.license_number}</span>
                   )}
-                  {/* License status badge with expiry date + hover tooltip */}
-                  {(pro as any).license_status === 'active' && (() => {
+                  {/* Legacy single license status — only show when no pro_licenses entries */}
+                  {proLicenses.length === 0 && (pro as any).license_status === 'active' && (() => {
                     const expiry = (pro as any).license_expiry_date
                     const expiryStr = expiry ? new Date(expiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null
                     return (
@@ -277,7 +277,7 @@ export default function ProProfilePage() {
                       </span>
                     )
                   })()}
-                  {(pro as any).license_status === 'expiring_soon' && (() => {
+                  {proLicenses.length === 0 && (pro as any).license_status === 'expiring_soon' && (() => {
                     const expiry = (pro as any).license_expiry_date
                     const expiryStr = expiry ? new Date(expiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null
                     const daysLeft = expiry ? Math.ceil((new Date(expiry).getTime() - Date.now()) / 86400000) : null
@@ -293,7 +293,7 @@ export default function ProProfilePage() {
                       </span>
                     )
                   })()}
-                  {(pro as any).license_status === 'expired' && (() => {
+                  {proLicenses.length === 0 && (pro as any).license_status === 'expired' && (() => {
                     const expiry = (pro as any).license_expiry_date
                     const expiryStr = expiry ? new Date(expiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null
                     return (
@@ -312,6 +312,30 @@ export default function ProProfilePage() {
                   {(pro as any).osha_card_type && (
                     <span className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
                       🦺 {(pro as any).osha_card_type} certified
+                    </span>
+                  )}
+                  {/* COI Insurance badge */}
+                  {(pro as any).insurance_status === 'active' && (() => {
+                    const exp = (pro as any).insurance_expiry_date
+                    const expiryStr = exp ? new Date(exp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null
+                    return (
+                      <span title={expiryStr ? `Insured · expires ${expiryStr}` : 'Insurance verified'}
+                        className="relative group flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 cursor-default">
+                        🛡️ Insured{expiryStr ? ` · ${expiryStr}` : ''}
+                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-xs rounded-lg px-3 py-1.5 whitespace-nowrap shadow-lg z-10">
+                          {expiryStr ? `Certificate of Insurance · expires ${expiryStr}` : 'Certificate of Insurance on file'}
+                        </span>
+                      </span>
+                    )
+                  })()}
+                  {(pro as any).insurance_status === 'expiring_soon' && (
+                    <span className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                      🛡️ Insurance expiring soon
+                    </span>
+                  )}
+                  {(pro as any).insurance_status === 'expired' && (
+                    <span className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-red-50 text-red-700 border border-red-200">
+                      ⚠️ Insurance expired
                     </span>
                   )}
                   {pro.available_for_work && (
@@ -529,7 +553,7 @@ export default function ProProfilePage() {
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {portfolio.map(item => (
                       <div key={item.id} onClick={() => item.photo_url && setLightbox(item.photo_url)}
-                        className="aspect-square rounded-xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity bg-stone-100">
+                        className="relative aspect-square rounded-xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity bg-stone-100">
                         {item.photo_url ? (
                           <img
                             src={item.photo_url}
@@ -548,6 +572,13 @@ export default function ProProfilePage() {
                           <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
                             <div className="text-2xl mb-1">🖼</div>
                             <div className="text-xs">{item.title || 'Photo'}</div>
+                          </div>
+                        )}
+                        {/* Job site geo label */}
+                        {item.is_job_site && (
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs px-2 py-1 flex items-center gap-1">
+                            <span>📍</span>
+                            <span className="truncate">{item.location_label || 'Job site'}</span>
                           </div>
                         )}
                       </div>
