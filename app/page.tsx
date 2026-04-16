@@ -46,6 +46,8 @@ function HomePageInner() {
   const [sort, setSort]             = useState('rating')
   const [availableOnly, setAvailableOnly] = useState(false)
   const [showAllTrades, setShowAllTrades] = useState(false)
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
+  const MOBILE_MAX_PER_GROUP = 3
   const [tradeCounts, setTradeCounts] = useState<Record<string, number>>({})
   const offset = useRef(0)
 
@@ -131,34 +133,34 @@ function HomePageInner() {
 
   const TRADE_ICONS: Record<string, string> = {
     'electrician':           '⚡',
-    'plumber':               '🔧',
-    'hvac-technician':       '❄',
-    'alarm-security':        '🔒',
+    'plumber':               '🪠',
+    'hvac-technician':       '❄️',
+    'alarm-security':        '🔐',
     'irrigation':            '💧',
-    'solar-installer':       '☀',
-    'solar-energy':          '☀',
-    'general-contractor':    '📋',
+    'solar-installer':       '☀️',
+    'solar-energy':          '☀️',
+    'general-contractor':    '🏗️',
     'carpenter':             '🪚',
     'roofer':                '🏠',
     'roofing':               '🏠',
     'mason':                 '🧱',
-    'welder':                '🔥',
-    'structural-contractor': '🏗',
+    'welder':                '🔩',
+    'structural-contractor': '⚙️',
     'marine-contractor':     '⚓',
     'industrial-facility':   '🏭',
     'painter':               '🎨',
-    'flooring':              '▭',
-    'drywall':               '🔲',
+    'flooring':              '🪵',
+    'drywall':               '🧰',
     'windows-doors':         '🪟',
-    'gutters':               '〰',
-    'glass-glazing':         '🔷',
-    'screening-sheet-metal': '⊞',
-    'tile-setter':           '◼',
+    'gutters':               '🌧️',
+    'glass-glazing':         '🔍',
+    'screening-sheet-metal': '🔩',
+    'tile-setter':           '🔲',
     'landscaper':            '🌿',
     'pool-spa':              '🏊',
-    'pest-control':          '🛡',
+    'pest-control':          '🪲',
     'handyman':              '🔨',
-    'other-trades':          '⋯',
+    'other-trades':          '🛠️',
   }
 
   // Build slug→category lookup
@@ -269,14 +271,17 @@ function HomePageInner() {
             {TRADE_GROUPS.map(group => {
               const groupCats = group.slugs.map(s => catBySlug[s]).filter(Boolean)
               if (groupCats.length === 0) return null
+              const isExpanded = expandedGroups[group.label]
+              const visibleCats = isExpanded ? groupCats : groupCats.slice(0, MOBILE_MAX_PER_GROUP)
+              const hiddenCount = groupCats.length - MOBILE_MAX_PER_GROUP
               return (
                 <div key={group.label}>
                   <div className="flex items-center gap-1.5 mb-2">
-                    <span className="text-sm text-gray-300">{group.icon}</span>
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{group.label}</span>
+                    <span className="text-sm">{group.icon}</span>
+                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{group.label}</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
-                    {groupCats.map(cat => {
+                    {visibleCats.map(cat => {
                       const count = tradeCounts[cat.id] || 0
                       const icon  = TRADE_ICONS[cat.slug] || ''
                       const active = activeTrade === cat.id
@@ -287,7 +292,7 @@ function HomePageInner() {
                               ? 'bg-teal-600 text-white border-teal-600'
                               : 'border-gray-200 text-gray-600 hover:border-teal-300 hover:text-teal-700 hover:bg-teal-50'
                           }`}>
-                          {icon && <span className="text-xs opacity-70">{icon}</span>}
+                          {icon && <span style={{fontSize:'13px'}}>{icon}</span>}
                           {cat.category_name}
                           {count > 0 && (
                             <span className={`text-xs font-bold rounded-full px-1.5 min-w-[18px] text-center leading-none py-0.5 ${
@@ -297,6 +302,20 @@ function HomePageInner() {
                         </button>
                       )
                     })}
+                    {!isExpanded && hiddenCount > 0 && (
+                      <button
+                        onClick={() => setExpandedGroups(prev => ({ ...prev, [group.label]: true }))}
+                        className="px-3 py-1.5 rounded-xl text-sm border border-dashed border-gray-300 text-gray-400 hover:border-teal-300 hover:text-teal-600 transition-all">
+                        +{hiddenCount} more
+                      </button>
+                    )}
+                    {isExpanded && hiddenCount > 0 && (
+                      <button
+                        onClick={() => setExpandedGroups(prev => ({ ...prev, [group.label]: false }))}
+                        className="px-3 py-1.5 rounded-xl text-sm border border-dashed border-gray-300 text-gray-400 hover:border-teal-300 hover:text-teal-600 transition-all">
+                        ↑ less
+                      </button>
+                    )}
                   </div>
                 </div>
               )

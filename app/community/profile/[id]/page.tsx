@@ -163,7 +163,7 @@ export default function CommunityProfilePage() {
   const location = [pro.city, pro.state].filter(Boolean).join(', ')
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-stone-100">
       <nav className="bg-white border-b border-gray-100 px-6 h-[60px] flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-6">
           <Link href="/" className="font-serif text-xl text-gray-900">Trades<span className="text-teal-600">Network</span></Link>
@@ -195,7 +195,7 @@ export default function CommunityProfilePage() {
       <div className="max-w-4xl mx-auto px-6 py-8">
 
         {/* Profile header */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-8 mb-6">
+        <div className="bg-white border border-gray-200 rounded-xl p-6 mb-5">
           <div className="flex gap-6 items-start">
             <Avatar pro={pro} size="lg" />
             <div className="flex-1">
@@ -266,10 +266,14 @@ export default function CommunityProfilePage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-5 bg-white border border-gray-100 rounded-xl p-1 w-fit">
+        <div className="bg-white border border-gray-200 rounded-xl p-1 mb-5 flex gap-1">
           {(['posts', 'portfolio', 'skills'] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab as any)}
-              className={`px-5 py-2 text-sm font-medium rounded-lg capitalize transition-all ${activeTab === tab ? 'bg-teal-600 text-white' : 'text-gray-500 hover:text-gray-900'}`}>
+              className={`flex-1 px-4 py-2.5 text-sm font-semibold rounded-xl capitalize transition-all ${
+                activeTab === tab
+                  ? 'bg-teal-600 text-white shadow-sm'
+                  : 'text-gray-500 hover:text-gray-900 hover:bg-stone-100'
+              }`}>
               {tab === 'posts' ? `Posts (${posts.length})` : tab === 'portfolio' ? `Portfolio (${portfolio.length})` : `Skills (${skills.length})`}
             </button>
           ))}
@@ -346,34 +350,39 @@ export default function CommunityProfilePage() {
 
       {/* Skills tab */}
       {activeTab === 'skills' && (
-        <div className="space-y-4">
-          {/* Add skill — owner only, contained card */}
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          {/* Add skill — owner only, full-width centred */}
           {isOwn && (
-            <div className="bg-white border border-gray-100 rounded-2xl p-5">
-              <div className="text-sm font-semibold text-gray-900 mb-1">Add a skill</div>
-              <p className="text-xs text-gray-400 mb-3">Skills you add can be endorsed by other pros on TradesNetwork.</p>
-              <div className="flex gap-2 max-w-md">
+            <div className="px-6 pt-5 pb-5 border-b border-gray-100">
+              <div className="text-sm font-bold text-gray-900 mb-1 text-center">Add a skill</div>
+              <p className="text-xs text-gray-400 mb-3 text-center">Skills you add can be endorsed by other verified pros.</p>
+              <div className="flex gap-2">
                 <input value={newSkill} onChange={e => setNewSkill(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addSkill()}
-                  placeholder="e.g. Panel upgrades, EV charger installation..."
-                  className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-teal-400 bg-stone-50" />
+                  placeholder="e.g. Panel upgrades, EV charger installation, Ductwork..."
+                  className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-teal-400 bg-stone-50" />
                 <button onClick={addSkill} disabled={addingSkill || !newSkill.trim()}
-                  className="px-4 py-2 bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 disabled:opacity-40 transition-colors whitespace-nowrap">
-                  + Add
+                  className="px-5 py-2.5 bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 disabled:opacity-40 transition-colors whitespace-nowrap">
+                  {addingSkill ? '...' : '+ Add'}
                 </button>
               </div>
             </div>
           )}
 
           {/* Skills list */}
-          <div className="bg-white border border-gray-100 rounded-2xl p-6">
+          <div className="p-6">
+            {skills.length > 0 && (
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
+                Skills ({skills.length})
+              </div>
+            )}
             {skills.length === 0 ? (
               <div className="text-center py-10">
                 <div className="text-4xl mb-3 opacity-10">🔧</div>
                 <div className="text-sm font-medium text-gray-500">
                   {isOwn ? 'No skills added yet' : 'No skills listed yet'}
                 </div>
-                {isOwn && <div className="text-xs text-gray-400 mt-1">Use the field above to add your first skill</div>}
+                {isOwn && <div className="text-xs text-gray-400 mt-1">Add your first skill above</div>}
               </div>
             ) : (
               <div className="flex flex-wrap gap-3">
