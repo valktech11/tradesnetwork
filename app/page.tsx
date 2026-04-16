@@ -261,7 +261,7 @@ function HomePageInner() {
             <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Browse by trade</div>
             <button onClick={() => selectTrade('')}
               className={`text-xs px-3 py-1 rounded-full border transition-all font-medium ${
-                !activeTrade ? 'bg-teal-600 text-white border-teal-600' : 'border-gray-200 text-gray-400 hover:border-teal-300 hover:text-teal-600'
+                !activeTrade ? 'bg-teal-600 text-white border-teal-600' : 'border-gray-300 text-gray-600 bg-white hover:border-teal-400 hover:text-teal-700'
               }`}>
               All trades
             </button>
@@ -290,13 +290,13 @@ function HomePageInner() {
                           className={`inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl text-sm border transition-all font-medium ${
                             active
                               ? 'bg-teal-600 text-white border-teal-600'
-                              : 'border-gray-200 text-gray-600 hover:border-teal-300 hover:text-teal-700 hover:bg-teal-50'
+                              : 'border-gray-300 text-gray-700 bg-white hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50'
                           }`}>
                           {icon && <span style={{fontSize:'13px'}}>{icon}</span>}
                           <span className="truncate">{cat.category_name}</span>
                           {count > 0 && (
                             <span className={`ml-auto text-xs font-bold rounded-full px-1.5 min-w-[18px] text-center leading-none py-0.5 ${
-                              active ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'
+                              active ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600 font-semibold'
                             }`}>{count.toLocaleString()}</span>
                           )}
                         </button>
@@ -305,14 +305,14 @@ function HomePageInner() {
                     {!isExpanded && hiddenCount > 0 && (
                       <button
                         onClick={() => setExpandedGroups(prev => ({ ...prev, [group.label]: true }))}
-                        className="px-3 py-1.5 rounded-xl text-sm border border-dashed border-gray-300 text-gray-400 hover:border-teal-300 hover:text-teal-600 transition-all">
+                        className="px-3 py-1.5 rounded-xl text-sm border border-dashed border-gray-400 text-gray-500 hover:border-teal-400 hover:text-teal-600 transition-all">
                         +{hiddenCount} more
                       </button>
                     )}
                     {isExpanded && hiddenCount > 0 && (
                       <button
                         onClick={() => setExpandedGroups(prev => ({ ...prev, [group.label]: false }))}
-                        className="px-3 py-1.5 rounded-xl text-sm border border-dashed border-gray-300 text-gray-400 hover:border-teal-300 hover:text-teal-600 transition-all">
+                        className="px-3 py-1.5 rounded-xl text-sm border border-dashed border-gray-400 text-gray-500 hover:border-teal-400 hover:text-teal-600 transition-all">
                         ↑ less
                       </button>
                     )}
@@ -334,12 +334,12 @@ function HomePageInner() {
                     return (
                       <button key={cat.id} onClick={() => selectTrade(cat.id)}
                         className={`inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl text-sm border transition-all font-medium ${
-                          active ? 'bg-teal-600 text-white border-teal-600' : 'border-gray-200 text-gray-600 hover:border-teal-300 hover:text-teal-700 hover:bg-teal-50'
+                          active ? 'bg-teal-600 text-white border-teal-600' : 'border-gray-300 text-gray-700 bg-white hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50'
                         }`}>
                         <span className="truncate">{cat.category_name}</span>
                         {count > 0 && (
                           <span className={`ml-auto text-xs font-bold rounded-full px-1.5 py-0.5 min-w-[18px] text-center leading-none ${
-                            active ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'
+                            active ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600 font-semibold'
                           }`}>{count.toLocaleString()}</span>
                         )}
                       </button>

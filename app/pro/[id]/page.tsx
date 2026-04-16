@@ -73,7 +73,7 @@ function CredCard({ lic }: { lic: any }) {
               {lic.license_number ? (
                 <>
                   <span>{lic.license_number.slice(0,4)}</span>
-                  <span className="text-gray-400 mx-0.5">{revealed ? lic.license_number.slice(4,-3) : '•••'}</span>
+                  <span className="text-gray-500 mx-0.5">{revealed ? lic.license_number.slice(4,-3) : '•••'}</span>
                   <span>{lic.license_number.slice(-3)}</span>
                   <button onClick={() => setRevealed(r => !r)} className="ml-2 text-teal-600 underline text-xs">{revealed ? 'hide' : 'reveal'}</button>
                 </>
@@ -88,7 +88,7 @@ function CredCard({ lic }: { lic: any }) {
             )}
           </div>
           {lic.license_expiry_date && (
-            <div className="text-xs text-gray-400 mt-1">
+            <div className="text-xs text-gray-600 mt-1 font-medium">
               Expires {new Date(lic.license_expiry_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
             </div>
           )}
@@ -564,7 +564,7 @@ export default function ProProfilePage() {
               <div className="bg-white border border-gray-200 rounded-xl p-5">
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="text-sm font-bold text-gray-900">Verified credentials</h2>
-                  <span className="text-xs text-gray-400 bg-stone-100 border border-gray-200 px-2 py-0.5 rounded-full">Florida DBPR</span>
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full">🛡 Florida DBPR</span>
                 </div>
 
                 {proLicenses.map(lic => <CredCard key={lic.id} lic={lic} />)}

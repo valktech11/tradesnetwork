@@ -21,7 +21,7 @@ export default function ProCard({ pro, index = 0 }: ProCardProps) {
   return (
     <Link
       href={`/pro/${pro.id}`}
-      className="group block bg-white border border-gray-200 rounded-xl p-5 hover:border-teal-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative"
+      className="group block bg-white border border-gray-300 rounded-xl p-5 shadow-sm hover:border-teal-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative"
       style={{ animationDelay: `${index * 40}ms` }}
     >
       {/* Header — avatar with availability ring + name */}
@@ -127,7 +127,7 @@ export default function ProCard({ pro, index = 0 }: ProCardProps) {
       </div>
 
       {/* CTA */}
-      <button className="mt-3 w-full py-2 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 group-hover:bg-teal-50 group-hover:border-teal-200 group-hover:text-teal-700 transition-colors">
+      <button className="mt-3 w-full py-2 rounded-lg border border-gray-300 text-xs font-semibold text-gray-600 group-hover:bg-teal-50 group-hover:border-teal-400 group-hover:text-teal-700 transition-colors">
         View profile →
       </button>
     </Link>

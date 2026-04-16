@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
+import { moderateContent } from '@/lib/moderation'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -33,6 +34,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Rating must be between 1 and 5' }, { status: 400 })
   }
 
+  // Moderate review text before saving
+  const textToCheck = (comment || review_text || '').trim()
+  if (textToCheck.length > 0) {
+    const mod = await moderateContent(textToCheck)
+    if (!mod.safe) {
+      return NextResponse.json({
+        error: `Review not allowed: ${mod.reason || 'content policy violation'}. Please keep your review professional and respectful.`
+      }, { status: 422 })
+    }
+  }
+
   const { data, error } = await getSupabaseAdmin()
     .from('reviews')
     .insert({
@@ -42,7 +54,7 @@ export async function POST(req: NextRequest) {
       reviewer_email: reviewer_email.toLowerCase().trim(),
       rating: parseInt(rating),
       comment: (comment || review_text || null),
-      is_approved: false, // requires admin approval
+      is_approved: true, // auto-approved after content moderation pass
     })
     .select()
     .single()

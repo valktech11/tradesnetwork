@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Session } from '@/types'
@@ -9,6 +9,8 @@ export default function Navbar() {
   const path    = usePathname()
   const router  = useRouter()
   const [session, setSession] = useState<Session | null>(null)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     // Read session immediately
@@ -24,9 +26,18 @@ export default function Navbar() {
     }
     window.addEventListener('storage', sync)
     window.addEventListener('tn-session-changed', sync)
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('touchstart', handleClickOutside as any)
     return () => {
       window.removeEventListener('storage', sync)
       window.removeEventListener('tn-session-changed', sync)
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchstart', handleClickOutside as any)
     }
   }, [])
 
@@ -73,8 +84,8 @@ export default function Navbar() {
               Dashboard
             </Link>
             {/* Avatar dropdown */}
-            <div className="relative group">
-              <button className="flex items-center gap-2 pl-1 pr-3 py-1.5 rounded-full border border-gray-200 hover:border-teal-300 transition-colors">
+            <div className="relative" ref={dropdownRef}>
+              <button onClick={() => setDropdownOpen(o => !o)} className="flex items-center gap-2 pl-1 pr-3 py-1.5 rounded-full border border-gray-200 hover:border-teal-300 transition-colors">
                 {session.name && (
                   <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0"
                     style={{ background: bg, color: fg }}>
@@ -87,7 +98,7 @@ export default function Navbar() {
                 </svg>
               </button>
               {/* Dropdown */}
-              <div className="absolute right-0 top-full mt-2 w-44 bg-white border border-gray-100 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+              {dropdownOpen && (<div className="absolute right-0 top-full mt-2 w-44 bg-white border border-gray-100 rounded-xl shadow-lg z-50">
                 <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-stone-50 rounded-t-xl transition-colors">
                   📊 Dashboard
                 </Link>
@@ -111,11 +122,14 @@ export default function Navbar() {
                     → Log out
                   </button>
                 </div>
-              </div>
+              </div>)}
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Link href="/community" className="text-sm font-medium text-gray-500 hover:text-teal-600 transition-colors px-2 hidden sm:block">
+              Community
+            </Link>
             <Link href="/login" className="text-sm font-medium px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors">
               Log in
             </Link>
