@@ -69,13 +69,8 @@ function HomePageInner() {
     })
     if (activeTrade)   params.set('trade', activeTrade)
     if (appliedSearch) {
-      // If search looks like a city name (no numbers), use city filter
-      // Otherwise use general search
-      if (/^[a-zA-Z\s]+$/.test(appliedSearch) && appliedSearch.length > 2) {
-        params.set('city', appliedSearch)
-      } else {
-        params.set('search', appliedSearch)
-      }
+      // Single search param — API searches name, city, business name and zip
+      params.set('search', appliedSearch)
     }
     return `/api/pros?${params}`
   }

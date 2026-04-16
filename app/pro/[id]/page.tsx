@@ -33,20 +33,24 @@ function Stars({ rating, size = 'sm' }: { rating: number; size?: 'sm'|'md' }) {
   )
 }
 
-// Blurred license number — click to reveal
+// License number — show start + end, click to reveal full
 function LicenseNumber({ number }: { number: string }) {
   const [revealed, setRevealed] = useState(false)
   if (!number) return <span className="text-gray-400">—</span>
-  const visible = number.slice(0, 4)
-  const masked  = '•'.repeat(Math.max(0, number.length - 4))
+  const start  = number.slice(0, 4)
+  const end    = number.slice(-3)
+  const masked = '•••'
   return (
-    <button onClick={() => setRevealed(r => !r)}
-      className="inline-flex items-center gap-1 font-mono text-xs group"
-      title={revealed ? 'Click to hide' : 'Click to reveal full number'}>
-      <span className="text-gray-300">{visible}</span>
-      <span className="text-gray-400 tracking-widest">{revealed ? number.slice(4) : masked}</span>
-      <span className="opacity-30 group-hover:opacity-70 transition-opacity">{revealed ? '🙈' : '👁'}</span>
-    </button>
+    <span className="inline-flex items-center gap-1 font-mono text-xs">
+      <span className="text-gray-700 font-medium">{start}</span>
+      <span className="text-gray-400">{revealed ? number.slice(4, -3) : masked}</span>
+      <span className="text-gray-700 font-medium">{end}</span>
+      <button onClick={() => setRevealed(r => !r)}
+        className="ml-1 text-teal-600 hover:text-teal-700 text-xs underline-offset-2 underline"
+        title={revealed ? 'Hide' : 'Reveal full number'}>
+        {revealed ? 'hide' : 'reveal'}
+      </button>
+    </span>
   )
 }
 
@@ -85,6 +89,7 @@ export default function ProProfilePage() {
   const [equipment, setEquipment] = useState<any[]>([])
   const [proLicenses, setProLicenses] = useState<any[]>([])
   const [memberships, setMemberships] = useState<any[]>([])
+  const [endorsements, setEndorsements] = useState<any[]>([])
   const [loading, setLoading]     = useState(true)
   const [error, setError]         = useState('')
   const [isFollowing, setIsFollowing] = useState(false)
@@ -122,6 +127,10 @@ export default function ProProfilePage() {
       fetch(`/api/equipment?pro_id=${id}`).then(r => r.json()).then(d => setEquipment(d.equipment || []))
       fetch(`/api/pro-licenses?pro_id=${id}`).then(r => r.json()).then(d => setProLicenses(d.licenses || []))
       fetch(`/api/memberships?pro_id=${id}`).then(r => r.json()).then(d => setMemberships(d.memberships || []))
+      fetch(`/api/skills?pro_id=${id}`).then(r => r.json()).then(d => {
+        const endorsed = (d.skills || []).filter((s: any) => s.endorsement_count > 0)
+        setEndorsements(endorsed)
+      })
     }).catch(() => { setError('Could not load profile'); setLoading(false) })
   }, [id])
 
@@ -244,10 +253,6 @@ export default function ProProfilePage() {
 
       {/* ── HERO ───────────────────────────────────────────────────────────── */}
       <div className="bg-[#152a23] relative overflow-hidden">
-        {/* Subtle texture pattern */}
-        <div className="absolute inset-0 opacity-[0.04]"
-          style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)', backgroundSize: '12px 12px' }} />
-
         <div className="relative max-w-5xl mx-auto px-6 pt-8 pb-6">
           <div className="flex items-start gap-5">
             {/* Avatar */}
@@ -302,12 +307,14 @@ export default function ProProfilePage() {
 
         {/* Availability banner */}
         {pro.available_for_work && (
-          <div className="bg-green-600/90 border-t border-green-500/30 px-6 py-2.5 flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse" />
-            <span className="text-sm text-white font-medium">Available for new work</span>
-            {(pro as any).available_note && (
-              <span className="text-green-200/80 text-xs ml-1">· {(pro as any).available_note}</span>
-            )}
+          <div className="bg-green-600/90 border-t border-green-500/30 py-2.5">
+            <div className="max-w-5xl mx-auto px-6 flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse" />
+              <span className="text-sm text-white font-medium">Available for new work</span>
+              {(pro as any).available_note && (
+                <span className="text-green-200/80 text-xs ml-1">· {(pro as any).available_note}</span>
+              )}
+            </div>
           </div>
         )}
 
@@ -352,6 +359,11 @@ export default function ProProfilePage() {
                     💬 Send message
                   </button>
                 )}
+                <button
+                  onClick={() => alert('Compliance PDF download coming soon. This will generate a one-page summary of licenses, OSHA certification and insurance.')}
+                  className="flex items-center justify-center gap-1.5 px-4 py-3 border border-teal-800 text-teal-400 text-xs font-medium rounded-xl hover:bg-teal-900/40 transition-colors whitespace-nowrap">
+                  ⬇ PDF
+                </button>
               </div>
             )}
           </div>
@@ -599,6 +611,38 @@ export default function ProProfilePage() {
                   </div>
                 )}
 
+                {/* Peer endorsements */}
+                {endorsements.length > 0 && (
+                  <div className="bg-white border border-gray-100 rounded-2xl p-6">
+                    <h2 className="font-semibold text-gray-900 mb-1">Peer endorsements</h2>
+                    <p className="text-xs text-gray-400 mb-4">Vouched for by other verified pros on TradesNetwork</p>
+                    <div className="space-y-3">
+                      {endorsements.map(skill => (
+                        <div key={skill.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                          <div>
+                            <div className="text-sm font-semibold text-gray-900">{skill.skill_name}</div>
+                            <div className="text-xs text-teal-600 font-medium mt-0.5">
+                              Vouched for by {skill.endorsement_count} pro{skill.endorsement_count !== 1 ? 's' : ''}
+                            </div>
+                          </div>
+                          <div className="flex -space-x-1.5">
+                            {Array.from({ length: Math.min(skill.endorsement_count, 4) }).map((_, i) => (
+                              <div key={i} className="w-7 h-7 rounded-full bg-teal-100 border-2 border-white flex items-center justify-center">
+                                <span className="text-teal-700 text-xs font-semibold">✓</span>
+                              </div>
+                            ))}
+                            {skill.endorsement_count > 4 && (
+                              <div className="w-7 h-7 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center">
+                                <span className="text-gray-500 text-xs font-semibold">+{skill.endorsement_count - 4}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Business hours */}
                 <div className="bg-white border border-gray-100 rounded-2xl p-6">
                   <button onClick={() => setShowHours(h => !h)}
@@ -758,7 +802,7 @@ export default function ProProfilePage() {
             {/* Trust signals */}
             <div className="bg-white border border-gray-100 rounded-2xl p-5 space-y-3">
               {[
-                { icon: '✓', lbl: pro.is_verified ? 'License verified' : 'Profile created', sub: pro.is_verified ? 'State database check' : 'Unverified — complete profile' },
+                { icon: '✓', lbl: pro.is_verified ? 'License verified' : 'Profile created', sub: pro.is_verified ? 'State database check' : (isOwner ? 'Unverified — complete profile' : 'Self-reported') },
                 { icon: '💰', lbl: 'Free to contact', sub: 'No per-lead fees ever' },
                 { icon: rating > 0 ? '⭐' : '🆕', lbl: rating > 0 ? `${rating.toFixed(1)} star rating` : 'New pro', sub: rating > 0 ? `${reviewCnt} verified reviews` : 'Be the first to review' },
               ].map(item => (
@@ -798,8 +842,8 @@ export default function ProProfilePage() {
                 </div>
               ) : (
                 <>
-                  <div className="font-semibold text-gray-900 mb-0.5">Contact {firstName}</div>
-                  <div className="text-xs text-gray-400 mb-4">Free · No middleman · Direct contact</div>
+                  <div className="font-semibold text-gray-900 mb-0.5">Request a callback</div>
+                  <div className="text-xs text-gray-400 mb-4">Free · Direct contact · No middleman</div>
                   {formError && <div className="mb-3 p-2.5 bg-red-50 text-red-600 text-xs rounded-lg">{formError}</div>}
                   <div className="space-y-3">
                     <div>

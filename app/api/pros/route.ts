@@ -27,10 +27,10 @@ export async function GET(req: NextRequest) {
   if (city)   query = query.ilike('city', city)
   if (state)  query = query.ilike('state', state)
 
-  // Free text search — only on name and zip, NOT city (city has its own filter)
+  // Free text search — name, city, business name, zip
   if (search) {
     query = query.or(
-      `full_name.ilike.%${search}%,zip_code.ilike.%${search}%`
+      `full_name.ilike.%${search}%,city.ilike.%${search}%,business_name.ilike.%${search}%,zip_code.ilike.%${search}%`
     )
   }
 

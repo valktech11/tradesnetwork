@@ -347,18 +347,19 @@ export default function CommunityProfilePage() {
       {/* Skills tab */}
       {activeTab === 'skills' && (
         <div className="space-y-4">
-          {/* Add skill — owner only */}
+          {/* Add skill — owner only, contained card */}
           {isOwn && (
             <div className="bg-white border border-gray-100 rounded-2xl p-5">
-              <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Add a skill</div>
-              <div className="flex gap-2">
+              <div className="text-sm font-semibold text-gray-900 mb-1">Add a skill</div>
+              <p className="text-xs text-gray-400 mb-3">Skills you add can be endorsed by other pros on TradesNetwork.</p>
+              <div className="flex gap-2 max-w-md">
                 <input value={newSkill} onChange={e => setNewSkill(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addSkill()}
                   placeholder="e.g. Panel upgrades, EV charger installation..."
-                  className="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-teal-400 bg-stone-50" />
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-teal-400 bg-stone-50" />
                 <button onClick={addSkill} disabled={addingSkill || !newSkill.trim()}
-                  className="px-4 py-2 bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 disabled:opacity-40 transition-colors">
-                  Add
+                  className="px-4 py-2 bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 disabled:opacity-40 transition-colors whitespace-nowrap">
+                  + Add
                 </button>
               </div>
             </div>
@@ -367,9 +368,12 @@ export default function CommunityProfilePage() {
           {/* Skills list */}
           <div className="bg-white border border-gray-100 rounded-2xl p-6">
             {skills.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="text-3xl mb-2 opacity-20">🔧</div>
-                <div className="text-sm text-gray-400">{isOwn ? 'Add your first skill above.' : 'No skills listed yet.'}</div>
+              <div className="text-center py-10">
+                <div className="text-4xl mb-3 opacity-10">🔧</div>
+                <div className="text-sm font-medium text-gray-500">
+                  {isOwn ? 'No skills added yet' : 'No skills listed yet'}
+                </div>
+                {isOwn && <div className="text-xs text-gray-400 mt-1">Use the field above to add your first skill</div>}
               </div>
             ) : (
               <div className="flex flex-wrap gap-3">
