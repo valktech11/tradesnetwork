@@ -26,6 +26,14 @@ export function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
 }
 
+// For reviews — always show full date, never relative. "Apr 17, 2026"
+export function formatReviewDate(dateStr: string): string {
+  if (!dateStr) return ''
+  const ts = new Date(dateStr).getTime()
+  if (isNaN(ts)) return ''
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
 export function isPaid(plan: PlanTier): boolean {
   return PAID_PLANS.includes(plan)
 }

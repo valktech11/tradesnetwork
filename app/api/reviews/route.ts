@@ -34,6 +34,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Rating must be between 1 and 5' }, { status: 400 })
   }
 
+  // Rate limit: max 3 reviews per email per 24 hours
+  const since24h = new Date(Date.now() - 86400000).toISOString()
+  const { count: recentCount } = await getSupabaseAdmin()
+    .from('reviews')
+    .select('*', { count: 'exact', head: true })
+    .ilike('reviewer_email', reviewer_email.toLowerCase().trim())
+    .gte('reviewed_at', since24h)
+  if ((recentCount || 0) >= 3) {
+    return NextResponse.json({ error: 'You have submitted too many reviews today. Please try again tomorrow.' }, { status: 429 })
+  }
+
   // Moderate review text before saving
   const textToCheck = (comment || review_text || '').trim()
   if (textToCheck.length > 0) {

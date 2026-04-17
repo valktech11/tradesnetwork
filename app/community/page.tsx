@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { Session, Post, Pro } from '@/types'
 import { initials, avatarColor, timeAgo, isPaid } from '@/lib/utils'
@@ -7,8 +7,19 @@ import { initials, avatarColor, timeAgo, isPaid } from '@/lib/utils'
 const POST_TYPES = [
   { value: 'update',    label: 'Update',    emoji: '💬' },
   { value: 'work',      label: 'Work',      emoji: '🔧' },
-  { value: 'tip',       label: 'Tip',       emoji: '💡' },
+  { value: 'tip',       label: 'Ask a pro', emoji: '❓' },
   { value: 'milestone', label: 'Milestone', emoji: '🏆' },
+]
+
+const TRADE_CHIPS = [
+  { label: 'Electrical', slug: 'electrician' },
+  { label: 'Plumbing',   slug: 'plumber' },
+  { label: 'HVAC',       slug: 'hvac-technician' },
+  { label: 'Carpentry',  slug: 'carpenter' },
+  { label: 'Roofing',    slug: 'roofer' },
+  { label: 'Painting',   slug: 'painter' },
+  { label: 'GC',         slug: 'general-contractor' },
+  { label: 'Drywall',    slug: 'drywall' },
 ]
 
 function Avatar({ pro, size = 10 }: { pro: any; size?: number }) {
@@ -18,6 +29,7 @@ function Avatar({ pro, size = 10 }: { pro: any; size?: number }) {
   return <div className={cls} style={{ background: bg, color: fg }}>{initials(pro?.full_name || 'A')}</div>
 }
 
+// ── Post card with functional type rendering ──────────────────────────────────
 function PostCard({ post, session, onLike, onDelete }: {
   post: Post & { liked_by_me: boolean }
   session: Session | null
@@ -27,11 +39,14 @@ function PostCard({ post, session, onLike, onDelete }: {
   const [showComments, setShowComments] = useState(false)
   const [comments, setComments]         = useState<any[]>([])
   const [commentText, setCommentText]   = useState('')
-  const [loadingComments, setLoadingComments] = useState(false)
+  const [loadingComments, setLoadingComments]   = useState(false)
   const [submittingComment, setSubmittingComment] = useState(false)
-  const isOwn    = session?.id === post.pro_id
-  const typeInfo = POST_TYPES.find(t => t.value === post.post_type)
+  const isOwn         = session?.id === post.pro_id
+  const typeInfo      = POST_TYPES.find(t => t.value === post.post_type)
   const isVerifiedPro = (post.pro as any)?.is_verified
+  const isAskAPro     = post.post_type === 'tip'
+  const isMilestone   = post.post_type === 'milestone'
+  const isWork        = post.post_type === 'work'
 
   async function loadComments() {
     if (comments.length > 0) { setShowComments(s => !s); return }
@@ -47,8 +62,7 @@ function PostCard({ post, session, onLike, onDelete }: {
     if (!commentText.trim() || !session) return
     setSubmittingComment(true)
     const r = await fetch('/api/comments', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ post_id: post.id, pro_id: session.id, content: commentText }),
     })
     const d = await r.json()
@@ -57,7 +71,24 @@ function PostCard({ post, session, onLike, onDelete }: {
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+    <div className={`bg-white border rounded-xl overflow-hidden ${isMilestone ? 'border-amber-300' : isAskAPro ? 'border-blue-200' : 'border-gray-200'}`}>
+
+      {/* Milestone banner */}
+      {isMilestone && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center gap-2">
+          <span className="text-lg">🏆</span>
+          <span className="text-xs font-bold text-amber-800 uppercase tracking-widest">Milestone Achievement</span>
+        </div>
+      )}
+
+      {/* Ask a Pro banner */}
+      {isAskAPro && (
+        <div className="bg-blue-50 border-b border-blue-100 px-4 py-2 flex items-center gap-2">
+          <span className="text-lg">❓</span>
+          <span className="text-xs font-bold text-blue-700 uppercase tracking-widest">Question for the Community</span>
+        </div>
+      )}
+
       {/* Post header */}
       <div className="flex items-start gap-3 p-4 pb-3">
         <Link href={`/community/profile/${post.pro_id}`}>
@@ -69,7 +100,6 @@ function PostCard({ post, session, onLike, onDelete }: {
               className="font-semibold text-sm text-gray-900 hover:text-teal-600 transition-colors">
               {post.pro?.full_name}
             </Link>
-            {/* Verified badge on post author */}
             {isVerifiedPro && (
               <span className="inline-flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded-full bg-green-50 border border-green-200 text-green-700">
                 <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
@@ -81,15 +111,22 @@ function PostCard({ post, session, onLike, onDelete }: {
             {isPaid((post.pro?.plan_tier ?? 'Free') as any) && (
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700">Pro</span>
             )}
-            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
-              {typeInfo?.emoji} {typeInfo?.label}
-            </span>
+            {/* Only show type badge for non-default types */}
+            {post.post_type !== 'update' && (
+              <span className={`text-xs px-2 py-0.5 rounded-full ${
+                isMilestone ? 'bg-amber-50 text-amber-700' :
+                isAskAPro   ? 'bg-blue-50 text-blue-700' :
+                isWork      ? 'bg-teal-50 text-teal-700' : 'bg-gray-100 text-gray-500'
+              }`}>
+                {typeInfo?.emoji} {typeInfo?.label}
+              </span>
+            )}
             {session && session.id !== post.pro_id && (
               <a href={`/messages?with=${post.pro_id}`} className="text-xs text-gray-400 hover:text-teal-600 transition-colors ml-auto">💬</a>
             )}
           </div>
           <div className="text-xs text-gray-400 mt-0.5">
-            {post.pro?.trade_category?.category_name}
+            {(post.pro as any)?.trade_category?.category_name}
             {post.pro?.city ? ` · ${post.pro.city}` : ''}
             {post.pro?.state ? `, ${post.pro.state}` : ''}
             {` · ${timeAgo(post.created_at)}`}
@@ -102,38 +139,50 @@ function PostCard({ post, session, onLike, onDelete }: {
       </div>
 
       {/* Content */}
-      <div className="px-4 pb-3">
-        <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{post.content}</p>
-      </div>
+      {post.content && (
+        <div className="px-4 pb-3">
+          <p className={`text-sm leading-relaxed whitespace-pre-wrap ${isAskAPro ? 'text-blue-900 font-medium' : 'text-gray-700'}`}>
+            {post.content}
+          </p>
+        </div>
+      )}
 
-      {/* Photo */}
+      {/* Work post photo */}
       {post.photo_url && (
         <div className="px-4 pb-3">
           <img src={post.photo_url} alt="Post"
             className="w-full rounded-xl object-contain bg-stone-50" style={{ maxHeight: '560px' }} />
+          {isWork && (
+            <div className="mt-1.5 flex items-center gap-1">
+              <span className="text-xs text-teal-600 font-medium">📸 Project work</span>
+              {(post.pro as any)?.trade_category?.category_name && (
+                <span className="text-xs text-gray-400">· {(post.pro as any).trade_category.category_name}</span>
+              )}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Actions — Respect + Comments */}
+      {/* Actions */}
       <div className="flex items-center gap-1 px-4 py-2.5 border-t border-gray-100">
         <button onClick={() => session && onLike(post.id)}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-            post.liked_by_me
-              ? 'bg-teal-50 text-teal-700 font-semibold'
-              : 'text-gray-400 hover:bg-gray-50 hover:text-gray-700'
+            post.liked_by_me ? 'bg-teal-50 text-teal-700 font-semibold' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-700'
           }`}>
-          <span>{post.liked_by_me ? '✊' : '✊'}</span>
+          <span>✊</span>
           <span>Respect</span>
           {post.like_count > 0 && <span className="font-semibold">{post.like_count}</span>}
         </button>
         <button onClick={loadComments}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-colors">
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+            isAskAPro ? 'text-blue-600 hover:bg-blue-50 font-medium' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'
+          }`}>
           <span>💬</span>
-          <span>{post.comment_count > 0 ? post.comment_count : 'Comment'}</span>
+          <span>{isAskAPro ? (post.comment_count > 0 ? `${post.comment_count} answers` : 'Answer this') : (post.comment_count > 0 ? post.comment_count : 'Comment')}</span>
         </button>
       </div>
 
-      {/* Comments */}
+      {/* Comments / Answers */}
       {showComments && (
         <div className="border-t border-gray-100 px-4 py-3 bg-stone-50/60">
           {loadingComments ? (
@@ -141,14 +190,16 @@ function PostCard({ post, session, onLike, onDelete }: {
           ) : (
             <div className="space-y-2.5 mb-3">
               {comments.length === 0 && (
-                <div className="text-xs text-gray-400">No comments yet — be the first.</div>
+                <div className="text-xs text-gray-400">
+                  {isAskAPro ? 'No answers yet — be the first verified pro to answer.' : 'No comments yet — be the first.'}
+                </div>
               )}
               {comments.map(cm => {
                 const cmVerified = cm.pro?.is_verified
                 return (
                   <div key={cm.id} className="flex gap-2 items-start">
                     <Avatar pro={cm.pro} size={7} />
-                    <div className="flex-1 bg-white rounded-xl px-3 py-2 border border-gray-100">
+                    <div className={`flex-1 rounded-xl px-3 py-2 border ${isAskAPro && cmVerified ? 'bg-green-50 border-green-200' : 'bg-white border-gray-100'}`}>
                       <div className="flex items-center gap-1.5 mb-0.5">
                         <span className="text-xs font-semibold text-gray-800">{cm.pro?.full_name}</span>
                         {cmVerified && (
@@ -156,7 +207,7 @@ function PostCard({ post, session, onLike, onDelete }: {
                             <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor">
                               <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
                             </svg>
-                            Verified
+                            {isAskAPro ? 'Verified Answer' : 'Verified'}
                           </span>
                         )}
                       </div>
@@ -173,11 +224,11 @@ function PostCard({ post, session, onLike, onDelete }: {
               <div className="flex-1 flex gap-2">
                 <input value={commentText} onChange={e => setCommentText(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && !e.shiftKey && submitComment()}
-                  placeholder="Write a comment..."
+                  placeholder={isAskAPro ? 'Share your expert answer...' : 'Write a comment...'}
                   className="flex-1 px-3 py-2 text-xs border border-gray-200 rounded-xl bg-white focus:outline-none focus:border-teal-400 transition-colors" />
                 <button onClick={submitComment} disabled={submittingComment || !commentText.trim()}
                   className="px-3 py-2 bg-teal-600 text-white text-xs font-semibold rounded-xl hover:bg-teal-700 disabled:opacity-40 transition-colors">
-                  Post
+                  {isAskAPro ? 'Answer' : 'Post'}
                 </button>
               </div>
             </div>
@@ -188,37 +239,24 @@ function PostCard({ post, session, onLike, onDelete }: {
   )
 }
 
-// ── Action bar shortcuts above composer ───────────────────────────────────────
-function ActionBar({ active, onSelect }: { active: string; onSelect: (type: string) => void }) {
-  const actions = [
-    { type: 'work',      icon: '📸', label: 'Post work' },
-    { type: 'tip',       icon: '❓', label: 'Ask a pro' },
-    { type: 'milestone', icon: '🏆', label: 'Milestone' },
-  ]
-  return (
-    <div className="flex gap-2 mb-3">
-      {actions.map(a => (
-        <button key={a.type} onClick={() => onSelect(a.type)}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border text-xs font-semibold transition-all ${
-            active === a.type
-              ? 'bg-teal-600 border-teal-600 text-white'
-              : 'border-gray-200 text-gray-600 hover:border-teal-300 hover:text-teal-700 hover:bg-teal-50'
-          }`}>
-          <span style={{fontSize:'14px'}}>{a.icon}</span>
-          <span>{a.label}</span>
-        </button>
-      ))}
-    </div>
-  )
-}
-
+// ── Composer with functional type selection ───────────────────────────────────
 function PostComposer({ session, onPost }: { session: Session; onPost: (post: Post) => void }) {
   const [content, setContent]     = useState('')
   const [postType, setPostType]   = useState<string>('update')
   const [photo, setPhoto]         = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [posting, setPosting]     = useState(false)
+  const [error, setError]         = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
+
+  const typeConfig: Record<string, { placeholder: string; requirePhoto?: boolean }> = {
+    update:    { placeholder: 'Share an update with the community...' },
+    work:      { placeholder: 'Describe the project — what trade, what was the challenge?', requirePhoto: false },
+    tip:       { placeholder: 'What question do you have for the community? Be specific about the trade and situation.' },
+    milestone: { placeholder: 'What milestone are you celebrating? Years in business, certification achieved, biggest project?' },
+  }
+
+  const current = typeConfig[postType] || typeConfig.update
 
   async function handlePhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -235,7 +273,7 @@ function PostComposer({ session, onPost }: { session: Session; onPost: (post: Po
 
   async function handlePost() {
     if (!content.trim() && !photo) return
-    setPosting(true)
+    setPosting(true); setError('')
     const r = await fetch('/api/posts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -243,17 +281,52 @@ function PostComposer({ session, onPost }: { session: Session; onPost: (post: Po
     })
     const d = await r.json()
     if (r.ok) { onPost(d.post); setContent(''); setPhoto(null); setPostType('update') }
+    else setError(d.error || 'Could not post. Please try again.')
     setPosting(false)
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4">
-      <ActionBar active={postType} onSelect={type => setPostType(type)} />
-      <div className="flex gap-3">
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden mb-4">
+      {/* Type selector tabs */}
+      <div className="flex border-b border-gray-100">
+        {POST_TYPES.map(t => (
+          <button key={t.value} onClick={() => { setPostType(t.value); setError('') }}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold transition-all ${
+              postType === t.value
+                ? t.value === 'tip'       ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-500'
+                : t.value === 'milestone' ? 'bg-amber-50 text-amber-700 border-b-2 border-amber-500'
+                : t.value === 'work'      ? 'bg-teal-50 text-teal-700 border-b-2 border-teal-500'
+                :                          'bg-stone-100 text-gray-700 border-b-2 border-gray-500'
+                : 'text-gray-400 hover:text-gray-600 hover:bg-stone-50'
+            }`}>
+            <span>{t.emoji}</span>
+            <span className="hidden sm:inline">{t.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Context hint for each type */}
+      {postType === 'tip' && (
+        <div className="bg-blue-50 border-b border-blue-100 px-4 py-2 text-xs text-blue-700">
+          Ask a trade question — verified pros in the community will answer.
+        </div>
+      )}
+      {postType === 'milestone' && (
+        <div className="bg-amber-50 border-b border-amber-100 px-4 py-2 text-xs text-amber-700">
+          Share a career milestone — years in business, new certification, biggest project completed.
+        </div>
+      )}
+      {postType === 'work' && (
+        <div className="bg-teal-50 border-b border-teal-100 px-4 py-2 text-xs text-teal-700">
+          Share project photos and describe the work — this appears in the Top Craftsmanship feed.
+        </div>
+      )}
+
+      <div className="flex gap-3 p-4">
         <Avatar pro={{ full_name: session.name, profile_photo_url: null }} />
         <div className="flex-1">
           <textarea value={content} onChange={e => setContent(e.target.value)}
-            placeholder="Share a work update, tip, or ask the community..."
+            placeholder={current.placeholder}
             rows={3}
             className="w-full text-sm text-gray-900 bg-stone-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-400 focus:bg-white resize-none transition-colors" />
           {photo && (
@@ -263,9 +336,9 @@ function PostComposer({ session, onPost }: { session: Session; onPost: (post: Po
                 className="absolute -top-1 -right-1 w-5 h-5 bg-gray-800 text-white rounded-full text-xs flex items-center justify-center">✕</button>
             </div>
           )}
+          {error && <div className="mt-2 text-xs text-red-600">{error}</div>}
           <div className="flex items-center justify-between mt-3">
             <div className="flex items-center gap-2">
-
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
               <button onClick={() => fileRef.current?.click()} disabled={uploading}
                 className="text-xs px-3 py-1.5 border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors disabled:opacity-50">
@@ -274,7 +347,7 @@ function PostComposer({ session, onPost }: { session: Session; onPost: (post: Po
             </div>
             <button onClick={handlePost} disabled={posting || (!content.trim() && !photo)}
               className="px-5 py-1.5 bg-teal-600 text-white text-sm font-semibold rounded-lg hover:bg-teal-700 disabled:opacity-40 transition-colors">
-              {posting ? 'Posting...' : 'Post'}
+              {posting ? 'Posting...' : postType === 'tip' ? 'Ask' : postType === 'milestone' ? 'Share milestone' : 'Post'}
             </button>
           </div>
         </div>
@@ -299,45 +372,46 @@ function FollowButton({ proId, followerId }: { proId: string; followerId: string
   return (
     <button onClick={toggle} disabled={loading}
       className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all ${
-        following
-          ? 'border-gray-200 text-gray-400 hover:border-red-200 hover:text-red-400'
-          : 'border-teal-200 text-teal-700 bg-teal-50 hover:bg-teal-100'
+        following ? 'border-gray-200 text-gray-400 hover:border-red-200 hover:text-red-400'
+                  : 'border-teal-200 text-teal-700 bg-teal-50 hover:bg-teal-100'
       }`}>
       {loading ? '...' : following ? 'Following' : 'Follow'}
     </button>
   )
 }
 
+// ── Main page ─────────────────────────────────────────────────────────────────
 export default function CommunityPage() {
-  const [session, setSession]   = useState<Session | null>(null)
-  const [posts, setPosts]       = useState<Post[]>([])
-  const [suggested, setSuggested] = useState<Pro[]>([])
-  const [jobAlerts, setJobAlerts] = useState<any[]>([])
-  const [loading, setLoading]   = useState(true)
-  const [likedIds, setLikedIds] = useState<Set<string>>(new Set())
-  const [localOnly, setLocalOnly]   = useState(false)
-  const [tradeFilter, setTradeFilter] = useState('')
+  const [session,    setSession]    = useState<Session | null>(null)
+  const [posts,      setPosts]      = useState<Post[]>([])
+  const [suggested,  setSuggested]  = useState<Pro[]>([])
+  const [jobAlerts,  setJobAlerts]  = useState<any[]>([])
+  const [loading,    setLoading]    = useState(true)
+  const [likedIds,   setLikedIds]   = useState<Set<string>>(new Set())
+  const [localOnly,  setLocalOnly]  = useState(false)
+  const [tradeFilter,setTradeFilter]= useState('')
+  const [search,     setSearch]     = useState('')
+  const [searchInput,setSearchInput]= useState('')
+  const searchRef = useRef<HTMLInputElement>(null)
 
-  const TRADE_CHIPS = [
-    { label: 'Electrical', slug: 'electrician' },
-    { label: 'Plumbing',   slug: 'plumber' },
-    { label: 'HVAC',       slug: 'hvac-technician' },
-    { label: 'Carpentry',  slug: 'carpenter' },
-    { label: 'Roofing',    slug: 'roofer' },
-    { label: 'Painting',   slug: 'painter' },
-    { label: 'GC',         slug: 'general-contractor' },
-    { label: 'Drywall',    slug: 'drywall' },
-  ]
+  // Build fetch URL from current filters
+  function buildFeedUrl(s: Session | null) {
+    const base = s ? `/api/posts?feed_for=${s.id}&limit=40` : `/api/posts?limit=40`
+    const params = new URLSearchParams()
+    if (tradeFilter) params.set('trade_slug', tradeFilter)
+    if (search)      params.set('search', search)
+    if (localOnly)   params.set('state', 'FL')
+    const qs = params.toString()
+    return qs ? base + '&' + qs : base
+  }
 
   useEffect(() => {
     const raw = sessionStorage.getItem('tn_pro')
     const s   = raw ? JSON.parse(raw) : null
     setSession(s)
 
-    const feedUrl = s ? `/api/posts?feed_for=${s.id}&limit=30` : `/api/posts?limit=30`
-
     Promise.all([
-      fetch(feedUrl).then(r => r.json()),
+      fetch(buildFeedUrl(s)).then(r => r.json()),
       fetch('/api/pros?limit=12&sort=rating').then(r => r.json()),
       s ? fetch(`/api/posts/likes?pro_id=${s.id}`).then(r => r.json()) : Promise.resolve({ likes: [] }),
       fetch('/api/jobs?status=Open&limit=4').then(r => r.json()),
@@ -345,9 +419,9 @@ export default function CommunityPage() {
       setPosts(postsData.posts || [])
       const allPros = (prosData.pros || []).filter((p: Pro) => p.id !== s?.id)
       if (s?.trade) {
-        const sameTrade = allPros.filter((p: any) => p.trade_category?.category_name === s.trade)
-        const others    = allPros.filter((p: any) => p.trade_category?.category_name !== s.trade)
-        setSuggested([...sameTrade, ...others].slice(0, 5))
+        const same   = allPros.filter((p: any) => p.trade_category?.category_name === s.trade)
+        const others = allPros.filter((p: any) => p.trade_category?.category_name !== s.trade)
+        setSuggested([...same, ...others].slice(0, 5))
       } else {
         setSuggested(allPros.slice(0, 5))
       }
@@ -355,18 +429,15 @@ export default function CommunityPage() {
       setJobAlerts(jobsData.jobs || [])
       setLoading(false)
     })
-  }, [])
+  }, [tradeFilter, search, localOnly])
 
+  // Local filter still applied client-side for instant FL toggle
   const postsWithLikes = posts
     .map(p => ({ ...p, liked_by_me: likedIds.has(p.id) }))
     .filter(p => {
       if (localOnly) {
         const state = (p.pro as any)?.state
         if (state && state !== 'FL') return false
-      }
-      if (tradeFilter) {
-        const slug = (p.pro as any)?.trade_category?.slug || ''
-        if (slug !== tradeFilter) return false
       }
       return true
     })
@@ -379,14 +450,8 @@ export default function CommunityPage() {
     })
     const d = await r.json()
     if (r.ok) {
-      setLikedIds(prev => {
-        const next = new Set(prev)
-        d.liked ? next.add(postId) : next.delete(postId)
-        return next
-      })
-      setPosts(prev => prev.map(p =>
-        p.id === postId ? { ...p, like_count: p.like_count + (d.liked ? 1 : -1) } : p
-      ))
+      setLikedIds(prev => { const n = new Set(prev); d.liked ? n.add(postId) : n.delete(postId); return n })
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, like_count: p.like_count + (d.liked ? 1 : -1) } : p))
     }
   }
 
@@ -395,6 +460,8 @@ export default function CommunityPage() {
     await fetch(`/api/posts?id=${postId}&pro_id=${session.id}`, { method: 'DELETE' })
     setPosts(prev => prev.filter(p => p.id !== postId))
   }
+
+  function applySearch() { setSearch(searchInput) }
 
   return (
     <div className="min-h-screen bg-stone-100">
@@ -413,9 +480,7 @@ export default function CommunityPage() {
           <div className="hidden sm:flex items-center bg-stone-100 border border-gray-200 rounded-lg p-0.5">
             {[{ v: false, l: 'All' }, { v: true, l: 'Florida' }].map(opt => (
               <button key={String(opt.v)} onClick={() => setLocalOnly(opt.v)}
-                className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-all ${
-                  localOnly === opt.v ? 'bg-white text-gray-900 border border-gray-200' : 'text-gray-500 hover:text-gray-700'
-                }`}>
+                className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-all ${localOnly === opt.v ? 'bg-white text-gray-900 border border-gray-200' : 'text-gray-500 hover:text-gray-700'}`}>
                 {opt.l}
               </button>
             ))}
@@ -435,16 +500,13 @@ export default function CommunityPage() {
 
         {/* ── FEED ── */}
         <div className="lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3">
             <h1 className="font-serif text-xl text-gray-900">Community feed</h1>
             <div className="flex items-center gap-2">
-              {/* Mobile local toggle */}
               <div className="sm:hidden flex items-center bg-stone-100 border border-gray-200 rounded-lg p-0.5">
                 {[{ v: false, l: 'All' }, { v: true, l: 'FL' }].map(opt => (
                   <button key={String(opt.v)} onClick={() => setLocalOnly(opt.v)}
-                    className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-all ${
-                      localOnly === opt.v ? 'bg-white text-gray-900 border border-gray-200' : 'text-gray-500'
-                    }`}>
+                    className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-all ${localOnly === opt.v ? 'bg-white text-gray-900 border border-gray-200' : 'text-gray-500'}`}>
                     {opt.l}
                   </button>
                 ))}
@@ -453,8 +515,25 @@ export default function CommunityPage() {
             </div>
           </div>
 
+          {/* Search bar */}
+          <div className="flex gap-2 mb-3">
+            <div className="flex-1 flex gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2">
+              <input ref={searchRef} value={searchInput} onChange={e => setSearchInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && applySearch()}
+                placeholder="Search posts..."
+                className="flex-1 text-sm bg-transparent outline-none text-gray-900 placeholder-gray-400" />
+              {searchInput && (
+                <button onClick={() => { setSearchInput(''); setSearch('') }} className="text-gray-300 hover:text-gray-500">×</button>
+              )}
+            </div>
+            <button onClick={applySearch}
+              className="px-4 py-2 bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 transition-colors">
+              Search
+            </button>
+          </div>
+
           {/* Trade filter chips */}
-          <div className="flex gap-2 overflow-x-auto pb-1 mb-3 scrollbar-hide">
+          <div className="flex gap-2 overflow-x-auto pb-2 mb-3 scrollbar-hide">
             <button onClick={() => setTradeFilter('')}
               className={'flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ' + (!tradeFilter ? 'bg-teal-600 text-white border-teal-600' : 'border-gray-300 text-gray-600 bg-white hover:border-teal-400')}>
               All trades
@@ -485,17 +564,19 @@ export default function CommunityPage() {
 
           {loading ? (
             <div className="space-y-4">
-              {[1,2,3].map(i => (
-                <div key={i} className="bg-white border border-gray-200 rounded-xl p-5 h-40 animate-pulse" />
-              ))}
+              {[1,2,3].map(i => <div key={i} className="bg-white border border-gray-200 rounded-xl p-5 h-40 animate-pulse" />)}
             </div>
           ) : postsWithLikes.length === 0 ? (
             <div className="bg-white border border-gray-200 rounded-xl p-16 text-center">
               <div className="text-4xl mb-3 opacity-20">🔧</div>
-              <div className="font-semibold text-gray-700 mb-2">No posts yet</div>
+              <div className="font-semibold text-gray-700 mb-2">No posts found</div>
               <div className="text-sm text-gray-400">
-                {localOnly ? 'No Florida posts yet. Try switching to All.' : 'Be the first to share something with the community.'}
+                {tradeFilter || search ? 'Try clearing your filters.' : localOnly ? 'No Florida posts yet. Try switching to All.' : 'Be the first to share something.'}
               </div>
+              {(tradeFilter || search) && (
+                <button onClick={() => { setTradeFilter(''); setSearch(''); setSearchInput('') }}
+                  className="mt-3 text-sm text-teal-600 hover:underline">Clear filters</button>
+              )}
             </div>
           ) : (
             <div className="space-y-4">
@@ -516,47 +597,39 @@ export default function CommunityPage() {
                 <div className="text-xs font-bold text-gray-700 uppercase tracking-widest">Job alerts</div>
                 <Link href="/jobs" className="text-xs text-teal-600 hover:underline">See all →</Link>
               </div>
-              <div className="space-y-0">
-                {jobAlerts.map((job, i) => (
-                  <Link key={job.id} href="/jobs"
-                    className={`block py-2.5 ${i < jobAlerts.length - 1 ? 'border-b border-gray-100' : ''} hover:bg-stone-50 -mx-2 px-2 rounded-lg transition-colors`}>
-                    <div className="text-sm font-medium text-gray-900 truncate">{job.title}</div>
-                    <div className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 bg-green-500 rounded-full inline-block" />
-                      {job.city ? `${job.city}, ${job.state}` : job.state || 'Florida'}
-                      {job.budget_range ? ` · ${job.budget_range}` : ''}
-                    </div>
-                  </Link>
-                ))}
-              </div>
+              {jobAlerts.map((job, i) => (
+                <Link key={job.id} href="/jobs"
+                  className={`block py-2.5 ${i < jobAlerts.length - 1 ? 'border-b border-gray-100' : ''} hover:bg-stone-50 -mx-2 px-2 rounded-lg transition-colors`}>
+                  <div className="text-sm font-medium text-gray-900 truncate">{job.title}</div>
+                  <div className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full inline-block" />
+                    {job.city ? `${job.city}, ${job.state}` : job.state || 'Florida'}
+                    {job.budget_range ? ` · ${job.budget_range}` : ''}
+                  </div>
+                </Link>
+              ))}
             </div>
           )}
 
           {/* Pros to follow */}
           <div className="bg-white border border-gray-200 rounded-xl p-4">
             <div className="text-xs font-bold text-gray-700 uppercase tracking-widest mb-3">Pros to follow</div>
-            {suggested.length === 0 ? (
-              <div className="text-sm text-gray-400">No suggestions yet.</div>
-            ) : suggested.map(pro => (
-              <div key={pro.id} className="flex items-center gap-3 py-2.5 border-b border-gray-100 last:border-0">
-                <Link href={`/community/profile/${pro.id}`}>
-                  <Avatar pro={pro} size={9} />
-                </Link>
-                <div className="flex-1 min-w-0">
-                  <Link href={`/community/profile/${pro.id}`}
-                    className="text-sm font-medium text-gray-900 hover:text-teal-600 block truncate">{pro.full_name}</Link>
-                  <div className="text-xs text-gray-400 truncate">
-                    {pro.trade_category?.category_name}{pro.city ? ` · ${pro.city}` : ''}
+            {suggested.length === 0
+              ? <div className="text-sm text-gray-400">No suggestions yet.</div>
+              : suggested.map(pro => (
+                <div key={pro.id} className="flex items-center gap-3 py-2.5 border-b border-gray-100 last:border-0">
+                  <Link href={`/community/profile/${pro.id}`}><Avatar pro={pro} size={9} /></Link>
+                  <div className="flex-1 min-w-0">
+                    <Link href={`/community/profile/${pro.id}`} className="text-sm font-medium text-gray-900 hover:text-teal-600 block truncate">{pro.full_name}</Link>
+                    <div className="text-xs text-gray-400 truncate">{pro.trade_category?.category_name}{pro.city ? ` · ${pro.city}` : ''}</div>
                   </div>
+                  {session && session.id !== pro.id && <FollowButton proId={pro.id} followerId={session.id} />}
                 </div>
-                {session && session.id !== pro.id && (
-                  <FollowButton proId={pro.id} followerId={session.id} />
-                )}
-              </div>
-            ))}
+              ))
+            }
           </div>
 
-          {/* Logged-out: signup prompt in sidebar */}
+          {/* Logged-out signup */}
           {!session && (
             <div className="bg-white border border-gray-200 rounded-xl p-5">
               <div className="text-sm font-bold text-gray-900 mb-1">New to TradesNetwork?</div>
@@ -582,16 +655,16 @@ export default function CommunityPage() {
             </div>
           )}
 
-          {/* Logged-in: quick links */}
+          {/* Logged-in quick links */}
           {session && (
             <div className="bg-white border border-gray-200 rounded-xl p-4">
               <div className="text-xs font-bold text-gray-700 uppercase tracking-widest mb-3">Quick links</div>
               {[
-                { href: '/',              label: '🔍 Find a pro' },
-                { href: '/post-job',      label: '📋 Post a job' },
-                { href: '/jobs',          label: '💼 Browse jobs' },
-                { href: `/community/profile/${session.id}`, label: '👤 My profile' },
-                { href: '/community/edit', label: '✏️ Edit portfolio' },
+                { href: '/',                                    label: '🔍 Find a pro' },
+                { href: '/post-job',                            label: '📋 Post a job' },
+                { href: '/jobs',                                label: '💼 Browse jobs' },
+                { href: `/community/profile/${session.id}`,    label: '👤 My profile' },
+                { href: '/community/edit',                      label: '✏️ Edit portfolio' },
               ].map(item => (
                 <Link key={item.href} href={item.href}
                   className="block text-sm text-gray-600 hover:text-teal-600 py-2 border-b border-gray-100 last:border-0 transition-colors">
