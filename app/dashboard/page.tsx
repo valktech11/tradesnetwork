@@ -262,27 +262,27 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {/* KPI STAT CARDS */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-          {[
-            { label: 'Total leads',  value: loading ? '—' : leads.length,      sub: 'All time',    highlight: false },
-            { label: 'New leads',    value: loading ? '—' : newLeads,           sub: 'Uncontacted', highlight: newLeads > 0 },
-            { label: 'Reviews',      value: loading ? '—' : reviews.length,     sub: 'Approved',    highlight: false },
-            { label: 'Avg rating',   value: loading ? '—' : avgRating > 0 ? avgRating.toFixed(1) : '—', sub: 'Out of 5.0', highlight: false },
-          ].map(s => (
-            <div key={s.label} className={'bg-white border rounded-2xl p-5 ' + (s.highlight ? 'border-amber-300 bg-amber-50/30' : 'border-gray-100')}>
-              <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">{s.label}</div>
-              <div className={'font-serif text-3xl ' + (s.highlight ? 'text-amber-600' : 'text-teal-600')}>{s.value}</div>
-              <div className="text-xs text-gray-400 mt-1">{s.sub}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* MAIN GRID */}
+        {/* MAIN GRID — sidebar starts flush with KPI stats */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
           {/* LEFT — col-span-2 */}
           <div className="lg:col-span-2 space-y-5">
+
+            {/* KPI STAT CARDS — 2x2 inside left column */}
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: 'Total leads',  value: loading ? '—' : leads.length,      sub: 'All time',    highlight: false },
+                { label: 'New leads',    value: loading ? '—' : newLeads,           sub: 'Uncontacted', highlight: newLeads > 0 },
+                { label: 'Reviews',      value: loading ? '—' : reviews.length,     sub: 'Approved',    highlight: false },
+                { label: 'Avg rating',   value: loading ? '—' : avgRating > 0 ? avgRating.toFixed(1) : '—', sub: 'Out of 5.0', highlight: false },
+              ].map(s => (
+                <div key={s.label} className={'bg-white border rounded-2xl p-5 ' + (s.highlight ? 'border-amber-300 bg-amber-50/30' : 'border-gray-100')}>
+                  <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">{s.label}</div>
+                  <div className={'font-serif text-3xl ' + (s.highlight ? 'text-amber-600' : 'text-teal-600')}>{s.value}</div>
+                  <div className="text-xs text-gray-400 mt-1">{s.sub}</div>
+                </div>
+              ))}
+            </div>
 
             {/* ACTIVE LEADS */}
             <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">

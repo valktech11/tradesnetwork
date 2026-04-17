@@ -47,8 +47,11 @@ export default function ReviewPage() {
       .then(d => { setPro(d.pro); setLoading(false) })
   }, [pro_id])
 
-  const BANNED = [/\bfuck/i,/\bshit/i,/\bbitch/i,/\basshole/i,/\bcunt/i,/\bdick\b/i,/\bwhore/i,/\bslut/i]
-  function hasProfanity(t: string) { return BANNED.some(p => p.test(t)) }
+  function unmaskText(t: string) {
+    return t.replace(/a\*+/gi,'ass').replace(/f\*+/gi,'fuck').replace(/s\*+t/gi,'shit').replace(/b\*+h/gi,'bitch').replace(/\*+/g,'')
+  }
+  const BANNED = [/\bfuck/i,/\bshit/i,/\bbitch/i,/\basshole/i,/\bcunt/i,/\bdick\b/i,/\bwhore/i,/\bslut/i,/\bidiot/i,/\bstupid\b/i,/\bmoron/i,/\bscumbag/i,/\bdumbass/i,/\bworthless/i]
+  function hasProfanity(t: string) { const u = unmaskText(t); return BANNED.some(p => p.test(t) || p.test(u)) }
 
   async function handleSubmit() {
     if (!rating)        { setError('Please select a star rating'); return }

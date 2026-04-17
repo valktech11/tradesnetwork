@@ -727,7 +727,7 @@ export default function ProProfilePage() {
                         <div className="font-semibold text-gray-900 text-sm">{rev.reviewer_name || 'Anonymous'}</div>
                         <div className="text-amber-400 text-sm mt-0.5">{starsHtml(rev.rating)}</div>
                       </div>
-                      <div className="text-xs text-gray-400">{timeAgo(rev.created_at)}</div>
+                      <div className="text-xs text-gray-400">{timeAgo((rev as any).reviewed_at || rev.created_at)}</div>
                     </div>
                     <p className="text-sm text-gray-600 leading-relaxed">{rev.review_text}</p>
                   </div>

@@ -315,7 +315,19 @@ export default function CommunityPage() {
   const [jobAlerts, setJobAlerts] = useState<any[]>([])
   const [loading, setLoading]   = useState(true)
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set())
-  const [localOnly, setLocalOnly] = useState(false)
+  const [localOnly, setLocalOnly]   = useState(false)
+  const [tradeFilter, setTradeFilter] = useState('')
+
+  const TRADE_CHIPS = [
+    { label: 'Electrical', slug: 'electrician' },
+    { label: 'Plumbing',   slug: 'plumber' },
+    { label: 'HVAC',       slug: 'hvac-technician' },
+    { label: 'Carpentry',  slug: 'carpenter' },
+    { label: 'Roofing',    slug: 'roofer' },
+    { label: 'Painting',   slug: 'painter' },
+    { label: 'GC',         slug: 'general-contractor' },
+    { label: 'Drywall',    slug: 'drywall' },
+  ]
 
   useEffect(() => {
     const raw = sessionStorage.getItem('tn_pro')
@@ -348,9 +360,15 @@ export default function CommunityPage() {
   const postsWithLikes = posts
     .map(p => ({ ...p, liked_by_me: likedIds.has(p.id) }))
     .filter(p => {
-      if (!localOnly) return true
-      const state = (p.pro as any)?.state
-      return !state || state === 'FL'
+      if (localOnly) {
+        const state = (p.pro as any)?.state
+        if (state && state !== 'FL') return false
+      }
+      if (tradeFilter) {
+        const slug = (p.pro as any)?.trade_category?.slug || ''
+        if (slug !== tradeFilter) return false
+      }
+      return true
     })
 
   async function handleLike(postId: string) {
@@ -435,6 +453,34 @@ export default function CommunityPage() {
             </div>
           </div>
 
+          {/* Trade filter chips */}
+          <div className="flex gap-2 overflow-x-auto pb-1 mb-3 scrollbar-hide">
+            <button onClick={() => setTradeFilter('')}
+              className={'flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ' + (!tradeFilter ? 'bg-teal-600 text-white border-teal-600' : 'border-gray-300 text-gray-600 bg-white hover:border-teal-400')}>
+              All trades
+            </button>
+            {TRADE_CHIPS.map(chip => (
+              <button key={chip.slug} onClick={() => setTradeFilter(tradeFilter === chip.slug ? '' : chip.slug)}
+                className={'flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ' + (tradeFilter === chip.slug ? 'bg-teal-600 text-white border-teal-600' : 'border-gray-300 text-gray-600 bg-white hover:border-teal-400')}>
+                {chip.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Logged-out CTA */}
+          {!session && (
+            <div className="bg-white border border-teal-200 rounded-xl p-5 mb-4 flex items-center justify-between gap-4">
+              <div>
+                <div className="text-sm font-semibold text-gray-900 mb-0.5">Join Florida's verified trades network</div>
+                <div className="text-xs text-gray-500">Share work, ask questions, find local pros — free forever.</div>
+              </div>
+              <div className="flex gap-2 flex-shrink-0">
+                <Link href="/login" className="text-xs font-semibold px-3 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">Log in</Link>
+                <Link href="/login?tab=signup" className="text-xs font-semibold px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">Join free</Link>
+              </div>
+            </div>
+          )}
+
           {session && <PostComposer session={session} onPost={post => setPosts(p => [post, ...p])} />}
 
           {loading ? (
@@ -510,22 +556,50 @@ export default function CommunityPage() {
             ))}
           </div>
 
-          {/* Quick nav */}
-          <div className="bg-white border border-gray-200 rounded-xl p-4">
-            <div className="text-xs font-bold text-gray-700 uppercase tracking-widest mb-3">Quick links</div>
-            {[
-              { href: '/',              label: '🔍 Find a pro' },
-              { href: '/post-job',      label: '📋 Post a job' },
-              { href: '/jobs',          label: '💼 Browse jobs' },
-              session ? { href: `/community/profile/${session.id}`, label: '👤 My profile' } : { href: '/login', label: '👤 Log in' },
-              session ? { href: '/community/edit', label: '✏️ Edit portfolio' } : null,
-            ].filter(Boolean).map(item => (
-              <Link key={item!.href} href={item!.href}
-                className="block text-sm text-gray-600 hover:text-teal-600 py-2 border-b border-gray-100 last:border-0 transition-colors">
-                {item!.label}
+          {/* Logged-out: signup prompt in sidebar */}
+          {!session && (
+            <div className="bg-white border border-gray-200 rounded-xl p-5">
+              <div className="text-sm font-bold text-gray-900 mb-1">New to TradesNetwork?</div>
+              <p className="text-xs text-gray-500 mb-4 leading-relaxed">
+                Florida's verified trades network. Share your work, connect with GCs, find jobs — free forever.
+              </p>
+              <Link href="/login?tab=signup"
+                className="block w-full py-2.5 text-center bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 transition-colors mb-2">
+                Join as a pro — free
               </Link>
-            ))}
-          </div>
+              <Link href="/login"
+                className="block w-full py-2.5 text-center border border-gray-200 text-gray-600 text-sm font-medium rounded-xl hover:bg-gray-50 transition-colors">
+                Log in
+              </Link>
+              <div className="mt-4 pt-4 border-t border-gray-100 space-y-1">
+                {[['🔍','Find a pro','/'],['📋','Post a job','/post-job'],['💼','Browse jobs','/jobs']].map(([icon,label,href]) => (
+                  <Link key={href as string} href={href as string}
+                    className="flex items-center gap-2 py-1.5 text-sm text-gray-500 hover:text-teal-600 transition-colors">
+                    <span>{icon}</span>{label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Logged-in: quick links */}
+          {session && (
+            <div className="bg-white border border-gray-200 rounded-xl p-4">
+              <div className="text-xs font-bold text-gray-700 uppercase tracking-widest mb-3">Quick links</div>
+              {[
+                { href: '/',              label: '🔍 Find a pro' },
+                { href: '/post-job',      label: '📋 Post a job' },
+                { href: '/jobs',          label: '💼 Browse jobs' },
+                { href: `/community/profile/${session.id}`, label: '👤 My profile' },
+                { href: '/community/edit', label: '✏️ Edit portfolio' },
+              ].map(item => (
+                <Link key={item.href} href={item.href}
+                  className="block text-sm text-gray-600 hover:text-teal-600 py-2 border-b border-gray-100 last:border-0 transition-colors">
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

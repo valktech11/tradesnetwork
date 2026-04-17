@@ -1,10 +1,20 @@
-// Content moderation using Claude API
-// Called server-side before saving any user-generated text to DB
+// Content moderation — dual layer: fast pattern check + Claude Haiku
+// Called server-side before saving any user-generated content to DB
 
-// Fast client-safe banned word check — catches obvious cases before API call
+// Strip asterisk masking (e.g. "a**hole" → "asshole", "f*** you" → "fuck you")
+function unmask(text: string): string {
+  return text
+    .replace(/a\*+/gi, 'ass')
+    .replace(/f\*+/gi, 'fuck')
+    .replace(/s\*+t/gi, 'shit')
+    .replace(/b\*+h/gi, 'bitch')
+    .replace(/c\*+t/gi, 'cunt')
+    .replace(/\*+/g, '')  // remove remaining asterisks
+}
+
 const BANNED_PATTERNS = [
-  /\bfuck(ed|ing|er|s)?\b/i,
-  /\bshit(ty|s|ter)?\b/i,
+  /\bfuck(ed|ing|er|s|face)?\b/i,
+  /\bshit(ty|s|ter|head)?\b/i,
   /\bbitch(es)?\b/i,
   /\basshole(s)?\b/i,
   /\bcunt(s)?\b/i,
@@ -14,19 +24,29 @@ const BANNED_PATTERNS = [
   /\bslut(s)?\b/i,
   /\bmoron(s)?\b/i,
   /\bretard(ed|s)?\b/i,
-  /\bstupid\s+(bitch|ass|idiot)\b/i,
+  /\bidiot(s)?\b/i,
+  /\bstupid\b/i,
+  /\bdumbass\b/i,
+  /\bscumbag\b/i,
+  /\blosers?\b/i,
+  /\bworthless\b/i,
+  /\buseless\b/i,
+  /\bscam(mer)?\b/i,
+  /\bfraud\b/i,
   /\bn[i1]gg[ae]r/i,
+  /he is a\s+\w+/i,  // "he is a [insult]" pattern
 ]
 
 export function hasObviousProfanity(text: string): boolean {
-  return BANNED_PATTERNS.some(p => p.test(text))
+  const cleaned = unmask(text)
+  return BANNED_PATTERNS.some(p => p.test(text) || p.test(cleaned))
 }
 
 export async function moderateContent(text: string): Promise<{ safe: boolean; reason?: string }> {
   if (!text || text.trim().length === 0) return { safe: true }
   if (text.trim().length < 10) return { safe: true }
 
-  // Fast path — catch obvious profanity without API call
+  // Fast path — pattern check on original AND unmasked text
   if (hasObviousProfanity(text)) {
     return { safe: false, reason: 'Contains profanity or offensive language' }
   }
@@ -44,21 +64,24 @@ export async function moderateContent(text: string): Promise<{ safe: boolean; re
         max_tokens: 50,
         messages: [{
           role:    'user',
-          content: `You are a strict content moderator for a professional trades marketplace used by contractors and homeowners. Any review must be professional and constructive.
+          content: `You are a strict content moderator for a professional trades marketplace used by contractors and homeowners.
 
-Flag as UNSAFE if the text contains ANY of the following — even mildly:
-- Any profanity, swear words, or crude language (including mild ones like "damn", "crap", "pissed off")
-- Personal insults or attacks on the person (calling them names, questioning their character)
+Flag as UNSAFE if the text contains ANY of the following:
+- Profanity or swear words in any form (including with asterisks like f***, s***, a**)
+- Personal insults or attacks: calling the person stupid, an idiot, dumb, incompetent, useless, a scammer, a fraud, a liar, lazy, or any other derogatory label
+- Attacking someone's character, intelligence, or professional integrity in a disrespectful way
 - Threats or aggressive language
 - Hate speech, slurs, or discriminatory language
 - Sexually explicit content
-- Spam or promotional content unrelated to the job
 
-The standard is STRICT. If in doubt, flag as UNSAFE. Constructive negative reviews ("poor quality work", "did not finish on time") are fine. Personal attacks are not.
+Safe examples: "poor quality work", "did not finish on time", "overcharged me", "wouldn't recommend"
+Unsafe examples: "he is an idiot", "stupid worker", "complete moron", "useless fraud"
+
+The bar is STRICT. Personal attacks on the individual are always UNSAFE even without profanity.
 
 Review text: "${text.replace(/"/g, "'")}"
 
-Reply ONLY with:
+Reply ONLY:
 SAFE
 or
 UNSAFE: [reason in 5 words]`,
@@ -68,18 +91,14 @@ UNSAFE: [reason in 5 words]`,
 
     if (!response.ok) {
       console.error('Moderation API error:', response.status)
-      // If API unavailable, fall back to pattern check only — already passed
       return { safe: true }
     }
 
     const data = await response.json()
     const result = data.content?.[0]?.text?.trim() || 'SAFE'
-
     if (result.startsWith('UNSAFE')) {
-      const reason = result.replace('UNSAFE:', '').trim()
-      return { safe: false, reason: reason || 'Content not allowed' }
+      return { safe: false, reason: result.replace('UNSAFE:', '').trim() || 'Content not allowed' }
     }
-
     return { safe: true }
   } catch (error) {
     console.error('Moderation check failed:', error)
