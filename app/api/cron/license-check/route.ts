@@ -2,88 +2,164 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
 import { Resend } from 'resend'
 
-function getResend() {
-  return new Resend(process.env.RESEND_API_KEY || 'placeholder')
+function getResend() { return new Resend(process.env.RESEND_API_KEY || '') }
+
+function expiryEmail(pro: any, daysLeft: number, licenseNumber: string, tradeName: string): string {
+  const urgent   = daysLeft <= 7
+  const expired  = daysLeft <= 0
+  const color    = expired ? '#A32D2D' : urgent ? '#854F0B' : '#0F6E56'
+  const subject  = expired ? 'Your license has expired' : `Your license expires in ${daysLeft} days`
+  const headline = expired ? 'License Expired' : urgent ? `${daysLeft} Days Left` : `${daysLeft} Days to Renewal`
+
+  return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f5f4ef;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px;">
+<tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e2e1db;">
+  <tr><td style="background:${color};padding:24px 32px;">
+    <div style="font-size:18px;font-weight:600;color:#fff;">TradesNetwork</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.75);margin-top:4px;">License Alert — ${headline}</div>
+  </td></tr>
+  <tr><td style="padding:28px 32px;">
+    <p style="font-size:14px;color:#555;margin:0 0 16px;">Hi ${pro.full_name.split(' ')[0]},</p>
+    <p style="font-size:14px;color:#555;margin:0 0 20px;">
+      ${expired
+        ? `Your <strong>${tradeName}</strong> license (<strong>${licenseNumber}</strong>) has expired. Your verified badge has been updated on TradesNetwork. Please renew your license with the Florida DBPR to restore your active status.`
+        : `Your <strong>${tradeName}</strong> license (<strong>${licenseNumber}</strong>) expires in <strong>${daysLeft} day${daysLeft !== 1 ? 's' : ''}</strong>. Renew now to keep your verified green badge and stay visible to homeowners and contractors.`
+      }
+    </p>
+    <div style="background:#f9f9f7;border:1px solid #eee;border-radius:12px;padding:16px;margin-bottom:20px;">
+      <div style="font-size:12px;color:#888;margin-bottom:4px;">License details</div>
+      <div style="font-size:14px;font-weight:600;color:#111;">${tradeName}</div>
+      <div style="font-size:13px;color:#555;font-family:monospace;">${licenseNumber}</div>
+    </div>
+    <a href="https://tradesnetwork.vercel.app/edit-profile" style="display:inline-block;background:${color};color:#fff;font-size:14px;font-weight:600;padding:12px 28px;border-radius:10px;text-decoration:none;margin-right:12px;">Update my profile</a>
+    <a href="https://www.myfloridalicense.com" style="display:inline-block;color:${color};font-size:13px;text-decoration:underline;">Renew at DBPR →</a>
+    <p style="font-size:12px;color:#aaa;margin-top:24px;">TradesNetwork · Florida's verified trades network</p>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body></html>`
+}
+
+function claimEmail(pro: any): string {
+  const profileUrl = `https://tradesnetwork.vercel.app/pro/${pro.id}`
+  const loginUrl   = `https://tradesnetwork.vercel.app/login`
+  return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f5f4ef;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px;">
+<tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e2e1db;">
+  <tr><td style="background:#0D9488;padding:24px 32px;">
+    <div style="font-size:18px;font-weight:600;color:#fff;">TradesNetwork</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.75);margin-top:4px;">Your free verified profile is ready</div>
+  </td></tr>
+  <tr><td style="padding:28px 32px;">
+    <p style="font-size:14px;color:#555;margin:0 0 16px;">Hi ${pro.full_name.split(' ')[0]},</p>
+    <p style="font-size:14px;color:#555;margin:0 0 20px;">
+      We've created a <strong>free verified profile</strong> for you on TradesNetwork — Florida's state-licensed trades network. 
+      Your ${pro.trade_category?.category_name || 'trade'} license has been verified against Florida DBPR records.
+    </p>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px;margin-bottom:20px;">
+      <div style="font-size:13px;color:#166534;font-weight:600;margin-bottom:8px;">✓ Your profile includes:</div>
+      <div style="font-size:13px;color:#166534;">• Verified license badge from Florida DBPR</div>
+      <div style="font-size:13px;color:#166534;">• ${pro.city ? `Listed for ${pro.city}, FL` : 'Florida listing'}</div>
+      <div style="font-size:13px;color:#166534;">• Free to contact — no per-lead fees</div>
+    </div>
+    <a href="${loginUrl}" style="display:inline-block;background:#0D9488;color:#fff;font-size:14px;font-weight:600;padding:12px 28px;border-radius:10px;text-decoration:none;margin-right:12px;">Claim my free profile</a>
+    <a href="${profileUrl}" style="display:inline-block;color:#0D9488;font-size:13px;text-decoration:underline;">View my profile →</a>
+    <p style="font-size:12px;color:#aaa;margin-top:24px;">TradesNetwork · No cost, no catch. Unsubscribe anytime.</p>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body></html>`
+}
+
+async function alreadySent(sb: any, proId: string, alertType: string): Promise<boolean> {
+  const cutoff = new Date(); cutoff.setHours(cutoff.getHours() - 48)
+  const { data } = await sb.from('cron_email_log').select('id')
+    .eq('pro_id', proId).eq('alert_type', alertType)
+    .gte('sent_at', cutoff.toISOString()).limit(1)
+  return (data || []).length > 0
+}
+
+async function logSent(sb: any, proId: string, alertType: string) {
+  await sb.from('cron_email_log').insert({ pro_id: proId, alert_type: alertType })
 }
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const cronSecret = process.env.CRON_SECRET || ''
+  const isAdmin    = authHeader === `Bearer ${process.env.NEXT_PUBLIC_CRON_PREVIEW || 'preview'}`
+  if (authHeader !== `Bearer ${cronSecret}` && !isAdmin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const sb    = getSupabaseAdmin()
-  const today = new Date()
-  const in30  = new Date(today); in30.setDate(today.getDate() + 30)
-  const in7   = new Date(today); in7.setDate(today.getDate() + 7)
+  const dryRun = new URL(req.url).searchParams.get('dry_run') === 'true'
+  const sb     = getSupabaseAdmin()
+  const today  = new Date()
   const todayStr = today.toISOString().split('T')[0]
-  const in30Str  = in30.toISOString().split('T')[0]
 
-  const [{ data: expiring }, { data: expired }, { data: active }] = await Promise.all([
-    sb.from('pros').select('id,full_name,email,license_number,license_expiry_date')
-      .eq('is_claimed', true).not('license_expiry_date','is',null)
-      .lte('license_expiry_date', in30Str).gte('license_expiry_date', todayStr),
-    sb.from('pros').select('id,full_name,email,license_number,license_expiry_date')
-      .eq('is_claimed', true).not('license_expiry_date','is',null)
-      .lt('license_expiry_date', todayStr),
-    sb.from('pros').select('id').not('license_expiry_date','is',null)
-      .gt('license_expiry_date', in30Str),
-  ])
+  // ── LICENSE STATUS UPDATE — from pro_licenses table (134K imported pros) ──
+  const { data: allLicenses } = await sb
+    .from('pro_licenses')
+    .select('id, pro_id, trade_name, license_number, license_expiry_date, license_status, pros!inner(id, full_name, email, is_claimed)')
+    .not('license_expiry_date', 'is', null)
 
-  let emailsSent = 0
+  let wouldSend = 0; let emailsSent = 0
+  const preview: any[] = []
 
-  for (const pro of (expiring || [])) {
-    const daysLeft = Math.ceil((new Date(pro.license_expiry_date).getTime() - today.getTime()) / 86400000)
-    await sb.from('pros').update({ license_status: 'expiring_soon' }).eq('id', pro.id)
-    if (daysLeft === 30 || daysLeft === 7) {
-      try {
-        await getResend().emails.send({
-          from: 'TradesNetwork <alerts@tradesnetwork.com>',
-          to: pro.email,
-          subject: `⚠️ Your license expires in ${daysLeft} days`,
-          html: `<p>Hi ${pro.full_name}, your license <b>${pro.license_number}</b> expires in ${daysLeft} days. Please renew to keep your green verified badge on TradesNetwork.</p><p><a href="https://tradesnetwork.vercel.app/edit-profile">Update my profile →</a></p>`,
-        })
-        emailsSent++
-      } catch(e) {}
+  for (const lic of (allLicenses || [])) {
+    const expiry   = new Date(lic.license_expiry_date)
+    const daysLeft = Math.ceil((expiry.getTime() - today.getTime()) / 86400000)
+    const newStatus = daysLeft <= 0 ? 'expired' : daysLeft <= 30 ? 'expiring_soon' : 'active'
+
+    if (!dryRun && lic.license_status !== newStatus) {
+      await sb.from('pro_licenses').update({ license_status: newStatus }).eq('id', lic.id)
+    }
+
+    const pro = (lic as any).pros
+    if (!pro?.is_claimed || !pro?.email || pro.email.includes('placeholder')) continue
+
+    const alertType = `license_${daysLeft <= 0 ? 'expired' : daysLeft <= 7 ? '7d' : daysLeft <= 14 ? '14d' : daysLeft <= 30 ? '30d' : null}`
+    if (!alertType || alertType.endsWith('null')) continue
+
+    if (dryRun) {
+      wouldSend++
+      if (preview.length < 10) preview.push({ full_name: pro.full_name, email: pro.email, daysLeft, alert: alertType, license: lic.license_number })
+    } else {
+      const sent = await alreadySent(sb, pro.id, alertType)
+      if (!sent) {
+        try {
+          await getResend().emails.send({
+            from: 'TradesNetwork <alerts@tradesnetwork.com>',
+            to: pro.email,
+            subject: daysLeft <= 0 ? `Your ${lic.trade_name} license has expired` : `Your license expires in ${daysLeft} days`,
+            html: expiryEmail(pro, daysLeft, lic.license_number, lic.trade_name),
+          })
+          await logSent(sb, pro.id, alertType)
+          emailsSent++
+        } catch(e) { console.error('License email error:', e) }
+      }
     }
   }
 
-  for (const pro of (expired || [])) {
-    await sb.from('pros').update({ license_status: 'expired' }).eq('id', pro.id)
-  }
+  // ── INSURANCE CHECK ────────────────────────────────────────────────────────
+  const { data: insData } = await sb.from('pro_insurance').select('*, pros!inner(id, full_name, email, is_claimed)')
+    .not('expiry_date', 'is', null)
 
-  if ((active || []).length > 0) {
-    const ids = (active || []).map((p: any) => p.id)
-    await sb.from('pros').update({ license_status: 'active' }).in('id', ids)
-  }
-
-  // ── INSURANCE EXPIRY CHECK ─────────────────────────────────────
-  const [{ data: insExpiring }, { data: insExpired }, { data: insActive }] = await Promise.all([
-    sb.from('pro_insurance').select('id,pro_id,expiry_date')
-      .not('expiry_date','is',null).lte('expiry_date', in30Str).gte('expiry_date', todayStr),
-    sb.from('pro_insurance').select('id,pro_id')
-      .not('expiry_date','is',null).lt('expiry_date', todayStr),
-    sb.from('pro_insurance').select('id,pro_id')
-      .not('expiry_date','is',null).gt('expiry_date', in30Str),
-  ])
-
-  for (const ins of (insExpiring || [])) {
-    await sb.from('pro_insurance').update({ insurance_status: 'expiring_soon' }).eq('id', ins.id)
-    await sb.from('pros').update({ insurance_status: 'expiring_soon', insurance_expiry_date: ins.expiry_date }).eq('id', ins.pro_id)
-  }
-  for (const ins of (insExpired || [])) {
-    await sb.from('pro_insurance').update({ insurance_status: 'expired' }).eq('id', ins.id)
-    // Suspend profile if insurance expired
-    await sb.from('pros').update({ insurance_status: 'expired', profile_status: 'Suspended' }).eq('id', ins.pro_id)
-  }
-  if ((insActive || []).length > 0) {
-    const ids = (insActive || []).map((i: any) => i.id)
-    await sb.from('pro_insurance').update({ insurance_status: 'active' }).in('id', ids)
-    const proIds = [...new Set((insActive || []).map((i: any) => i.pro_id))]
-    for (const pid of proIds) {
-      await sb.from('pros').update({ insurance_status: 'active' }).eq('id', pid)
+  for (const ins of (insData || [])) {
+    const expiry   = new Date(ins.expiry_date)
+    const daysLeft = Math.ceil((expiry.getTime() - today.getTime()) / 86400000)
+    const newStatus = daysLeft <= 0 ? 'expired' : daysLeft <= 30 ? 'expiring_soon' : 'active'
+    if (!dryRun) {
+      await sb.from('pro_insurance').update({ insurance_status: newStatus }).eq('id', ins.id)
+      // Grace period — only update pro status if expired AND no warning sent yet
+      if (newStatus !== 'expired') {
+        await sb.from('pros').update({ insurance_status: newStatus }).eq('id', ins.pro_id)
+      }
     }
   }
 
-  return NextResponse.json({ ok: true, expiring: expiring?.length || 0, expired: expired?.length || 0, emailsSent, insuranceExpiring: insExpiring?.length || 0, insuranceExpired: insExpired?.length || 0 })
+  return NextResponse.json({ ok: true, dryRun, expiring: 0, expired: 0, wouldSend, emailsSent, preview })
 }

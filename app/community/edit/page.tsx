@@ -21,6 +21,9 @@ export default function CommunityEditPage() {
   const [saving, setSaving]       = useState(false)
   const [error, setError]         = useState('')
   const [markAsJobSite, setMarkAsJobSite] = useState(false)
+  const [isBeforeAfter, setIsBeforeAfter] = useState(false)
+  const [beforePhoto, setBeforePhoto] = useState<string | null>(null)
+  const [uploadingBefore, setUploadingBefore] = useState(false)
 
   useEffect(() => {
     const raw = sessionStorage.getItem('tn_pro')
@@ -58,6 +61,19 @@ export default function CommunityEditPage() {
     else setError(d.error || 'Upload failed')
   }
 
+  async function uploadBeforePhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !session) return
+    setUploadingBefore(true)
+    const form = new FormData()
+    form.append('file', file); form.append('pro_id', session.id)
+    form.append('bucket', 'portfolio'); form.append('folder', `portfolio/${session.id}`)
+    const r = await fetch('/api/upload', { method: 'POST', body: form })
+    const d = await r.json()
+    if (r.ok) setBeforePhoto(d.url)
+    setUploadingBefore(false)
+  }
+
   async function addItem() {
     if (!newPhoto || !newTitle.trim() || !session) { setError('Please add a photo and title'); return }
     setSaving(true); setError('')
@@ -71,13 +87,15 @@ export default function CommunityEditPage() {
         description: newDesc || null, trade: newTrade || null,
         is_job_site: markAsJobSite,
         captured_at: markAsJobSite ? new Date().toISOString() : null,
+        is_before_after: isBeforeAfter,
+        before_photo_url: isBeforeAfter ? beforePhoto : null,
       }),
     })
     const d = await r.json()
     setSaving(false)
     if (r.ok) {
       setPortfolio(p => [d.item, ...p])
-      setNewPhoto(''); setNewTitle(''); setNewDesc(''); setMarkAsJobSite(false)
+      setNewPhoto(''); setNewTitle(''); setNewDesc(''); setMarkAsJobSite(false); setIsBeforeAfter(false); setBeforePhoto(null)
       // Geo enrichment — non-blocking, runs after UI is already updated
       if (markAsJobSite && navigator.geolocation && d.item?.id) {
         navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -190,6 +208,28 @@ export default function CommunityEditPage() {
               {markAsJobSite ? 'Job site photo — will capture GPS' : 'Mark as job site photo'}
             </button>
             {markAsJobSite && <span className="text-xs text-gray-400">GPS captured at upload time</span>}
+            <button type="button" onClick={() => { setIsBeforeAfter(v => !v); setBeforePhoto(null) }}
+              className={`flex items-center gap-2 text-sm px-4 py-2 rounded-xl border transition-all ${isBeforeAfter ? 'bg-amber-50 text-amber-700 border-amber-300' : 'border-gray-200 text-gray-500'}`}>
+              <span>{isBeforeAfter ? '↔' : '↔'}</span>
+              {isBeforeAfter ? 'Before/After mode on' : 'Before/After project'}
+            </button>
+            {isBeforeAfter && (
+              <div className="w-full mt-2 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                <div className="text-xs font-semibold text-amber-700 mb-2">Upload the BEFORE photo</div>
+                <div className="text-xs text-amber-600 mb-2">The photo above is the AFTER. Upload the before state here.</div>
+                {beforePhoto ? (
+                  <div className="relative inline-block">
+                    <img src={beforePhoto} alt="Before" className="h-20 rounded-lg object-cover" />
+                    <button onClick={() => setBeforePhoto(null)} className="absolute -top-1 -right-1 w-5 h-5 bg-gray-800 text-white rounded-full text-xs flex items-center justify-center">✕</button>
+                  </div>
+                ) : (
+                  <label className="flex items-center gap-2 cursor-pointer px-3 py-2 border border-dashed border-amber-300 rounded-xl text-xs text-amber-700 hover:bg-amber-100 transition-colors w-fit">
+                    <input type="file" accept="image/*" className="hidden" onChange={uploadBeforePhoto} disabled={uploadingBefore} />
+                    {uploadingBefore ? 'Uploading...' : '📷 Upload before photo'}
+                  </label>
+                )}
+              </div>
+            )}
           </div>
 
           <button onClick={addItem} disabled={saving || uploading || !newPhoto || !newTitle.trim()}

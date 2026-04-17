@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Session } from '@/types'
 import { timeAgo } from '@/lib/utils'
 
-type Section = 'dashboard' | 'pros' | 'leads' | 'moderation' | 'config' | 'emails'
+type Section = 'dashboard' | 'pros' | 'leads' | 'moderation' | 'config' | 'emails' | 'categories' | 'cron'
 
 function StatCard({ label, value, sub, color = 'teal' }: { label: string; value: any; sub?: string; color?: string }) {
   const colors: Record<string, string> = {
@@ -79,7 +79,10 @@ export default function AdminPage() {
   }, [session])
 
   useEffect(() => {
-    if (session && section !== 'emails') loadSection(section)
+    if (session && section !== 'emails' && section !== 'categories' && section !== 'cron') loadSection(section)
+    if (session && section === 'categories') {
+      fetch('/api/categories').then(r => r.json()).then(d => setCats(d.categories || []))
+    }
   }, [section, session])
 
   async function updateConfig(key: string, value: string) {
@@ -142,9 +145,19 @@ export default function AdminPage() {
     { id: 'moderation', icon: '🛡',  label: 'Moderation' },
     { id: 'config',     icon: '⚙️',  label: 'Config'    },
     { id: 'emails',     icon: '📧', label: 'Emails'     },
+    { id: 'categories', icon: '🏷',  label: 'Categories' },
+    { id: 'cron',       icon: '⏰',  label: 'Cron & Outreach' },
   ]
 
   const cfg = data?.config || {}
+  const [cats, setCats]         = useState<any[]>([])
+  const [newCatName, setNewCatName] = useState('')
+  const [newCatSlug, setNewCatSlug] = useState('')
+  const [editCatId, setEditCatId]   = useState<string | null>(null)
+  const [editCatName, setEditCatName] = useState('')
+  const [cronLoading, setCronLoading] = useState(false)
+  const [cronResult, setCronResult]   = useState<any>(null)
+  const [cronSending, setCronSending] = useState(false)
 
   if (loading && !accessDenied) return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center">
@@ -573,6 +586,174 @@ export default function AdminPage() {
                 <p className="text-xs text-gray-400 mt-3 text-center">
                   Only sends to pros where email_sent = false
                 </p>
+              </div>
+            </div>
+          )}
+
+
+          {/* ── CATEGORIES ── */}
+          {section === 'categories' && (
+            <div>
+              <h1 className="font-serif text-2xl text-white mb-6">Trade Categories</h1>
+
+              {/* Add new */}
+              <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-6">
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Add new category</div>
+                <div className="flex gap-3">
+                  <input value={newCatName} onChange={e => { setNewCatName(e.target.value); setNewCatSlug(e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')) }}
+                    placeholder="Category name" className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-stone-50 focus:outline-none focus:border-teal-400" />
+                  <input value={newCatSlug} onChange={e => setNewCatSlug(e.target.value)}
+                    placeholder="slug" className="w-48 px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-stone-50 focus:outline-none focus:border-teal-400 font-mono" />
+                  <button onClick={async () => {
+                    if (!newCatName || !newCatSlug) return
+                    const r = await fetch('/api/categories', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ category_name: newCatName, slug: newCatSlug }) })
+                    if (r.ok) { setNewCatName(''); setNewCatSlug(''); fetch('/api/categories').then(r => r.json()).then(d => setCats(d.categories || [])); showToast('Category added ✓') }
+                  }} className="px-5 py-2.5 bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 transition-colors whitespace-nowrap">
+                    + Add
+                  </button>
+                </div>
+              </div>
+
+              {/* List */}
+              <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
+                <div className="grid grid-cols-12 gap-3 px-5 py-2.5 bg-stone-50 border-b border-gray-100 text-xs font-semibold text-gray-400 uppercase tracking-widest">
+                  <div className="col-span-4">Name</div><div className="col-span-3">Slug</div><div className="col-span-2">Status</div><div className="col-span-3">Actions</div>
+                </div>
+                {cats.map(cat => (
+                  <div key={cat.id} className="grid grid-cols-12 gap-3 px-5 py-3 border-b border-gray-50 last:border-0 items-center">
+                    <div className="col-span-4">
+                      {editCatId === cat.id ? (
+                        <input value={editCatName} onChange={e => setEditCatName(e.target.value)} autoFocus
+                          className="w-full px-3 py-1.5 border border-teal-300 rounded-lg text-sm focus:outline-none" />
+                      ) : (
+                        <span className="text-sm font-medium text-gray-900">{cat.category_name}</span>
+                      )}
+                    </div>
+                    <div className="col-span-3 font-mono text-xs text-gray-500">{cat.slug}</div>
+                    <div className="col-span-2">
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cat.is_active !== false ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                        {cat.is_active !== false ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                    <div className="col-span-3 flex gap-2">
+                      {editCatId === cat.id ? (
+                        <>
+                          <button onClick={async () => {
+                            await fetch('/api/categories', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: cat.id, category_name: editCatName }) })
+                            setEditCatId(null); fetch('/api/categories').then(r => r.json()).then(d => setCats(d.categories || [])); showToast('Saved ✓')
+                          }} className="px-3 py-1 text-xs bg-teal-600 text-white rounded-lg">Save</button>
+                          <button onClick={() => setEditCatId(null)} className="px-3 py-1 text-xs border border-gray-200 rounded-lg text-gray-500">Cancel</button>
+                        </>
+                      ) : (
+                        <>
+                          <button onClick={() => { setEditCatId(cat.id); setEditCatName(cat.category_name) }} className="px-3 py-1 text-xs border border-gray-200 rounded-lg text-gray-600 hover:border-teal-300 hover:text-teal-600">Edit</button>
+                          <button onClick={async () => {
+                            const active = cat.is_active !== false
+                            await fetch('/api/categories', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: cat.id, is_active: !active }) })
+                            fetch('/api/categories').then(r => r.json()).then(d => setCats(d.categories || []))
+                          }} className={`px-3 py-1 text-xs border rounded-lg ${cat.is_active !== false ? 'border-red-200 text-red-500 hover:bg-red-50' : 'border-green-200 text-green-600 hover:bg-green-50'}`}>
+                            {cat.is_active !== false ? 'Deactivate' : 'Activate'}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── CRON & OUTREACH ── */}
+          {section === 'cron' && (
+            <div>
+              <h1 className="font-serif text-2xl text-white mb-2">Cron & Outreach</h1>
+              <p className="text-gray-400 text-sm mb-6">Preview what would be sent before triggering any emails. Vercel schedule is disabled until launch.</p>
+
+              {/* License expiry alerts */}
+              <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-5">
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1">License expiry alerts</div>
+                <p className="text-sm text-gray-500 mb-4">Checks all claimed pros for expiring/expired licenses, OSHA cards. Dry-run shows what would be sent — no emails fired.</p>
+                <div className="flex gap-3 mb-4">
+                  <button onClick={async () => {
+                    setCronLoading(true); setCronResult(null)
+                    const r = await fetch('/api/cron/license-check?dry_run=true', { headers: { 'authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_PREVIEW || 'preview'}` } })
+                    const d = await r.json(); setCronResult({ type: 'license', ...d }); setCronLoading(false)
+                  }} disabled={cronLoading} className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:border-teal-300 hover:text-teal-600 disabled:opacity-50">
+                    {cronLoading ? 'Running...' : '🔍 Preview license alerts'}
+                  </button>
+                  <button onClick={async () => {
+                    if (!confirm('This will send real emails. Continue?')) return
+                    setCronSending(true)
+                    const r = await fetch('/api/cron/license-check', { headers: { 'authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_PREVIEW || 'preview'}` } })
+                    const d = await r.json(); setCronResult({ type: 'license', ...d }); setCronSending(false); showToast(`Sent ${d.emailsSent || 0} emails`)
+                  }} disabled={cronSending} className="px-5 py-2.5 bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 disabled:opacity-50">
+                    {cronSending ? 'Sending...' : '📧 Send alerts now'}
+                  </button>
+                </div>
+                {cronResult?.type === 'license' && (
+                  <div className="bg-stone-50 border border-gray-100 rounded-xl p-4 text-sm">
+                    <div className="grid grid-cols-3 gap-4 mb-3">
+                      <div className="text-center"><div className="text-xl font-semibold text-amber-600">{cronResult.expiring || 0}</div><div className="text-xs text-gray-400">Expiring (30d)</div></div>
+                      <div className="text-center"><div className="text-xl font-semibold text-red-600">{cronResult.expired || 0}</div><div className="text-xs text-gray-400">Expired</div></div>
+                      <div className="text-center"><div className="text-xl font-semibold text-teal-600">{cronResult.emailsSent ?? (cronResult.wouldSend || 0)}</div><div className="text-xs text-gray-400">{cronResult.emailsSent !== undefined ? 'Emails sent' : 'Would send'}</div></div>
+                    </div>
+                    {cronResult.preview && cronResult.preview.length > 0 && (
+                      <div>
+                        <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Would send to:</div>
+                        {cronResult.preview.map((p: any, i: number) => (
+                          <div key={i} className="flex items-center justify-between py-1.5 border-b border-gray-100 last:border-0">
+                            <span className="text-sm text-gray-800">{p.full_name}</span>
+                            <span className="text-xs text-gray-500">{p.email}</span>
+                            <span className={`text-xs font-semibold ${p.daysLeft <= 7 ? 'text-red-600' : p.daysLeft <= 14 ? 'text-amber-600' : 'text-gray-500'}`}>{p.daysLeft}d left — {p.alert}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Claim outreach */}
+              <div className="bg-white border border-gray-100 rounded-2xl p-6">
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1">Claim outreach campaign</div>
+                <p className="text-sm text-gray-500 mb-4">Emails unclaimed pros with real email addresses to claim their free profile. One-time per pro — won't re-send.</p>
+                <div className="flex gap-3 mb-4">
+                  <button onClick={async () => {
+                    setCronLoading(true); setCronResult(null)
+                    const r = await fetch('/api/cron/claim-outreach?dry_run=true', { headers: { 'authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_PREVIEW || 'preview'}` } })
+                    const d = await r.json(); setCronResult({ type: 'claim', ...d }); setCronLoading(false)
+                  }} disabled={cronLoading} className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:border-teal-300 hover:text-teal-600 disabled:opacity-50">
+                    {cronLoading ? 'Running...' : '🔍 Preview claim outreach'}
+                  </button>
+                  <button onClick={async () => {
+                    if (!confirm('This will send real emails to unclaimed pros. Continue?')) return
+                    setCronSending(true)
+                    const r = await fetch('/api/cron/claim-outreach', { headers: { 'authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_PREVIEW || 'preview'}` } })
+                    const d = await r.json(); setCronResult({ type: 'claim', ...d }); setCronSending(false); showToast(`Sent ${d.emailsSent || 0} claim emails`)
+                  }} disabled={cronSending} className="px-5 py-2.5 bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 disabled:opacity-50">
+                    {cronSending ? 'Sending...' : '📧 Send claim emails'}
+                  </button>
+                </div>
+                {cronResult?.type === 'claim' && (
+                  <div className="bg-stone-50 border border-gray-100 rounded-xl p-4 text-sm">
+                    <div className="grid grid-cols-2 gap-4 mb-3">
+                      <div className="text-center"><div className="text-xl font-semibold text-teal-600">{cronResult.eligible || 0}</div><div className="text-xs text-gray-400">Eligible pros</div></div>
+                      <div className="text-center"><div className="text-xl font-semibold text-teal-600">{(cronResult.emailsSent ?? cronResult.wouldSend) || 0}</div><div className="text-xs text-gray-400">{cronResult.emailsSent !== undefined ? 'Sent' : 'Would send'}</div></div>
+                    </div>
+                    {cronResult.sample && cronResult.sample.length > 0 && (
+                      <div>
+                        <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Sample:</div>
+                        {cronResult.sample.map((p: any, i: number) => (
+                          <div key={i} className="flex items-center justify-between py-1.5 border-b border-gray-100 last:border-0">
+                            <span className="text-sm text-gray-800">{p.full_name}</span>
+                            <span className="text-xs text-gray-500">{p.trade} · {p.city}</span>
+                            <span className="text-xs text-gray-400">{p.email}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}

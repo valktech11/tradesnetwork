@@ -18,6 +18,10 @@ export default function Navbar() {
   const router = useRouter()
   const [session, setSession]         = useState<Session | null>(null)
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [notifOpen, setNotifOpen]         = useState(false)
+  const [notifications, setNotifications] = useState<any[]>([])
+  const [unreadCount, setUnreadCount]     = useState(0)
+  const notifRef = useRef<HTMLDivElement>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const dropdownRef  = useRef<HTMLDivElement>(null)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
@@ -28,7 +32,14 @@ export default function Navbar() {
 
     const sync = () => {
       const r = sessionStorage.getItem('tn_pro')
-      setSession(r ? JSON.parse(r) : null)
+      const s = r ? JSON.parse(r) : null
+      setSession(s)
+      if (s?.id) {
+        fetch(`/api/notifications?pro_id=${s.id}`)
+          .then(r => r.json())
+          .then(d => { setNotifications(d.notifications || []); setUnreadCount(d.unread || 0) })
+          .catch(() => {})
+      }
     }
     window.addEventListener('storage', sync)
     window.addEventListener('tn-session-changed', sync)
@@ -36,6 +47,7 @@ export default function Navbar() {
     const handleOutside = (e: MouseEvent | TouchEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setDropdownOpen(false)
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) setMobileMenuOpen(false)
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) setNotifOpen(false)
     }
     document.addEventListener('mousedown', handleOutside)
     document.addEventListener('touchstart', handleOutside as any)
@@ -146,6 +158,48 @@ export default function Navbar() {
               <Link href="/dashboard" className="text-sm text-gray-500 hover:text-gray-900 transition-colors hidden md:block">
                 Dashboard
               </Link>
+              {/* Notification bell */}
+              <div className="relative hidden md:block" ref={notifRef}>
+                <button onClick={async () => {
+                  setNotifOpen(o => !o)
+                  if (!notifOpen && unreadCount > 0 && session) {
+                    await fetch('/api/notifications', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pro_id: session.id }) })
+                    setUnreadCount(0)
+                    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
+                  }
+                }} className="relative p-1.5 rounded-lg hover:bg-stone-100 transition-colors">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                  </svg>
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold leading-none">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+                {notifOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                      <span className="text-sm font-semibold text-gray-900">Notifications</span>
+                      <Link href="/dashboard" className="text-xs text-teal-600">See all</Link>
+                    </div>
+                    <div className="max-h-80 overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="px-4 py-8 text-center text-sm text-gray-400">No notifications yet</div>
+                      ) : notifications.map((n: any) => (
+                        <a key={n.id} href={n.link || '/dashboard'}
+                          className={`flex items-start gap-3 px-4 py-3 border-b border-gray-50 hover:bg-stone-50 transition-colors ${!n.is_read ? 'bg-teal-50/50' : ''}`}>
+                          <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${!n.is_read ? 'bg-teal-500' : 'bg-gray-200'}`} />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm text-gray-800">{n.message}</div>
+                            <div className="text-xs text-gray-400 mt-0.5">{n.created_at ? new Date(n.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}</div>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
               <div className="relative" ref={dropdownRef}>
                 <button onClick={() => setDropdownOpen(o => !o)}
                   className="flex items-center gap-2 pl-1 pr-3 py-1.5 rounded-full border border-gray-200 hover:border-teal-300 transition-colors">

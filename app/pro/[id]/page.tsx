@@ -196,6 +196,31 @@ function ContactModal({ pro, onClose }: { pro: any; onClose: () => void }) {
   )
 }
 
+function BeforeAfterSlider({ afterUrl, beforeUrl, title }: { afterUrl: string; beforeUrl: string; title: string }) {
+  const [pos, setPos] = useState(50)
+  return (
+    <div className="relative w-full h-full select-none overflow-hidden bg-stone-100"
+      onMouseMove={e => {
+        const r = e.currentTarget.getBoundingClientRect()
+        setPos(Math.min(95, Math.max(5, ((e.clientX - r.left) / r.width) * 100)))
+      }}
+      onTouchMove={e => {
+        const r = e.currentTarget.getBoundingClientRect()
+        setPos(Math.min(95, Math.max(5, ((e.touches[0].clientX - r.left) / r.width) * 100)))
+      }}>
+      <img src={afterUrl} alt={title} className="absolute inset-0 w-full h-full object-cover" />
+      <div className="absolute inset-0 overflow-hidden" style={{ width: `${pos}%` }}>
+        <img src={beforeUrl} alt="Before" className="absolute inset-0 w-full h-full object-cover" style={{ minWidth: `${100 * 100 / pos}%` }} />
+      </div>
+      <div className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg" style={{ left: `${pos}%` }}>
+        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-7 h-7 bg-white rounded-full shadow-md flex items-center justify-center text-xs font-bold text-gray-700">↔</div>
+      </div>
+      <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded">Before</div>
+      <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded">After</div>
+    </div>
+  )
+}
+
 function extractKeywords(reviews: any[]) {
   const positive = ['professional','responsive','reliable','quality','excellent','great','clean','fast','honest','affordable','knowledgeable','friendly','thorough','efficient','expert']
   const counts: Record<string, number> = {}
@@ -237,7 +262,7 @@ export default function ProProfilePage() {
     if (s) setSession(s)
 
     Promise.all([
-      fetch(`/api/pros/${id}`).then(r => r.json()),
+      fetch(`/api/pros/${id}${!s || s.id !== id ? '?view=1' : ''}`).then(r => r.json()),
       fetch(`/api/reviews?pro_id=${id}`).then(r => r.json()),
       fetch(`/api/portfolio?pro_id=${id}`).then(r => r.json()),
       s ? fetch(`/api/follows?pro_id=${id}`).then(r => r.json()) : Promise.resolve(null),
@@ -272,7 +297,7 @@ export default function ProProfilePage() {
   }
 
   function downloadPdf() {
-    alert('Credential Report PDF — coming soon. This will generate a one-page summary of licenses, certifications and insurance for onboarding.')
+    window.open(`/api/pros/${id}/pdf`, '_blank')
   }
 
   if (loading) return (
@@ -357,7 +382,15 @@ export default function ProProfilePage() {
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-4 sm:px-5 pt-5">
-        <div className="bg-[#152a23] rounded-xl overflow-hidden">
+        <div className="rounded-xl overflow-hidden relative" style={{background: (pro as any).cover_image_url ? undefined : '#152a23'}}>
+        {(pro as any).cover_image_url && (
+          <div className="absolute inset-0">
+            <img src={(pro as any).cover_image_url} alt="Cover" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-[#152a23]/75" />
+          </div>
+        )}
+        {!(pro as any).cover_image_url && <div className="absolute inset-0 bg-[#152a23]" />}
+        <div className="relative z-10">
 
           {/* Identity row */}
           <div className="px-5 sm:px-7 pt-6 pb-4">
@@ -456,6 +489,7 @@ export default function ProProfilePage() {
             )}
           </div>
         </div>
+        </div>
       </div>
 
       {/* ── MAIN CONTENT ─────────────────────────────────────────────────────── */}
@@ -476,15 +510,23 @@ export default function ProProfilePage() {
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {visiblePhotos.map(item => (
                       <div key={item.id} className="rounded-xl overflow-hidden bg-stone-100 cursor-pointer group"
-                        onClick={() => item.photo_url && setLightbox(item.photo_url)}>
+                        onClick={() => !item.is_before_after && item.photo_url && setLightbox(item.photo_url)}>
                         <div className="relative aspect-square">
-                          {item.photo_url
-                            ? <img src={item.photo_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                            : <div className="w-full h-full flex items-center justify-center text-gray-300 text-2xl">🖼</div>
-                          }
-                          {item.is_job_site && (
+                          {item.is_before_after && item.before_photo_url && item.photo_url ? (
+                            <BeforeAfterSlider afterUrl={item.photo_url} beforeUrl={item.before_photo_url} title={item.title} />
+                          ) : item.photo_url ? (
+                            <img src={item.photo_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-300 text-2xl">🖼</div>
+                          )}
+                          {item.is_job_site && !item.is_before_after && (
                             <div className="absolute top-2 left-2 bg-green-700/90 rounded-full px-2 py-0.5">
                               <span className="text-white text-xs font-semibold">✓ Verified GPS</span>
+                            </div>
+                          )}
+                          {item.is_before_after && (
+                            <div className="absolute top-2 left-2 bg-amber-600/90 rounded-full px-2 py-0.5">
+                              <span className="text-white text-xs font-semibold">↔ Before/After</span>
                             </div>
                           )}
                         </div>

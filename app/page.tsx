@@ -49,6 +49,7 @@ function HomePageInner() {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
   const MOBILE_MAX_PER_GROUP = 3
   const [tradeCounts, setTradeCounts] = useState<Record<string, number>>({})
+  const [featuredItems, setFeaturedItems] = useState<any[]>([])
   const offset = useRef(0)
 
   useEffect(() => {
@@ -63,6 +64,8 @@ function HomePageInner() {
       for (const t of (statsData.trades || [])) counts[t.id] = t.pro_count
       setTradeCounts(counts)
     })
+    // Fetch GPS-verified portfolio items for craftsmanship feed
+    fetch('/api/portfolio/featured').then(r => r.json()).then(d => setFeaturedItems(d.items || []))
   }, [])
 
   function buildUrl(off: number) {
@@ -254,6 +257,39 @@ function HomePageInner() {
 
       {/* ── BROWSE + RESULTS ──────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-6">
+
+        {/* ── TOP CRAFTSMANSHIP FEED ── */}
+        {featuredItems.length >= 3 && (
+          <div className="py-6 border-b border-gray-100 mb-2">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-0.5">Verified project work</div>
+                <div className="text-sm text-gray-500">GPS-confirmed on-site photos from top-rated Florida pros</div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              {featuredItems.map((item: any) => (
+                <a key={item.id} href={`/pro/${item.pro?.id}`}
+                  className="group block rounded-xl overflow-hidden bg-stone-100 hover:shadow-md transition-all hover:-translate-y-0.5">
+                  <div className="relative aspect-square">
+                    <img src={item.photo_url} alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <div className="absolute top-1.5 left-1.5 bg-green-700/90 rounded-full px-1.5 py-0.5">
+                      <span className="text-white text-xs font-semibold">✓ GPS</span>
+                    </div>
+                  </div>
+                  <div className="p-2 bg-white">
+                    <div className="text-xs font-semibold text-gray-800 truncate">{item.pro?.full_name}</div>
+                    <div className="text-xs text-teal-600 truncate">{item.pro?.trade_category?.category_name}</div>
+                    {item.pro?.avg_rating > 0 && (
+                      <div className="text-xs text-amber-500 mt-0.5">{'★'.repeat(Math.round(item.pro.avg_rating))} {item.pro.avg_rating.toFixed(1)}</div>
+                    )}
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Trade filter — grouped by industry */}
         <div className="py-5">

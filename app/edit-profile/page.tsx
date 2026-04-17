@@ -72,6 +72,8 @@ export default function EditProfilePage() {
   const [citiesLoading, setCitiesLoading] = useState(false)
   const [categories, setCategories]     = useState<TradeCategory[]>([])
   const [photoUrl, setPhotoUrl]         = useState('')
+  const [coverUrl, setCoverUrl]         = useState('')
+  const [uploadingCover, setUploadingCover] = useState(false)
   const [uploading, setUploading]       = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -133,6 +135,7 @@ export default function EditProfilePage() {
         setCity(p.city || '')
         setZip(p.zip_code || '')
         setPhotoUrl(p.profile_photo_url || '')
+        setCoverUrl(p.cover_image_url || '')
         setLicenseExpiry(p.license_expiry_date || '')
         setOshaType(p.osha_card_type || '')
         setOshaNumber(p.osha_card_number || '')
@@ -173,6 +176,21 @@ export default function EditProfilePage() {
     setUploading(false)
     if (r.ok) setPhotoUrl(d.url)
     else setErrors(p => ({ ...p, photo: d.error || 'Upload failed' }))
+  }
+
+  async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !session) return
+    setUploadingCover(true)
+    const form = new FormData()
+    form.append('file', file); form.append('pro_id', session.id); form.append('bucket', 'avatars'); form.append('folder', `covers/${session.id}`)
+    const r = await fetch('/api/upload', { method: 'POST', body: form })
+    const d = await r.json()
+    setUploadingCover(false)
+    if (r.ok) {
+      setCoverUrl(d.url)
+      await fetch(`/api/pros/${session.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cover_image_url: d.url }) })
+    }
   }
 
   async function handleSave() {
@@ -296,6 +314,20 @@ export default function EditProfilePage() {
               <Link href="/upgrade" className="mt-4 block w-full py-2 bg-teal-600 text-white text-sm font-semibold rounded-lg hover:bg-teal-700 transition-colors text-center">
                 Upgrade plan
               </Link>
+              <div className="border-t border-gray-100 mt-5 pt-5">
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Cover photo</div>
+                <div className="relative w-full h-20 rounded-xl overflow-hidden bg-[#152a23] mb-2">
+                  {coverUrl && <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />}
+                  {!coverUrl && <div className="absolute inset-0 flex items-center justify-center text-xs text-teal-400/50">No cover photo</div>}
+                </div>
+                <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" id="cover-upload"
+                  onChange={handleCoverUpload} />
+                <label htmlFor="cover-upload"
+                  className="block w-full py-1.5 text-center border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-teal-50 hover:border-teal-200 hover:text-teal-700 transition-colors cursor-pointer">
+                  {uploadingCover ? 'Uploading...' : coverUrl ? 'Change cover' : 'Upload cover'}
+                </label>
+                <p className="text-xs text-gray-400 mt-1.5 text-center">Shows behind your name on your profile</p>
+              </div>
             </div>
           </div>
 

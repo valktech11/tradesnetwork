@@ -190,12 +190,12 @@ export default function DashboardPage() {
         </div>
 
         {/* STAT CARDS */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           {[
-            { label: 'Total leads', value: loading ? '—' : leads.length,      sub: 'All time'    },
-            { label: 'New leads',   value: loading ? '—' : newLeads,           sub: 'Uncontacted' },
-            { label: 'Reviews',     value: loading ? '—' : reviews.length,     sub: 'Approved'    },
-            { label: 'Avg rating',  value: loading ? '—' : avgRating > 0 ? avgRating.toFixed(1) : '—', sub: 'Out of 5.0' },
+            { label: 'Total leads',    value: loading ? '—' : leads.length,      sub: 'All time'       },
+            { label: 'New leads',      value: loading ? '—' : newLeads,           sub: 'Uncontacted'    },
+            { label: 'Reviews',        value: loading ? '—' : reviews.length,     sub: 'Approved'       },
+            { label: 'Avg rating',     value: loading ? '—' : avgRating > 0 ? avgRating.toFixed(1) : '—', sub: 'Out of 5.0' },
           ].map(s => (
             <div key={s.label} className="bg-white border border-gray-100 rounded-2xl p-5">
               <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">{s.label}</div>
@@ -203,6 +203,35 @@ export default function DashboardPage() {
               <div className="text-xs text-gray-400 mt-1">{s.sub}</div>
             </div>
           ))}
+        </div>
+
+        {/* PROFILE ANALYTICS CARD */}
+        <div className="bg-white border border-gray-100 rounded-2xl p-5 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Profile performance</div>
+            <div className="text-xs text-gray-400">Tracking started on deploy</div>
+          </div>
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+            {[
+              { label: 'Profile views',  value: loading ? '—' : (proData?.profile_view_count ?? 0), icon: '👁', sub: 'Since tracking' },
+              { label: 'Leads received', value: loading ? '—' : leads.length,                        icon: '📥', sub: 'All time' },
+              { label: 'Followers',      value: loading ? '—' : (proData?.follower_count ?? '—'),     icon: '👥', sub: 'Community' },
+              { label: 'Endorsements',   value: loading ? '—' : (proData?.endorsement_count ?? '—'),  icon: '✊', sub: 'Skills vouched' },
+              { label: 'Portfolio',      value: loading ? '—' : (proData?.portfolio_count ?? '—'),    icon: '🖼', sub: 'Photos' },
+            ].map(s => (
+              <div key={s.label} className="text-center bg-stone-50 rounded-xl p-3">
+                <div className="text-lg mb-1">{s.icon}</div>
+                <div className="text-xl font-semibold text-teal-600">{s.value}</div>
+                <div className="text-xs font-medium text-gray-700 mt-0.5">{s.label}</div>
+                <div className="text-xs text-gray-400">{s.sub}</div>
+              </div>
+            ))}
+          </div>
+          {!proData?.profile_view_count && (
+            <div className="mt-3 text-xs text-gray-400 text-center">
+              Views start counting as visitors land on your profile. Share your profile link to get started.
+            </div>
+          )}
         </div>
 
         {/* COMMUNITY BANNER */}
