@@ -3,40 +3,46 @@ import { getSupabaseAdmin } from '@/lib/supabase'
 
 async function moderateImage(base64: string, mimeType: string): Promise<{ safe: boolean; reason?: string }> {
   const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) return { safe: true } // fail open if no key
+  if (!apiKey) return { safe: true }
 
   try {
+    const model = process.env.AI_PROVIDER_MODEL || 'gemini-2.5-flash'
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${process.env.AI_PROVIDER_MODEL || 'gemini-2.5-flash'}:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{
             parts: [
-              {
-                inline_data: {
-                  mime_type: mimeType,
-                  data: base64,
-                }
-              },
-              {
-                text: 'Does this image contain any of: nudity, sexual content, graphic violence, gore, hate symbols, weapons pointed at people, or illegal content? Reply with only JSON: {"safe": true} or {"safe": false, "reason": "brief reason"}'
-              }
+              { inline_data: { mime_type: mimeType, data: base64 } },
+              { text: 'Does this image contain nudity, sexual content, graphic violence, gore, hate symbols, weapons pointed at people, or illegal content? Return safe as true or false, and if false provide a brief reason.' }
             ]
           }],
-          generationConfig: { maxOutputTokens: 60, temperature: 0 },
+          generationConfig: {
+            maxOutputTokens: 100,
+            temperature: 0,
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: 'object',
+              properties: {
+                safe:   { type: 'boolean' },
+                reason: { type: 'string', nullable: true },
+              },
+              required: ['safe'],
+            },
+          },
         }),
       }
     )
 
     if (!response.ok) return { safe: true }
     const data = await response.json()
-    const text = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g, '').trim()
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{"safe":true}'
     const parsed = JSON.parse(text)
     return { safe: parsed.safe !== false, reason: parsed.reason }
   } catch {
-    return { safe: true } // fail open
+    return { safe: true }
   }
 }
 
@@ -70,7 +76,6 @@ export async function POST(req: NextRequest) {
   const bytes0 = await file.arrayBuffer()
   const b64    = Buffer.from(bytes0).toString('base64')
 
-  // Moderate image content — skip for PDFs (documents don't need vision moderation)
   if (!isPDF) {
     const mod = await moderateImage(b64, file.type)
     if (!mod.safe) {
@@ -88,8 +93,7 @@ export async function POST(req: NextRequest) {
   const buffer    = Buffer.from(b64, 'base64')
 
   const { error: uploadError } = await supabase
-    .storage
-    .from(bucket)
+    .storage.from(bucket)
     .upload(path, buffer, { contentType: file.type, upsert: isAvatar })
 
   if (uploadError) {
@@ -100,7 +104,6 @@ export async function POST(req: NextRequest) {
   const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(path)
   const publicUrl = urlData.publicUrl
 
-  // For avatar uploads — update pro record automatically
   if (isAvatar) {
     await supabase.from('pros').update({ profile_photo_url: publicUrl }).eq('id', proId)
   }

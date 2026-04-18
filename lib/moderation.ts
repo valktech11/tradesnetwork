@@ -1,7 +1,6 @@
-// Content moderation — dual layer: fast pattern check + Gemini 1.5 Flash
+// Content moderation — dual layer: fast pattern check + Gemini
 // Called server-side before saving any user-generated content to DB
 
-// Strip asterisk masking (e.g. "a**hole" → "asshole", "f*** you" → "fuck you")
 function unmask(text: string): string {
   return text
     .replace(/a\*+/gi, 'ass')
@@ -9,7 +8,7 @@ function unmask(text: string): string {
     .replace(/s\*+t/gi, 'shit')
     .replace(/b\*+h/gi, 'bitch')
     .replace(/c\*+t/gi, 'cunt')
-    .replace(/\*+/g, '')  // remove remaining asterisks
+    .replace(/\*+/g, '')
 }
 
 const BANNED_PATTERNS = [
@@ -52,23 +51,23 @@ export async function moderateContent(text: string): Promise<{ safe: boolean; re
   }
 
   const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) return { safe: true } // fail open if no key
+  if (!apiKey) return { safe: true }
 
   try {
+    const model = process.env.AI_PROVIDER_MODEL || 'gemini-2.5-flash'
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${process.env.AI_PROVIDER_MODEL || 'gemini-2.5-flash'}:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `You are a strict content moderator for a professional trades marketplace used by contractors and homeowners.
+              text: `You are a strict content moderator for a professional trades marketplace.
 
-Flag as UNSAFE if the text contains ANY of the following:
-- Profanity or swear words in any form (including with asterisks like f***, s***, a**)
-- Personal insults or attacks: calling the person stupid, an idiot, dumb, incompetent, useless, a scammer, a fraud, a liar, lazy, or any other derogatory label
-- Attacking someone's character, intelligence, or professional integrity in a disrespectful way
+Flag as unsafe if the text contains ANY of:
+- Profanity or swear words in any form (including asterisk-masked versions)
+- Personal insults: stupid, idiot, dumb, incompetent, useless, scammer, fraud, liar, lazy, or similar
 - Threats or aggressive language
 - Hate speech, slurs, or discriminatory language
 - Sexually explicit content
@@ -76,17 +75,24 @@ Flag as UNSAFE if the text contains ANY of the following:
 Safe examples: "poor quality work", "did not finish on time", "overcharged me", "wouldn't recommend"
 Unsafe examples: "he is an idiot", "stupid worker", "complete moron", "useless fraud"
 
-The bar is STRICT. Personal attacks on the individual are always UNSAFE even without profanity.
+Personal attacks are always unsafe even without profanity.
 
-Review text: "${text.replace(/"/g, "'")}"
-
-Reply ONLY:
-SAFE
-or
-UNSAFE: [reason in 5 words]`
+Review text: "${text.replace(/"/g, "'")}"`
             }]
           }],
-          generationConfig: { maxOutputTokens: 50, temperature: 0 },
+          generationConfig: {
+            maxOutputTokens: 100,
+            temperature: 0,
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: 'object',
+              properties: {
+                safe:   { type: 'boolean' },
+                reason: { type: 'string', nullable: true },
+              },
+              required: ['safe'],
+            },
+          },
         }),
       }
     )
@@ -97,13 +103,14 @@ UNSAFE: [reason in 5 words]`
     }
 
     const data = await response.json()
-    const result = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'SAFE'
-    if (result.startsWith('UNSAFE')) {
-      return { safe: false, reason: result.replace('UNSAFE:', '').trim() || 'Content not allowed' }
+    const text2 = data.candidates?.[0]?.content?.parts?.[0]?.text || '{"safe":true}'
+    const parsed = JSON.parse(text2)
+    if (parsed.safe === false) {
+      return { safe: false, reason: parsed.reason || 'Content not allowed' }
     }
     return { safe: true }
   } catch (error) {
     console.error('Gemini moderation failed:', error)
-    return { safe: true } // fail open
+    return { safe: true }
   }
 }

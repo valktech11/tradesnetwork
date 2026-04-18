@@ -27,18 +27,9 @@ async function extractCOIData(file_url: string): Promise<{
     const mimeType = mimeFromUrl(file_url)
     console.log('[COI] File fetched, size:', arrayBuf.byteLength, 'mime:', mimeType)
 
-    const PROMPT = `You are extracting data from a Certificate of Liability Insurance (COI) document.
-Find and return ONLY these four fields:
-- insurer_name: The insurance company name (from "INSURER A" or similar field)
-- policy_number: The policy number
-- coverage_type: The type of coverage (e.g. "Commercial General Liability")
-- expiry_date: The POLICY EXPIRATION DATE in YYYY-MM-DD format (look for "POLICY EXP" or "EXPIRATION DATE" column — NOT the event end date or certificate date)
-
-Respond ONLY with valid JSON, no markdown, no explanation:
-{"insurer_name":"value or null","policy_number":"value or null","coverage_type":"value or null","expiry_date":"YYYY-MM-DD or null"}`
-
+    const model = process.env.AI_PROVIDER_MODEL || 'gemini-2.5-flash'
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${process.env.AI_PROVIDER_MODEL || 'gemini-2.5-flash'}:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -46,23 +37,42 @@ Respond ONLY with valid JSON, no markdown, no explanation:
           contents: [{
             parts: [
               { inline_data: { mime_type: mimeType, data: b64 } },
-              { text: PROMPT }
+              { text: `Extract data from this Certificate of Liability Insurance (COI).
+Return the following fields:
+- insurer_name: insurance company name from the "INSURER A" field
+- policy_number: the policy number
+- coverage_type: type of coverage e.g. "Commercial General Liability"
+- expiry_date: POLICY EXPIRATION DATE in YYYY-MM-DD format — look for "POLICY EXP" column, NOT the event end date or certificate date. Return null if not found.` }
             ]
           }],
-          generationConfig: { maxOutputTokens: 300, temperature: 0 },
+          generationConfig: {
+            maxOutputTokens: 1024,
+            temperature: 0,
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: 'object',
+              properties: {
+                insurer_name:  { type: 'string', nullable: true },
+                policy_number: { type: 'string', nullable: true },
+                coverage_type: { type: 'string', nullable: true },
+                expiry_date:   { type: 'string', nullable: true },
+              },
+              required: ['insurer_name', 'policy_number', 'coverage_type', 'expiry_date'],
+            },
+          },
         }),
       }
     )
 
     if (!response.ok) {
       const err = await response.text()
-      console.log('[COI] Gemini API error:', response.status, err.slice(0, 200))
+      console.log('[COI] Gemini API error:', response.status, err.slice(0, 300))
       return empty
     }
 
     const data = await response.json()
-    const text = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g, '').trim()
-    console.log('[COI] Gemini raw extraction:', text)
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}'
+    console.log('[COI] Gemini raw response:', text)
     const p = JSON.parse(text)
     return {
       insurer_name:  p.insurer_name  || null,
