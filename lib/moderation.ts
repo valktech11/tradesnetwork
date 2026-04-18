@@ -1,4 +1,4 @@
-// Content moderation — dual layer: fast pattern check + Claude Haiku
+// Content moderation — dual layer: fast pattern check + Gemini 1.5 Flash
 // Called server-side before saving any user-generated content to DB
 
 // Strip asterisk masking (e.g. "a**hole" → "asshole", "f*** you" → "fuck you")
@@ -34,7 +34,7 @@ const BANNED_PATTERNS = [
   /\bscam(mer)?\b/i,
   /\bfraud\b/i,
   /\bn[i1]gg[ae]r/i,
-  /he is a\s+\w+/i,  // "he is a [insult]" pattern
+  /he is a\s+\w+/i,
 ]
 
 export function hasObviousProfanity(text: string): boolean {
@@ -51,20 +51,19 @@ export async function moderateContent(text: string): Promise<{ safe: boolean; re
     return { safe: false, reason: 'Contains profanity or offensive language' }
   }
 
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) return { safe: true } // fail open if no key
+
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type':      'application/json',
-        'x-api-key':         process.env.ANTHROPIC_API_KEY || '',
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model:      'claude-haiku-4-5-20251001',
-        max_tokens: 50,
-        messages: [{
-          role:    'user',
-          content: `You are a strict content moderator for a professional trades marketplace used by contractors and homeowners.
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `You are a strict content moderator for a professional trades marketplace used by contractors and homeowners.
 
 Flag as UNSAFE if the text contains ANY of the following:
 - Profanity or swear words in any form (including with asterisks like f***, s***, a**)
@@ -84,24 +83,27 @@ Review text: "${text.replace(/"/g, "'")}"
 Reply ONLY:
 SAFE
 or
-UNSAFE: [reason in 5 words]`,
-        }],
-      }),
-    })
+UNSAFE: [reason in 5 words]`
+            }]
+          }],
+          generationConfig: { maxOutputTokens: 50, temperature: 0 },
+        }),
+      }
+    )
 
     if (!response.ok) {
-      console.error('Moderation API error:', response.status)
+      console.error('Gemini moderation error:', response.status)
       return { safe: true }
     }
 
     const data = await response.json()
-    const result = data.content?.[0]?.text?.trim() || 'SAFE'
+    const result = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'SAFE'
     if (result.startsWith('UNSAFE')) {
       return { safe: false, reason: result.replace('UNSAFE:', '').trim() || 'Content not allowed' }
     }
     return { safe: true }
   } catch (error) {
-    console.error('Moderation check failed:', error)
-    return { safe: true }
+    console.error('Gemini moderation failed:', error)
+    return { safe: true } // fail open
   }
 }
