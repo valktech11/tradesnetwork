@@ -430,9 +430,9 @@ export default function CommunityPage() {
       if (s?.trade) {
         const same   = allPros.filter((p: any) => p.trade_category?.category_name === s.trade)
         const others = allPros.filter((p: any) => p.trade_category?.category_name !== s.trade)
-        setSuggested([...same, ...others].slice(0, 5))
+        setSuggested([...same, ...others].slice(0, 3))
       } else {
-        setSuggested(allPros.slice(0, 5))
+        setSuggested(allPros.slice(0, 3))
       }
       setLikedIds(new Set(likesData.likes || []))
       setJobAlerts(jobsData.jobs || [])
@@ -597,7 +597,7 @@ export default function CommunityPage() {
         </div>
 
         {/* ── SIDEBAR ── */}
-        <div className="space-y-4 lg:sticky lg:top-20 lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto lg:pb-4 scrollbar-hide">
+        <div className="space-y-4 lg:sticky lg:top-20">
 
           {/* Job Alerts */}
           {jobAlerts.length > 0 && (
@@ -606,7 +606,7 @@ export default function CommunityPage() {
                 <div className="text-xs font-bold text-gray-700 uppercase tracking-widest">Job alerts</div>
                 <Link href="/jobs" className="text-xs text-teal-600 hover:underline">See all →</Link>
               </div>
-              {jobAlerts.map((job, i) => (
+              {jobAlerts.slice(0, 2).map((job, i) => (
                 <Link key={job.id} href="/jobs"
                   className={`block py-2.5 ${i < jobAlerts.length - 1 ? 'border-b border-gray-100' : ''} hover:bg-stone-50 -mx-2 px-2 rounded-lg transition-colors`}>
                   <div className="text-sm font-medium text-gray-900 truncate">{job.title}</div>
