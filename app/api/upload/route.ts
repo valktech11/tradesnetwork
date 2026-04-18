@@ -36,25 +36,35 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'file and pro_id are required' }, { status: 400 })
   }
 
-  const allowed = ['image/jpeg', 'image/png', 'image/webp']
-  if (!allowed.includes(file.type)) {
-    return NextResponse.json({ error: 'Only JPG, PNG and WebP images are allowed' }, { status: 400 })
+  const isPDF     = file.type === 'application/pdf'
+  const isInsurance = bucket === 'insurance'
+
+  const allowedImages = ['image/jpeg', 'image/png', 'image/webp']
+  const allowedTypes  = isInsurance ? [...allowedImages, 'application/pdf'] : allowedImages
+
+  if (!allowedTypes.includes(file.type)) {
+    const msg = isInsurance ? 'Only JPG, PNG, WebP or PDF files are allowed' : 'Only JPG, PNG and WebP images are allowed'
+    return NextResponse.json({ error: msg }, { status: 400 })
   }
 
-  if (file.size > 5 * 1024 * 1024) {
-    return NextResponse.json({ error: 'Image must be under 5MB' }, { status: 400 })
+  const maxSize = isPDF ? 10 * 1024 * 1024 : 5 * 1024 * 1024
+  if (file.size > maxSize) {
+    return NextResponse.json({ error: `File must be under ${isPDF ? '10MB' : '5MB'}` }, { status: 400 })
   }
 
-  // Moderate image content
   const bytes0 = await file.arrayBuffer()
   const b64    = Buffer.from(bytes0).toString('base64')
-  const mod    = await moderateImage(b64, file.type as any)
-  if (!mod.safe) {
-    return NextResponse.json({ error: `Image not allowed: ${mod.reason || 'content policy violation'}. Please upload an appropriate photo.` }, { status: 422 })
+
+  // Moderate image content (skip for PDFs — no vision moderation needed for documents)
+  if (!isPDF) {
+    const mod = await moderateImage(b64, file.type as any)
+    if (!mod.safe) {
+      return NextResponse.json({ error: `Image not allowed: ${mod.reason || 'content policy violation'}. Please upload an appropriate photo.` }, { status: 422 })
+    }
   }
 
   const supabase  = getSupabaseAdmin()
-  const ext       = file.type === 'image/jpeg' ? 'jpg' : file.type.split('/')[1]
+  const ext       = file.type === 'image/jpeg' ? 'jpg' : isPDF ? 'pdf' : file.type.split('/')[1]
   const timestamp = Date.now()
   const isAvatar  = bucket === 'avatars'
   const path      = isAvatar ? `${folder}/avatar.${ext}` : `${folder}/${timestamp}.${ext}`

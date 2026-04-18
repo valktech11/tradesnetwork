@@ -165,14 +165,23 @@ function PostCard({ post, session, onLike, onDelete }: {
 
       {/* Actions */}
       <div className="flex items-center gap-1 px-4 py-2.5 border-t border-gray-100">
-        <button onClick={() => session && onLike(post.id)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-            post.liked_by_me ? 'bg-teal-50 text-teal-700 font-semibold' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-700'
-          }`}>
-          <span>✊</span>
-          <span>Respect</span>
-          {post.like_count > 0 && <span className="font-semibold">{post.like_count}</span>}
-        </button>
+        {isOwn ? (
+          /* Own post — show respect count read-only, no button */
+          <div className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-300 select-none">
+            <span>✊</span>
+            <span>Respect</span>
+            {post.like_count > 0 && <span className="font-semibold">{post.like_count}</span>}
+          </div>
+        ) : (
+          <button onClick={() => session && onLike(post.id)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+              post.liked_by_me ? 'bg-teal-50 text-teal-700 font-semibold' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-700'
+            }`}>
+            <span>✊</span>
+            <span>Respect</span>
+            {post.like_count > 0 && <span className="font-semibold">{post.like_count}</span>}
+          </button>
+        )}
         <button onClick={loadComments}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
             isAskAPro ? 'text-blue-600 hover:bg-blue-50 font-medium' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'
@@ -287,70 +296,70 @@ function PostComposer({ session, onPost }: { session: Session; onPost: (post: Po
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden mb-4">
-      {/* Type selector tabs */}
-      <div className="flex border-b border-gray-100">
-        {POST_TYPES.map(t => (
-          <button key={t.value} onClick={() => { setPostType(t.value); setError('') }}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold transition-all ${
-              postType === t.value
-                ? t.value === 'tip'       ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-500'
-                : t.value === 'milestone' ? 'bg-amber-50 text-amber-700 border-b-2 border-amber-500'
-                : t.value === 'work'      ? 'bg-teal-50 text-teal-700 border-b-2 border-teal-500'
-                :                          'bg-stone-100 text-gray-700 border-b-2 border-gray-500'
-                : 'text-gray-400 hover:text-gray-600 hover:bg-stone-50'
-            }`}>
-            <span>{t.emoji}</span>
-            <span className="hidden sm:inline">{t.label}</span>
-          </button>
-        ))}
-      </div>
 
-      {/* Context hint for each type */}
-      {postType === 'tip' && (
-        <div className="bg-blue-50 border-b border-blue-100 px-4 py-2 text-xs text-blue-700">
-          Ask a trade question — verified pros in the community will answer.
-        </div>
-      )}
-      {postType === 'milestone' && (
-        <div className="bg-amber-50 border-b border-amber-100 px-4 py-2 text-xs text-amber-700">
-          Share a career milestone — years in business, new certification, biggest project completed.
-        </div>
-      )}
-      {postType === 'work' && (
-        <div className="bg-teal-50 border-b border-teal-100 px-4 py-2 text-xs text-teal-700">
-          Share project photos and describe the work — this appears in the Top Craftsmanship feed.
-        </div>
-      )}
-
-      <div className="flex gap-3 p-4">
+      {/* Post type + composer row */}
+      <div className="flex items-center gap-3 px-4 pt-4 pb-0">
         <Avatar pro={{ full_name: session.name, profile_photo_url: null }} />
         <div className="flex-1">
+          {/* Type dropdown */}
+          <div className="flex items-center gap-2 mb-2">
+            <label className="text-xs text-gray-400 font-medium flex-shrink-0">Post type:</label>
+            <div className="relative">
+              <select
+                value={postType}
+                onChange={e => { setPostType(e.target.value); setError('') }}
+                className="appearance-none text-xs font-semibold pl-3 pr-7 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:border-teal-400 cursor-pointer transition-colors"
+                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
+              >
+                {POST_TYPES.map(t => (
+                  <option key={t.value} value={t.value}>{t.emoji} {t.label}</option>
+                ))}
+              </select>
+            </div>
+            {/* Active type pill */}
+            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+              postType === 'tip'       ? 'bg-blue-50 text-blue-700' :
+              postType === 'milestone' ? 'bg-amber-50 text-amber-700' :
+              postType === 'work'      ? 'bg-teal-50 text-teal-700' :
+                                         'bg-gray-100 text-gray-500'
+            }`}>
+              {postType === 'tip'       ? 'Verified pros will answer' :
+               postType === 'milestone' ? 'Career achievement' :
+               postType === 'work'      ? 'Appears in Top Craftsmanship' :
+                                          'General update'}
+            </span>
+          </div>
+
           <textarea value={content} onChange={e => setContent(e.target.value)}
             placeholder={current.placeholder}
             rows={3}
             className="w-full text-sm text-gray-900 bg-stone-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-400 focus:bg-white resize-none transition-colors" />
-          {photo && (
-            <div className="relative mt-2 inline-block">
-              <img src={photo} alt="Preview" className="h-20 rounded-lg object-cover" />
-              <button onClick={() => setPhoto(null)}
-                className="absolute -top-1 -right-1 w-5 h-5 bg-gray-800 text-white rounded-full text-xs flex items-center justify-center">✕</button>
-            </div>
-          )}
-          {error && <div className="mt-2 text-xs text-red-600">{error}</div>}
-          <div className="flex items-center justify-between mt-3">
-            <div className="flex items-center gap-2">
-              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
-              <button onClick={() => fileRef.current?.click()} disabled={uploading}
-                className="text-xs px-3 py-1.5 border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors disabled:opacity-50">
-                {uploading ? 'Uploading...' : '📷 Photo'}
-              </button>
-            </div>
-            <button onClick={handlePost} disabled={posting || (!content.trim() && !photo)}
-              className="px-5 py-1.5 bg-teal-600 text-white text-sm font-semibold rounded-lg hover:bg-teal-700 disabled:opacity-40 transition-colors">
-              {posting ? 'Posting...' : postType === 'tip' ? 'Ask' : postType === 'milestone' ? 'Share milestone' : 'Post'}
-            </button>
+        </div>
+      </div>
+
+      {photo && (
+        <div className="px-4 pb-0 mt-2">
+          <div className="relative inline-block">
+            <img src={photo} alt="Preview" className="h-20 rounded-lg object-cover" />
+            <button onClick={() => setPhoto(null)}
+              className="absolute -top-1 -right-1 w-5 h-5 bg-gray-800 text-white rounded-full text-xs flex items-center justify-center">✕</button>
           </div>
         </div>
+      )}
+      {error && <div className="px-4 mt-2 text-xs text-red-600">{error}</div>}
+
+      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 mt-3">
+        <div className="flex items-center gap-2">
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
+          <button onClick={() => fileRef.current?.click()} disabled={uploading}
+            className="text-xs px-3 py-1.5 border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors disabled:opacity-50">
+            {uploading ? 'Uploading...' : '📷 Photo'}
+          </button>
+        </div>
+        <button onClick={handlePost} disabled={posting || (!content.trim() && !photo)}
+          className="px-5 py-1.5 bg-teal-600 text-white text-sm font-semibold rounded-lg hover:bg-teal-700 disabled:opacity-40 transition-colors">
+          {posting ? 'Posting...' : postType === 'tip' ? 'Ask' : postType === 'milestone' ? 'Share milestone' : 'Post'}
+        </button>
       </div>
     </div>
   )
@@ -588,7 +597,7 @@ export default function CommunityPage() {
         </div>
 
         {/* ── SIDEBAR ── */}
-        <div className="space-y-4 lg:sticky lg:top-20">
+        <div className="space-y-4 lg:sticky lg:top-20 lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto lg:pb-4 scrollbar-hide">
 
           {/* Job Alerts */}
           {jobAlerts.length > 0 && (
