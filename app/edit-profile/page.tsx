@@ -547,9 +547,9 @@ export default function EditProfilePage() {
                   <div className="space-y-2 mb-4">
                     {insurance.map(ins => {
                       const expiryStr = ins.expiry_date ? new Date(ins.expiry_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null
-                      const statusColor = ins.insurance_status === 'active' ? 'bg-blue-50 text-blue-700 border-blue-200'
+                      const statusColor = ins.insurance_status === 'active' ? 'bg-teal-50 text-teal-700 border-teal-200'
                         : ins.insurance_status === 'expiring_soon' ? 'bg-amber-50 text-amber-700 border-amber-200'
-                        : ins.insurance_status === 'expired' ? 'bg-red-50 text-red-700 border-red-200'
+                        : ins.insurance_status === 'expired' ? 'bg-orange-50 text-orange-700 border-orange-200'
                         : 'bg-gray-50 text-gray-600 border-gray-200'
                       return (
                         <div key={ins.id} className={`flex items-start justify-between p-3 rounded-xl border ${statusColor}`}>

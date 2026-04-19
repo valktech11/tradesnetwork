@@ -1,50 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
-
-async function moderateImage(base64: string, mimeType: string): Promise<{ safe: boolean; reason?: string }> {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) return { safe: true }
-
-  try {
-    const model = process.env.AI_PROVIDER_MODEL || 'gemini-2.5-flash'
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            parts: [
-              { inline_data: { mime_type: mimeType, data: base64 } },
-              { text: 'Does this image contain nudity, sexual content, graphic violence, gore, hate symbols, weapons pointed at people, or illegal content? Return safe as true or false, and if false provide a brief reason.' }
-            ]
-          }],
-          generationConfig: {
-            maxOutputTokens: 100,
-            temperature: 0,
-            responseMimeType: 'application/json',
-            responseSchema: {
-              type: 'object',
-              properties: {
-                safe:   { type: 'boolean' },
-                reason: { type: 'string', nullable: true },
-              },
-              required: ['safe'],
-            },
-          },
-        }),
-      }
-    )
-
-    if (!response.ok) return { safe: true }
-    const data = await response.json()
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{"safe":true}'
-    const parsed = JSON.parse(text)
-    return { safe: parsed.safe !== false, reason: parsed.reason }
-  } catch {
-    return { safe: true }
-  }
-}
+import { moderateImage } from '@/lib/moderation'
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
@@ -76,6 +32,7 @@ export async function POST(req: NextRequest) {
   const bytes0 = await file.arrayBuffer()
   const b64    = Buffer.from(bytes0).toString('base64')
 
+  // Moderate images — PDFs skipped (documents don't need vision moderation)
   if (!isPDF) {
     const mod = await moderateImage(b64, file.type)
     if (!mod.safe) {
