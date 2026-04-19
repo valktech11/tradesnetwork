@@ -21,8 +21,7 @@ export default function ProCard({ pro, index = 0 }: ProCardProps) {
   return (
     <Link
       href={`/pro/${pro.id}`}
-      className="group block bg-white rounded-xl p-5 hover:-translate-y-0.5 transition-all duration-200 relative" style={{ border: "1px solid #E8E2D9", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}
-      style={{ animationDelay: `${index * 40}ms` }}
+      className="group block bg-white rounded-xl p-5 hover:-translate-y-0.5 transition-all duration-200 relative" style={{ border: "1px solid #E8E2D9", boxShadow: "0 1px 3px rgba(0,0,0,0.05)", animationDelay: `${index * 40}ms` }}
     >
       {/* Header — avatar with availability ring + name */}
       <div className="flex gap-3 items-start mb-3">
