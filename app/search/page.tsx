@@ -139,6 +139,14 @@ function SearchPageInner() {
   const loadPros = useCallback(async () => {
     // Wait for categories to load before querying if we have a trade filter
     if (activeTradeSlug && categories.length === 0) return
+    // Safety: if slug doesn't resolve to UUID, show empty state — never show all unfiltered pros
+    if (activeTradeSlug) {
+      const tradeId = slugToId(activeTradeSlug)
+      if (!tradeId) {
+        setPros([]); setTotal(0); setHasMore(false); setLoading(false)
+        return
+      }
+    }
     setLoading(true); setError(''); offset.current = 0
     try {
       const r = await fetch(buildUrl(0))
@@ -465,13 +473,21 @@ function SearchPageInner() {
                   ? (
                     <div className="col-span-3 text-center py-20">
                       <div className="text-5xl mb-4 opacity-20">🔍</div>
-                      <div className="font-bold mb-2" style={{ color: '#0A1628' }}>No pros found</div>
-                      <div className="text-sm mb-5" style={{ color: '#A89F93' }}>Try a different trade or city.</div>
+                      <div className="font-bold mb-2" style={{ color: '#0A1628' }}>
+                        {activeTradeSlug
+                          ? `No ${TRADE_GROUPS.flatMap(g => g.trades).find(t => t.slug === activeTradeSlug)?.label || activeTradeSlug} pros found in this area`
+                          : 'No pros found'}
+                      </div>
+                      <div className="text-sm mb-5" style={{ color: '#A89F93' }}>
+                        {activeTradeSlug
+                          ? 'This trade may not have verified pros in this area yet. Try browsing all trades.'
+                          : 'Try a different trade or city.'}
+                      </div>
                       {hasFilters && (
                         <button onClick={clearFilters}
                           className="text-sm font-medium transition-colors"
                           style={{ color: '#14B8A6' }}>
-                          Clear filters
+                          {activeTradeSlug ? 'Browse all trades' : 'Clear filters'}
                         </button>
                       )}
                     </div>

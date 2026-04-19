@@ -163,48 +163,56 @@ export default function TradeLandingClient({
 
       <div className="max-w-7xl mx-auto px-6 py-8 flex gap-8">
 
-        {/* ── SIDEBAR ──────────────────────────────────────────────────── */}
+        {/* ── SIDEBAR — static navigation, no accordion ─────────────── */}
         <aside className="hidden lg:block w-52 flex-shrink-0">
-          <div className="sticky top-24 space-y-6">
+          <div className="sticky top-24 space-y-5">
 
-            {/* Related trades in same group */}
+            {/* Active group trades — always shown, static */}
             {activeGroup && (
               <div>
-                <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#A89F93' }}>
-                  {activeGroup.label} trades
+                <div className="flex items-center gap-2 mb-3 px-2">
+                  <span className="text-base">{activeGroup.icon}</span>
+                  <span className="text-xs font-bold uppercase tracking-widest" style={{ color: activeGroup.accent }}>
+                    {activeGroup.label}
+                  </span>
                 </div>
                 <div className="space-y-0.5">
                   {activeGroup.trades.map(slug => (
                     <Link key={slug}
                       href={`/${stateSlug}/${slug}`}
-                      className="flex items-center justify-between text-sm px-2.5 py-2 rounded-lg transition-all"
+                      className="flex items-center justify-between text-sm px-2.5 py-2 rounded-lg transition-colors"
                       style={slug === tradeSlug
                         ? { background: '#F5F0E8', color: activeGroup.accent, fontWeight: 600 }
                         : { color: '#6B7280' }}
                       onMouseEnter={e => { if (slug !== tradeSlug) { e.currentTarget.style.background = '#F5F0E8'; e.currentTarget.style.color = activeGroup.accent } }}
                       onMouseLeave={e => { if (slug !== tradeSlug) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6B7280' } }}>
                       <span>{slugToTitle(slug)}</span>
-                      {slug === tradeSlug && <span style={{ fontSize: '10px' }}>●</span>}
+                      {slug === tradeSlug && (
+                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: activeGroup.accent }} />
+                      )}
                     </Link>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Other groups */}
+            {/* Thin divider */}
+            <div style={{ height: '1px', background: '#E8E2D9' }} />
+
+            {/* Other groups — single line links to search page, no expansion */}
             <div>
-              <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#A89F93' }}>
+              <div className="text-xs font-bold uppercase tracking-widest mb-3 px-2" style={{ color: '#A89F93' }}>
                 Other trades
               </div>
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {TRADE_GROUPS.filter(g => g.id !== activeGroup?.id).map(group => (
                   <Link key={group.id}
                     href={`/search?group=${group.id}`}
-                    className="flex items-center gap-2 text-sm px-2.5 py-1.5 rounded-lg transition-all"
+                    className="flex items-center gap-2.5 text-sm px-2.5 py-2 rounded-lg transition-colors"
                     style={{ color: '#6B7280' }}
                     onMouseEnter={e => { e.currentTarget.style.background = '#F5F0E8'; e.currentTarget.style.color = group.accent }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6B7280' }}>
-                    <span>{group.icon}</span>
+                    <span className="text-base flex-shrink-0">{group.icon}</span>
                     <span>{group.label}</span>
                   </Link>
                 ))}

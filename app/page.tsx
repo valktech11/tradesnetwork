@@ -290,69 +290,37 @@ export default function HomePage() {
           </h2>
         </div>
 
-        {/* Global hover expansion style — desktop only */}
-        <style>{`
-          @media (hover: hover) {
-            .trade-card-extra { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.25s ease, opacity 0.2s ease; }
-            .trade-card:hover .trade-card-extra { max-height: 200px; opacity: 1; }
-            .trade-card { position: relative; }
-            .trade-card:hover { z-index: 10; box-shadow: 0 8px 24px rgba(0,0,0,0.10); }
-          }
-        `}</style>
-
-        {/* Top 3 — large cards with progressive disclosure */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4" style={{ position: 'relative' }}>
+        {/* Top 3 — fixed height launchpad cards, no expansion */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           {TRADE_GROUPS.slice(0, 3).map(group => (
             <div key={group.id}
-              className="trade-card bg-white rounded-2xl border overflow-hidden transition-all duration-200"
+              className="bg-white rounded-2xl border overflow-hidden hover:shadow-md transition-shadow duration-200"
               style={{ borderColor: '#E8E2D9', borderTopWidth: '3px', borderTopColor: group.accent }}>
-              <div className="p-5">
-                {/* Card header */}
+              <div className="p-5 flex flex-col" style={{ minHeight: '220px' }}>
+                {/* Header */}
                 <div className="flex items-center gap-2 mb-4">
                   <span className="text-2xl">{group.icon}</span>
                   <span className="font-bold text-base" style={{ color: '#0A1628' }}>{group.label}</span>
                 </div>
-
-                {/* Primary trades — always visible (mobile launchpad) */}
-                <div className="space-y-1">
+                {/* Top 4 trades — always visible, fixed */}
+                <div className="space-y-1 flex-1">
                   {group.trades.slice(0, PRIMARY_COUNT).map(trade => (
                     <Link key={trade.slug}
                       href={`/${scopeState}/${trade.slug}`}
-                      className="flex items-center justify-between text-sm py-1.5 px-2 rounded-lg transition-all group/link"
+                      className="flex items-center justify-between text-sm py-1.5 px-2 rounded-lg transition-all"
                       style={{ color: '#4B5563' }}
                       onMouseEnter={e => { e.currentTarget.style.background = '#F5F0E8'; e.currentTarget.style.color = group.accent }}
                       onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#4B5563' }}>
                       <span>{trade.label}</span>
-                      <span className="opacity-0 group-hover/link:opacity-100 transition-opacity text-xs">→</span>
+                      <span className="text-xs opacity-0 hover:opacity-100" style={{ transition: 'opacity 0.15s' }}>→</span>
                     </Link>
                   ))}
                 </div>
-
-                {/* Secondary trades — desktop hover reveal only */}
-                {group.trades.length > PRIMARY_COUNT && (
-                  <div className="trade-card-extra">
-                    <div className="pt-2 space-y-1 border-t mt-2" style={{ borderColor: '#F5F0E8' }}>
-                      {group.trades.slice(PRIMARY_COUNT).map(trade => (
-                        <Link key={trade.slug}
-                          href={`/${scopeState}/${trade.slug}`}
-                          className="flex items-center justify-between py-1 px-2 rounded-lg transition-all group/link2"
-                          style={{ color: '#A89F93', fontSize: '11px' }}
-                          onMouseEnter={e => { e.currentTarget.style.color = group.accent }}
-                          onMouseLeave={e => { e.currentTarget.style.color = '#A89F93' }}>
-                          <span>{trade.label}</span>
-                          <span className="opacity-0 group-hover/link2:opacity-100 transition-opacity" style={{ fontSize: '10px' }}>→</span>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Browse All — mobile tap target + desktop fallback */}
-                <Link
-                  href={`/search?group=${group.id}`}
+                {/* Browse All CTA */}
+                <Link href={`/search?group=${group.id}`}
                   className="mt-4 flex items-center justify-between w-full text-xs font-bold py-2.5 px-3 rounded-xl border transition-all"
                   style={{ color: group.accent, borderColor: group.accent + '40', background: group.accent + '08' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = group.accent + '15' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = group.accent + '18' }}
                   onMouseLeave={e => { e.currentTarget.style.background = group.accent + '08' }}>
                   <span>Browse all {group.label}</span>
                   <span>→</span>
@@ -366,7 +334,7 @@ export default function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {TRADE_GROUPS.slice(3).map(group => (
             <div key={group.id}
-              className="trade-card bg-white rounded-2xl border overflow-hidden transition-all duration-200 hover:shadow-md"
+              className="bg-white rounded-2xl border overflow-hidden hover:shadow-md transition-shadow duration-200"
               style={{ borderColor: '#E8E2D9', borderTopWidth: '3px', borderTopColor: group.accent }}>
               <div className="p-5">
                 <div className="flex items-center gap-2 mb-3">
