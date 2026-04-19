@@ -7,19 +7,82 @@ import { Pro, TradeCategory } from '@/types'
 
 const PAGE_SIZE = 12
 
+// Must match homepage exactly — same order, same slugs
+const TRADE_GROUPS = [
+  {
+    id: 'mechanical', label: 'Mechanical', icon: '⚡', accent: '#14B8A6',
+    trades: [
+      { label: 'HVAC Technician',  slug: 'hvac-technician' },
+      { label: 'Electrician',       slug: 'electrician' },
+      { label: 'Plumber',          slug: 'plumber' },
+      { label: 'Solar Installer',   slug: 'solar-installer' },
+      { label: 'Gas Fitter',        slug: 'gas-fitter' },
+      { label: 'Fire Sprinkler',    slug: 'fire-sprinkler' },
+    ],
+  },
+  {
+    id: 'structural', label: 'Structural', icon: '🏗', accent: '#6366F1',
+    trades: [
+      { label: 'General Contractor', slug: 'general-contractor' },
+      { label: 'Roofer',             slug: 'roofer' },
+      { label: 'Framing Carpenter',  slug: 'carpenter' },
+      { label: 'Mason',              slug: 'mason' },
+      { label: 'Concrete',           slug: 'concrete-contractor' },
+      { label: 'Foundation',         slug: 'foundation-specialist' },
+    ],
+  },
+  {
+    id: 'finishing', label: 'Finishing', icon: '🎨', accent: '#F59E0B',
+    trades: [
+      { label: 'Painter',          slug: 'painter' },
+      { label: 'Drywall',          slug: 'drywall' },
+      { label: 'Flooring',         slug: 'flooring' },
+      { label: 'Tile Setter',      slug: 'tile-setter' },
+      { label: 'Insulation',       slug: 'insulation-contractor' },
+      { label: 'Windows & Doors',  slug: 'windows-doors' },
+    ],
+  },
+  {
+    id: 'property', label: 'Property', icon: '🌿', accent: '#10B981',
+    trades: [
+      { label: 'Landscaper',       slug: 'landscaper' },
+      { label: 'Pool & Spa',       slug: 'pool-spa' },
+      { label: 'Pest Control',     slug: 'pest-control' },
+      { label: 'Irrigation',       slug: 'irrigation' },
+      { label: 'Home Inspector',   slug: 'home-inspector' },
+      { label: 'Handyman',         slug: 'handyman' },
+    ],
+  },
+  {
+    id: 'specialty', label: 'Specialty', icon: '🔐', accent: '#8B5CF6',
+    trades: [
+      { label: 'Alarm & Security', slug: 'alarm-security' },
+      { label: 'Low-Voltage / AV', slug: 'low-voltage' },
+      { label: 'Welder',           slug: 'welder' },
+      { label: 'Septic & Drain',   slug: 'septic-drain' },
+      { label: 'Marine / Dock',    slug: 'marine-contractor' },
+      { label: 'Elevator Tech',    slug: 'elevator-technician' },
+    ],
+  },
+]
+
+function getScopeState(): string {
+  return (process.env.NEXT_PUBLIC_LAUNCH_SCOPE || 'FL').split(',')[0].trim().toLowerCase()
+}
+
 function SkeletonCard() {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 animate-pulse">
+    <div className="bg-white border rounded-xl p-5 animate-pulse" style={{ borderColor: '#E8E2D9' }}>
       <div className="flex gap-3 mb-4">
-        <div className="w-11 h-11 rounded-full bg-gray-100 flex-shrink-0" />
+        <div className="w-11 h-11 rounded-full flex-shrink-0" style={{ background: '#F5F0E8' }} />
         <div className="flex-1 space-y-2 pt-1">
-          <div className="h-3.5 w-3/5 rounded bg-gray-100" />
-          <div className="h-3 w-2/5 rounded bg-gray-100" />
+          <div className="h-3.5 w-3/5 rounded" style={{ background: '#F5F0E8' }} />
+          <div className="h-3 w-2/5 rounded" style={{ background: '#F5F0E8' }} />
         </div>
       </div>
-      <div className="h-3 w-4/5 rounded bg-gray-100 mb-2" />
-      <div className="h-3 w-3/5 rounded bg-gray-100 mb-4" />
-      <div className="h-8 w-full rounded-lg bg-gray-100" />
+      <div className="h-3 w-4/5 rounded mb-2" style={{ background: '#F5F0E8' }} />
+      <div className="h-3 w-3/5 rounded mb-4" style={{ background: '#F5F0E8' }} />
+      <div className="h-8 w-full rounded-lg" style={{ background: '#F5F0E8' }} />
     </div>
   )
 }
@@ -27,35 +90,50 @@ function SkeletonCard() {
 function SearchPageInner() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const scopeState = getScopeState()
 
-  const [pros, setPros]             = useState<Pro[]>([])
-  const [categories, setCategories] = useState<TradeCategory[]>([])
-  const [total, setTotal]           = useState(0)
-  const [hasMore, setHasMore]       = useState(false)
-  const [loading, setLoading]       = useState(true)
+  // Detect active group from URL trade slug
+  const urlTradeSlug = searchParams.get('trade') || ''
+  const activeGroup = TRADE_GROUPS.find(g => g.trades.some(t => t.slug === urlTradeSlug)) || null
+
+  const [pros, setPros]               = useState<Pro[]>([])
+  const [categories, setCategories]   = useState<TradeCategory[]>([])
+  const [total, setTotal]             = useState(0)
+  const [hasMore, setHasMore]         = useState(false)
+  const [loading, setLoading]         = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
-  const [error, setError]           = useState('')
-  const [search, setSearch]         = useState(searchParams.get('q') || '')
+  const [error, setError]             = useState('')
+  const [search, setSearch]           = useState(searchParams.get('q') || '')
   const [appliedSearch, setAppliedSearch] = useState(searchParams.get('q') || '')
-  const [activeTrade, setActiveTrade] = useState(searchParams.get('trade') || '')
-  const [sort, setSort]             = useState('rating')
+  const [activeTradeSlug, setActiveTradeSlug] = useState(urlTradeSlug)
+  const [sort, setSort]               = useState('rating')
   const [availableOnly, setAvailableOnly] = useState(false)
   const offset = useRef(0)
 
-  // Load categories once
+  // Load categories once — needed to resolve slug → UUID
   useEffect(() => {
     fetch('/api/categories').then(r => r.json()).then(d => setCategories(d.categories || []))
   }, [])
 
+  // Resolve slug to category UUID for the API
+  function slugToId(slug: string): string {
+    if (!slug) return ''
+    const cat = categories.find(c => c.slug === slug)
+    return cat?.id || ''
+  }
+
   function buildUrl(off: number) {
+    const tradeId = slugToId(activeTradeSlug)
     const params = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String(off), sort })
-    if (activeTrade)   params.set('trade', activeTrade)
+    if (tradeId)       params.set('trade', tradeId)       // UUID, not slug
     if (appliedSearch) params.set('search', appliedSearch)
     if (availableOnly) params.set('available', 'true')
     return `/api/pros?${params}`
   }
 
   const loadPros = useCallback(async () => {
+    // Wait for categories to load before querying if we have a trade filter
+    if (activeTradeSlug && categories.length === 0) return
     setLoading(true); setError(''); offset.current = 0
     try {
       const r = await fetch(buildUrl(0))
@@ -67,7 +145,7 @@ function SearchPageInner() {
       offset.current = PAGE_SIZE
     } catch { setError('Could not load pros. Please refresh.') }
     setLoading(false)
-  }, [activeTrade, appliedSearch, sort, availableOnly])
+  }, [activeTradeSlug, appliedSearch, sort, availableOnly, categories])
 
   useEffect(() => { loadPros() }, [loadPros])
 
@@ -87,101 +165,149 @@ function SearchPageInner() {
 
   function applySearch() {
     setAppliedSearch(search)
-    router.replace(`/search?q=${encodeURIComponent(search)}&trade=${activeTrade}`, { scroll: false })
+    const params = new URLSearchParams()
+    if (search) params.set('q', search)
+    if (activeTradeSlug) params.set('trade', activeTradeSlug)
+    router.replace(`/search?${params}`, { scroll: false })
   }
 
-  function selectTrade(id: string) {
-    setActiveTrade(prev => prev === id ? '' : id)
+  function selectTrade(slug: string) {
+    const next = activeTradeSlug === slug ? '' : slug
+    setActiveTradeSlug(next)
     setSearch(''); setAppliedSearch('')
+    const params = new URLSearchParams()
+    if (next) params.set('trade', next)
+    router.replace(`/search?${params}`, { scroll: false })
   }
 
   function clearFilters() {
-    setActiveTrade(''); setSearch(''); setAppliedSearch(''); setAvailableOnly(false)
+    setActiveTradeSlug(''); setSearch(''); setAppliedSearch(''); setAvailableOnly(false)
     router.replace('/search', { scroll: false })
   }
 
-  const activeCategory = categories.find(c => c.id === activeTrade)
-  const hasFilters = activeTrade || appliedSearch || availableOnly
-
-  const TRADE_GROUPS = [
-    { label: 'Mechanical', slugs: ['electrician','plumber','hvac-technician','alarm-security','irrigation','solar-installer','solar-energy'] },
-    { label: 'Structural',  slugs: ['general-contractor','carpenter','roofer','roofing','mason','welder','structural-contractor','marine-contractor'] },
-    { label: 'Finishing',   slugs: ['painter','flooring','drywall','windows-doors','gutters','glass-glazing','tile-setter'] },
-    { label: 'Property',    slugs: ['landscaper','pool-spa','pest-control','handyman','other-trades'] },
-    { label: 'Specialty',   slugs: ['alarm-security','industrial-facility'] },
-  ]
-
-  const catBySlug: Record<string, typeof categories[0]> = {}
-  for (const cat of categories) catBySlug[cat.slug] = cat
-  const groupedSlugs = new Set(TRADE_GROUPS.flatMap(g => g.slugs))
-  const ungrouped = categories.filter(c => !groupedSlugs.has(c.slug))
+  const hasFilters = activeTradeSlug || appliedSearch || availableOnly
 
   return (
-    <div className="min-h-screen bg-stone-50" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="min-h-screen" style={{ background: '#F5F0E8', fontFamily: "'DM Sans', sans-serif" }}>
 
       {/* ── NAV ──────────────────────────────────────────────────────────── */}
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <nav className="sticky top-0 z-40 bg-white border-b" style={{ borderColor: '#E8E2D9' }}>
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center gap-4">
+
+          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-6 h-6">
+            <div className="w-7 h-7">
               <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M16 2L4 7V16C4 22.6 9.4 28.4 16 30C22.6 28.4 28 22.6 28 16V7L16 2Z" fill="url(#sg)"/>
-                <text x="9" y="21" fontSize="13" fontWeight="700" fill="white" fontFamily="DM Sans, sans-serif">PG</text>
-                <defs><linearGradient id="sg" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse"><stop stopColor="#2DD4BF"/><stop offset="1" stopColor="#0D7377"/></linearGradient></defs>
+                <path d="M16 2L4 7V16C4 22.6 9.4 28.4 16 30C22.6 28.4 28 22.6 28 16V7L16 2Z" fill="url(#sg2)"/>
+                <text x="8.5" y="21" fontSize="12" fontWeight="700" fill="white" fontFamily="DM Sans,sans-serif">PG</text>
+                <defs><linearGradient id="sg2" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse"><stop stopColor="#2DD4BF"/><stop offset="1" stopColor="#0D7377"/></linearGradient></defs>
               </svg>
             </div>
-            <span className="font-bold text-gray-900 text-sm">ProGuild<span className="text-teal-600">.ai</span></span>
+            <div className="flex items-baseline gap-0.5">
+              <span className="font-bold text-sm" style={{ color: '#0A1628' }}>ProGuild</span>
+              <span className="font-light text-sm" style={{ color: '#14B8A6' }}>.ai</span>
+            </div>
           </Link>
 
-          {/* Inline search bar */}
+          {/* Inline search */}
           <div className="flex-1 max-w-xl">
-            <div className="flex gap-0 rounded-lg overflow-hidden border border-gray-200">
+            <div className="flex rounded-xl overflow-hidden border bg-white" style={{ borderColor: '#E8E2D9' }}>
               <input
                 type="text" value={search}
                 onChange={e => setSearch(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && applySearch()}
                 placeholder="Trade, name, or city..."
-                className="flex-1 px-4 py-2 text-sm bg-white outline-none text-gray-900 placeholder-gray-400"
+                className="flex-1 px-4 py-2 text-sm outline-none"
+                style={{ background: 'transparent', color: '#0A1628' }}
               />
               {search && (
                 <button onClick={() => { setSearch(''); setAppliedSearch('') }}
-                  className="px-2 text-gray-300 hover:text-gray-500">×</button>
+                  className="px-2 transition-colors" style={{ color: '#C4BAB0' }}>×</button>
               )}
               <button onClick={applySearch}
-                className="px-4 py-2 bg-teal-600 text-white text-sm font-semibold hover:bg-teal-700 transition-colors">
+                className="px-4 py-2 text-sm font-bold text-white transition-all hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg, #14B8A6, #0D7377)' }}>
                 Search
               </button>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 ml-auto">
+          <div className="flex items-center gap-3 ml-auto flex-shrink-0">
             <button onClick={() => setAvailableOnly(v => !v)}
-              className={`hidden sm:flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
-                availableOnly ? 'bg-green-600 text-white border-green-600' : 'border-gray-200 text-gray-500 hover:border-green-400'
-              }`}>
+              className="hidden sm:flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-all font-medium"
+              style={availableOnly
+                ? { background: '#14B8A6', color: '#fff', borderColor: '#14B8A6' }
+                : { color: '#6B7280', borderColor: '#E8E2D9', background: '#fff' }}>
               <span className={`w-1.5 h-1.5 rounded-full ${availableOnly ? 'bg-white animate-pulse' : 'bg-gray-300'}`} />
               Available now
             </button>
             <Link href="/login?tab=signup"
-              className="text-xs font-semibold px-4 py-2 rounded-lg text-white transition-all"
+              className="text-xs font-bold px-4 py-2 rounded-lg text-white transition-all hover:opacity-90"
               style={{ background: 'linear-gradient(135deg, #14B8A6, #0D7377)' }}>
-              Join the Guild
+              Join Free
             </Link>
           </div>
         </div>
       </nav>
 
+      {/* ── PILL STRIP — visual bridge from homepage category cards ──────── */}
+      {activeGroup && (
+        <div className="bg-white border-b sticky top-14 z-30" style={{ borderColor: '#E8E2D9' }}>
+          <div className="max-w-7xl mx-auto px-6 py-3">
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-0.5">
+              {/* Breadcrumb */}
+              <Link href="/" className="text-xs flex-shrink-0 transition-colors" style={{ color: '#A89F93' }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#14B8A6')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#A89F93')}>
+                Home
+              </Link>
+              <span className="text-xs flex-shrink-0" style={{ color: '#E8E2D9' }}>›</span>
+
+              {/* Group label */}
+              <span className="flex items-center gap-1 text-xs font-semibold flex-shrink-0" style={{ color: '#0A1628' }}>
+                <span>{activeGroup.icon}</span>
+                <span>{activeGroup.label}</span>
+              </span>
+              <span className="text-xs flex-shrink-0" style={{ color: '#E8E2D9' }}>›</span>
+
+              {/* All pill */}
+              <button
+                onClick={() => selectTrade('')}
+                className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all"
+                style={!activeTradeSlug
+                  ? { background: activeGroup.accent, color: '#fff', borderColor: activeGroup.accent }
+                  : { color: '#6B7280', borderColor: '#E8E2D9', background: '#fff' }}>
+                All {activeGroup.label}
+              </button>
+
+              {/* Trade pills */}
+              {activeGroup.trades.map(trade => (
+                <button key={trade.slug}
+                  onClick={() => selectTrade(trade.slug)}
+                  className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all"
+                  style={activeTradeSlug === trade.slug
+                    ? { background: activeGroup.accent, color: '#fff', borderColor: activeGroup.accent }
+                    : { color: '#6B7280', borderColor: '#E8E2D9', background: '#fff' }}>
+                  {trade.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-6 py-6 flex gap-6">
 
-        {/* ── SIDEBAR FILTERS ───────────────────────────────────────────── */}
-        <aside className="hidden lg:block w-56 flex-shrink-0">
-          <div className="sticky top-20 space-y-6">
+        {/* ── SIDEBAR ──────────────────────────────────────────────────── */}
+        <aside className="hidden lg:block w-52 flex-shrink-0">
+          <div className="sticky top-28 space-y-5">
 
             {/* Sort */}
             <div>
-              <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Sort by</div>
+              <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#A89F93' }}>Sort by</div>
               <select value={sort} onChange={e => setSort(e.target.value)}
-                className="w-full text-sm text-gray-700 border border-gray-200 rounded-lg px-3 py-2 bg-white outline-none">
+                className="w-full text-sm border rounded-xl px-3 py-2 bg-white outline-none"
+                style={{ borderColor: '#E8E2D9', color: '#0A1628' }}>
                 <option value="rating">Highest rated</option>
                 <option value="default">Top credentialed</option>
                 <option value="reviews">Most reviews</option>
@@ -189,47 +315,37 @@ function SearchPageInner() {
               </select>
             </div>
 
-            {/* Trade filter */}
+            {/* Trade groups */}
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Trade</div>
-                {activeTrade && (
-                  <button onClick={() => selectTrade('')} className="text-xs text-teal-600 hover:underline">Clear</button>
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-xs font-bold uppercase tracking-widest" style={{ color: '#A89F93' }}>Trade</div>
+                {activeTradeSlug && (
+                  <button onClick={clearFilters} className="text-xs font-medium transition-colors"
+                    style={{ color: '#14B8A6' }}>Clear</button>
                 )}
               </div>
               <div className="space-y-4">
-                {TRADE_GROUPS.map(group => {
-                  const groupCats = group.slugs.map(s => catBySlug[s]).filter(Boolean)
-                  if (groupCats.length === 0) return null
-                  return (
-                    <div key={group.label}>
-                      <div className="text-xs font-semibold text-gray-500 mb-1.5">{group.label}</div>
-                      <div className="space-y-1">
-                        {groupCats.map(cat => (
-                          <button key={cat.id} onClick={() => selectTrade(cat.id)}
-                            className={`w-full text-left text-sm px-2.5 py-1.5 rounded-lg transition-all ${
-                              activeTrade === cat.id ? 'bg-teal-50 text-teal-700 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                            }`}>
-                            {cat.category_name}
-                          </button>
-                        ))}
-                      </div>
+                {TRADE_GROUPS.map(group => (
+                  <div key={group.id}>
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <span className="text-sm">{group.icon}</span>
+                      <span className="text-xs font-semibold" style={{ color: '#6B7280' }}>{group.label}</span>
                     </div>
-                  )
-                })}
-                {ungrouped.length > 0 && (
-                  <div>
-                    <div className="text-xs font-semibold text-gray-500 mb-1.5">Other</div>
-                    {ungrouped.map(cat => (
-                      <button key={cat.id} onClick={() => selectTrade(cat.id)}
-                        className={`w-full text-left text-sm px-2.5 py-1.5 rounded-lg transition-all ${
-                          activeTrade === cat.id ? 'bg-teal-50 text-teal-700 font-semibold' : 'text-gray-600 hover:bg-gray-50'
-                        }`}>
-                        {cat.category_name}
-                      </button>
-                    ))}
+                    <div className="space-y-0.5 pl-1">
+                      {group.trades.map(trade => (
+                        <button key={trade.slug} onClick={() => selectTrade(trade.slug)}
+                          className="w-full text-left text-sm px-2.5 py-1.5 rounded-lg transition-all"
+                          style={activeTradeSlug === trade.slug
+                            ? { background: '#F5F0E8', color: group.accent, fontWeight: 600 }
+                            : { color: '#6B7280' }}
+                          onMouseEnter={e => { if (activeTradeSlug !== trade.slug) e.currentTarget.style.background = '#F5F0E8' }}
+                          onMouseLeave={e => { if (activeTradeSlug !== trade.slug) e.currentTarget.style.background = 'transparent' }}>
+                          {trade.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                )}
+                ))}
               </div>
             </div>
           </div>
@@ -241,25 +357,32 @@ function SearchPageInner() {
           {/* Results header */}
           <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
             <div className="flex items-center gap-3 flex-wrap">
-              <span className="text-sm text-gray-500">
+              <span className="text-sm" style={{ color: '#6B7280' }}>
                 {loading ? 'Searching...' : (
                   <>
-                    <span className="font-semibold text-gray-900">{total.toLocaleString()}</span>
-                    {' '}{activeCategory ? <span className="text-teal-700">{activeCategory.category_name} pros</span> : 'verified pros'}
-                    {appliedSearch && <span className="text-gray-400"> for "<span className="text-gray-700">{appliedSearch}</span>"</span>}
+                    <span className="font-bold" style={{ color: '#0A1628' }}>{total.toLocaleString()}</span>
+                    {' '}verified pros
+                    {activeTradeSlug && (
+                      <span style={{ color: '#14B8A6' }}> · {TRADE_GROUPS.flatMap(g => g.trades).find(t => t.slug === activeTradeSlug)?.label || activeTradeSlug}</span>
+                    )}
+                    {appliedSearch && <span style={{ color: '#A89F93' }}> for "{appliedSearch}"</span>}
                   </>
                 )}
               </span>
               {hasFilters && !loading && (
                 <button onClick={clearFilters}
-                  className="text-xs text-gray-400 hover:text-red-400 border border-gray-200 px-2.5 py-1 rounded-full transition-colors">
+                  className="text-xs border px-2.5 py-1 rounded-full transition-colors"
+                  style={{ color: '#A89F93', borderColor: '#E8E2D9' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#EF4444')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#A89F93')}>
                   Clear filters ×
                 </button>
               )}
             </div>
             {/* Mobile sort */}
             <select value={sort} onChange={e => setSort(e.target.value)}
-              className="lg:hidden text-sm text-gray-600 border border-gray-200 rounded-lg px-3 py-1.5 bg-white outline-none">
+              className="lg:hidden text-sm border rounded-xl px-3 py-1.5 bg-white outline-none"
+              style={{ borderColor: '#E8E2D9', color: '#0A1628' }}>
               <option value="rating">Highest rated</option>
               <option value="default">Top credentialed</option>
               <option value="reviews">Most reviews</option>
@@ -267,20 +390,22 @@ function SearchPageInner() {
             </select>
           </div>
 
-          {/* Pro card grid */}
+          {/* Pro grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
             {loading
               ? Array.from({ length: PAGE_SIZE }).map((_, i) => <SkeletonCard key={i} />)
               : error
-                ? <div className="col-span-3 text-center py-16 text-gray-400">{error}</div>
+                ? <div className="col-span-3 text-center py-16" style={{ color: '#A89F93' }}>{error}</div>
                 : pros.length === 0
                   ? (
                     <div className="col-span-3 text-center py-20">
                       <div className="text-5xl mb-4 opacity-20">🔍</div>
-                      <div className="font-semibold text-gray-700 mb-2">No pros found</div>
-                      <div className="text-sm text-gray-400 mb-5">Try a different trade or city.</div>
+                      <div className="font-bold mb-2" style={{ color: '#0A1628' }}>No pros found</div>
+                      <div className="text-sm mb-5" style={{ color: '#A89F93' }}>Try a different trade or city.</div>
                       {hasFilters && (
-                        <button onClick={clearFilters} className="text-sm text-teal-600 font-medium hover:underline">
+                        <button onClick={clearFilters}
+                          className="text-sm font-medium transition-colors"
+                          style={{ color: '#14B8A6' }}>
                           Clear filters
                         </button>
                       )}
@@ -294,15 +419,18 @@ function SearchPageInner() {
           {!loading && hasMore && (
             <div className="text-center pb-16">
               <button onClick={loadMore} disabled={loadingMore}
-                className="px-8 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-teal-50 hover:border-teal-200 hover:text-teal-700 transition-all disabled:opacity-50">
+                className="px-8 py-3 rounded-xl text-sm font-semibold border transition-all disabled:opacity-50"
+                style={{ color: '#0A1628', borderColor: '#E8E2D9', background: '#FFFFFF' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#14B8A6'; e.currentTarget.style.color = '#14B8A6' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E2D9'; e.currentTarget.style.color = '#0A1628' }}>
                 {loadingMore
-                  ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-gray-300 border-t-teal-600 rounded-full animate-spin" />Loading...</span>
+                  ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-gray-200 border-t-teal-500 rounded-full animate-spin" />Loading...</span>
                   : `Load more (${(total - pros.length).toLocaleString()} remaining)`}
               </button>
             </div>
           )}
           {!loading && !hasMore && pros.length > 0 && (
-            <div className="text-center pb-16 text-xs text-gray-300">
+            <div className="text-center pb-16 text-xs" style={{ color: '#C4BAB0' }}>
               — All {total.toLocaleString()} pros shown —
             </div>
           )}
@@ -315,8 +443,8 @@ function SearchPageInner() {
 export default function SearchPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-teal-600 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F0E8' }}>
+        <div className="w-8 h-8 border-2 border-t-teal-500 rounded-full animate-spin" style={{ borderColor: '#E8E2D9', borderTopColor: '#14B8A6' }} />
       </div>
     }>
       <SearchPageInner />

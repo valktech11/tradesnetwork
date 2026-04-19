@@ -505,7 +505,7 @@ export default function CommunityPage() {
         </div>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-3 gap-5 items-start lg:overflow-hidden">
 
         {/* ── FEED ── */}
         <div className="lg:col-span-2">
