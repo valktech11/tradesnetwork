@@ -297,11 +297,14 @@ export default function HomePage() {
               className="bg-white rounded-2xl border overflow-hidden hover:shadow-md transition-shadow duration-200"
               style={{ borderColor: '#E8E2D9', borderTopWidth: '3px', borderTopColor: group.accent }}>
               <div className="p-5 flex flex-col" style={{ minHeight: '220px' }}>
-                {/* Header */}
-                <div className="flex items-center gap-2 mb-4">
+                {/* Clickable header → group page */}
+                <Link href={`/${scopeState}/${group.id}`}
+                  className="flex items-center gap-2 mb-4 hover:opacity-75 transition-opacity"
+                  style={{ textDecoration: 'none' }}>
                   <span className="text-2xl">{group.icon}</span>
                   <span className="font-bold text-base" style={{ color: '#0A1628' }}>{group.label}</span>
-                </div>
+                  <span className="ml-auto text-xs font-semibold" style={{ color: group.accent }}>All →</span>
+                </Link>
                 {/* Top 4 trades — always visible, fixed */}
                 <div className="space-y-1 flex-1">
                   {group.trades.slice(0, PRIMARY_COUNT).map(trade => (
@@ -312,19 +315,10 @@ export default function HomePage() {
                       onMouseEnter={e => { e.currentTarget.style.background = '#F5F0E8'; e.currentTarget.style.color = group.accent }}
                       onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#4B5563' }}>
                       <span>{trade.label}</span>
-                      <span className="text-xs opacity-0 hover:opacity-100" style={{ transition: 'opacity 0.15s' }}>→</span>
+                      <span className="text-xs" style={{ opacity: 0, transition: 'opacity 0.15s' }}>→</span>
                     </Link>
                   ))}
                 </div>
-                {/* Browse All CTA */}
-                <Link href={`/search?group=${group.id}`}
-                  className="mt-4 flex items-center justify-between w-full text-xs font-bold py-2.5 px-3 rounded-xl border transition-all"
-                  style={{ color: group.accent, borderColor: group.accent + '40', background: group.accent + '08' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = group.accent + '18' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = group.accent + '08' }}>
-                  <span>Browse all {group.label}</span>
-                  <span>→</span>
-                </Link>
               </div>
             </div>
           ))}
@@ -337,10 +331,12 @@ export default function HomePage() {
               className="bg-white rounded-2xl border overflow-hidden hover:shadow-md transition-shadow duration-200"
               style={{ borderColor: '#E8E2D9', borderTopWidth: '3px', borderTopColor: group.accent }}>
               <div className="p-5">
-                <div className="flex items-center gap-2 mb-3">
+                <Link href={`/${scopeState}/${group.id}`}
+                  className="flex items-center gap-2 mb-3 hover:opacity-75 transition-opacity">
                   <span className="text-xl">{group.icon}</span>
                   <span className="font-bold" style={{ color: '#0A1628' }}>{group.label}</span>
-                </div>
+                  <span className="ml-auto text-xs font-semibold" style={{ color: group.accent }}>All →</span>
+                </Link>
                 {/* Primary trades as pills */}
                 <div className="flex flex-wrap gap-2 mb-4">
                   {group.trades.slice(0, PRIMARY_COUNT).map(trade => (
@@ -354,16 +350,7 @@ export default function HomePage() {
                     </Link>
                   ))}
                 </div>
-                {/* Browse All button */}
-                <Link
-                  href={`/search?group=${group.id}`}
-                  className="flex items-center justify-between w-full text-xs font-bold py-2 px-3 rounded-xl border transition-all"
-                  style={{ color: group.accent, borderColor: group.accent + '40', background: group.accent + '08' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = group.accent + '15' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = group.accent + '08' }}>
-                  <span>Browse all {group.label}</span>
-                  <span>→</span>
-                </Link>
+
               </div>
             </div>
           ))}
