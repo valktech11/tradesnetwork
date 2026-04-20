@@ -176,17 +176,17 @@ export default function DashboardPage() {
   const lockedCount  = paid ? 0 : Math.max(0, leads.length - 2)
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen" style={{background:"#F5F0E8",fontFamily:"'DM Sans',sans-serif"}}>
 
       {/* NAV */}
-      <nav className="bg-white border-b border-gray-100 px-4 sm:px-6 h-[56px] flex items-center justify-between sticky top-0 z-50">
+      <nav className="bg-white border-b px-4 sm:px-6 h-[56px] flex items-center justify-between sticky top-0 z-50" style={{borderColor:"#E8E2D9"}}>
         <div className="flex items-center gap-4">
-          <Link href="/" className="font-serif text-xl text-gray-900">Trades<span className="text-teal-600">Network</span></Link>
+          <Link href="/" className="flex items-center gap-2"><div className="w-7 h-7"><svg viewBox="0 0 32 32" fill="none"><path d="M16 2L4 7V16C4 22.6 9.4 28.4 16 30C22.6 28.4 28 22.6 28 16V7L16 2Z" fill="url(#dg)"/><text x="8.5" y="21" fontSize="12" fontWeight="700" fill="white" fontFamily="DM Sans,sans-serif">PG</text><defs><linearGradient id="dg" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse"><stop stopColor="#2DD4BF"/><stop offset="1" stopColor="#0D7377"/></linearGradient></defs></svg></div><span className="font-bold text-sm" style={{color:"#0A1628"}}>ProGuild<span style={{color:"#14B8A6",fontWeight:300}}>.ai</span></span></Link>
           <div className="hidden md:flex items-center gap-1">
             {[
               { href: '/dashboard', label: 'Dashboard', active: true },
               { href: '/community', label: 'Community', active: false },
-              { href: '/community/profile/' + session.id, label: 'My profile', active: false },
+              { href: '/pro/' + session.id, label: 'My profile', active: false },
               { href: '/messages', label: 'Messages', active: false },
             ].map(l => (
               <Link key={l.href} href={l.href}
@@ -453,7 +453,7 @@ export default function DashboardPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-semibold text-gray-800 truncate">{name}</div>
-                          <div className="text-xs text-gray-400">{count > 0 ? count.toLocaleString() + ' in FL' : 'Find on TradesNetwork'}</div>
+                          <div className="text-xs text-gray-400">{count > 0 ? count.toLocaleString() + ' in FL' : 'Verified pros available'}</div>
                         </div>
                         <span className="text-gray-300 group-hover:text-teal-500 text-sm">→</span>
                       </Link>
@@ -462,7 +462,7 @@ export default function DashboardPage() {
                 </div>
               )}
               <div className="mt-3 pt-3 border-t border-gray-100 text-center">
-                <Link href="/" className="text-xs text-teal-600 hover:underline">Browse all trades on TradesNetwork →</Link>
+                <Link href="/search" className="text-xs text-teal-600 hover:underline">Browse all trades →</Link>
               </div>
             </div>
           </div>
@@ -555,20 +555,17 @@ export default function DashboardPage() {
               </div>
 
               <Link href="/edit-profile"
-                className="block w-full py-2 text-center text-sm font-semibold bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-colors mb-2">
+                className="block w-full py-2 text-center text-sm font-semibold bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-colors mb-4">
                 Edit profile
               </Link>
-              <Link href={'/community/profile/' + session.id}
-                className="block w-full py-2 text-center text-sm font-medium border border-gray-200 rounded-xl text-gray-600 hover:border-teal-300 hover:text-teal-600 transition-colors mb-4">
-                Community profile →
-              </Link>
+
 
               {/* Quick links */}
               <div className="border-t border-gray-100 pt-3">
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Quick links</div>
                 {[
                   { href: '/community',      icon: '🏠', label: 'Feed',            badge: 0 },
-                  { href: '/community/edit', icon: '📸', label: 'Portfolio',        badge: 0 },
+                  { href: '/pro/' + session.id + '?tab=work', icon: '📸', label: 'Portfolio', badge: 0 },
                   { href: '/messages',       icon: '💬', label: 'Messages',         badge: unreadMessages },
                   { href: '/apprenticeship', icon: '📋', label: 'Apprenticeship',   badge: 0 },
                 ].map((item, i) => (
@@ -612,7 +609,7 @@ export default function DashboardPage() {
                 </a>
                 <button onClick={() => {
                   const url = 'https://tradesnetwork.vercel.app/card/' + session.id
-                  if (navigator.share) { navigator.share({ title: session.name + ' - TradesNetwork', url }) }
+                  if (navigator.share) { navigator.share({ title: session.name + ' - ProGuild.ai', url }) }
                   else { navigator.clipboard.writeText(url) }
                 }} className="block w-full py-2.5 text-center border border-gray-200 text-gray-600 text-sm font-medium rounded-xl hover:bg-gray-50 transition-colors">
                   🔗 Copy card link

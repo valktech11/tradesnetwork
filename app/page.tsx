@@ -270,7 +270,7 @@ export default function HomePage() {
             <div className="text-2xl mb-3">🔧</div>
             <div className="font-bold text-lg mb-1.5" style={{ color: '#0A1628' }}>I am a pro</div>
             <p className="text-sm mb-5 leading-relaxed" style={{ color: '#6B7280' }}>
-              Other platforms charge you $18–$200 per lead. We charge one flat fee. Join {scopeLabel}'s verified trades guild.
+              Other platforms charge pros per lead. We never do. One flat fee — keep every dollar you earn.
             </p>
             <Link href="/login?tab=signup"
               className="inline-flex items-center gap-2 text-sm font-bold px-5 py-2.5 rounded-xl border transition-all hover:bg-gray-50"
@@ -398,10 +398,7 @@ export default function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {(activeTab === 'homeowner' ? HOW_STEPS_HOMEOWNER : HOW_STEPS_PRO).map((step, i) => (
             <div key={step.n} className="relative">
-              {i < 2 && (
-                <div className="hidden md:block absolute top-5 left-full w-full h-px"
-                  style={{ background: 'linear-gradient(90deg, #E8E2D9, transparent)' }} />
-              )}
+
               <div className="text-3xl font-bold mb-4" style={{ color: '#E8E2D9', fontFamily: "'DM Serif Display', serif" }}>
                 {step.n}
               </div>
@@ -424,7 +421,7 @@ export default function HomePage() {
             Your craft shouldn't cost you a lead fee.
           </h2>
           <p className="mb-8 text-sm leading-relaxed max-w-md mx-auto" style={{ color: '#94A3B8' }}>
-            Other platforms charge pros per lead — sometimes more than the job is worth. ProGuild is one flat fee. Zero per-lead charges. Your clients, your income.
+            Other platforms charge pros per lead — sometimes more than the job is worth. ProGuild is one flat fee. Zero per-lead charges. Every dollar you earn stays yours.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/login?tab=signup"
@@ -503,7 +500,7 @@ export default function HomePage() {
 
           <div className="border-t pt-6 flex flex-wrap items-center justify-between gap-3"
             style={{ borderColor: '#E8E2D9' }}>
-            <div className="text-xs" style={{ color: '#C4BAB0' }}>© 2026 ProGuild.ai · Univaro Technologies Pvt Ltd</div>
+            <div className="text-xs" style={{ color: '#C4BAB0' }}>© 2026 ProGuild.ai</div>
             <div className="text-xs" style={{ color: '#C4BAB0' }}>Verified against Florida DBPR · OSHA · State licensing boards</div>
           </div>
         </div>

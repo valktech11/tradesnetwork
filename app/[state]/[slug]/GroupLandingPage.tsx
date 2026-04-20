@@ -1,6 +1,14 @@
 'use client'
 import Link from 'next/link'
 
+const ALL_GROUPS = [
+  { id: 'mechanical', label: 'Mechanical', icon: '⚡', accent: '#14B8A6' },
+  { id: 'structural', label: 'Structural', icon: '🏗', accent: '#6366F1' },
+  { id: 'finishing',  label: 'Finishing',  icon: '🎨', accent: '#F59E0B' },
+  { id: 'property',   label: 'Property',   icon: '🌿', accent: '#10B981' },
+  { id: 'specialty',  label: 'Specialty',  icon: '🔐', accent: '#8B5CF6' },
+]
+
 interface GroupProps {
   stateSlug: string
   stateName: string
@@ -54,7 +62,49 @@ export default function GroupLandingPage({
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-10">
+      <div className="max-w-7xl mx-auto px-6 py-10 flex gap-8">
+
+        {/* SIDEBAR */}
+        <aside className="hidden lg:block w-52 flex-shrink-0">
+          <div className="sticky top-24 space-y-5">
+            <div>
+              <div className="flex items-center gap-2 mb-3 px-2">
+                <span className="text-base">{group.icon}</span>
+                <span className="text-xs font-bold uppercase tracking-widest" style={{ color: group.accent }}>{group.label}</span>
+              </div>
+              <div className="space-y-0.5">
+                {group.trades.map(trade => (
+                  <Link key={trade.slug} href={`/${stateSlug}/${trade.slug}`}
+                    className="flex items-center text-sm px-2.5 py-2 rounded-lg transition-colors"
+                    style={{ color: '#6B7280' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#F5F0E8'; e.currentTarget.style.color = group.accent }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6B7280' }}>
+                    {trade.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+            <div style={{ height: '1px', background: '#E8E2D9' }} />
+            <div>
+              <div className="text-xs font-bold uppercase tracking-widest mb-3 px-2" style={{ color: '#A89F93' }}>Other trades</div>
+              <div className="space-y-0.5">
+                {ALL_GROUPS.filter(g => g.id !== groupSlug).map(g => (
+                  <Link key={g.id} href={`/${stateSlug}/${g.id}`}
+                    className="flex items-center gap-2.5 text-sm px-2.5 py-2 rounded-lg transition-colors"
+                    style={{ color: '#6B7280' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#F5F0E8'; e.currentTarget.style.color = g.accent }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6B7280' }}>
+                    <span className="text-base flex-shrink-0">{g.icon}</span>
+                    <span>{g.label}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* MAIN */}
+        <div className="flex-1 min-w-0">
 
         {/* HERO */}
         <div className="mb-10">
@@ -114,6 +164,9 @@ export default function GroupLandingPage({
           </div>
         </div>
       </div>
+
+        </div>{/* end main */}
+      </div>{/* end flex */}
 
       {/* FOOTER */}
       <footer className="border-t py-8 px-6 mt-8" style={{ borderColor: '#E8E2D9', background: '#FFFFFF' }}>

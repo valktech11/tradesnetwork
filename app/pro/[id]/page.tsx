@@ -172,10 +172,24 @@ function AddWorkItem({ proId, onAdded }: { proId: string; onAdded: (item: any) =
       <div className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#A89F93' }}>Add project photo</div>
       {error && <div className="mb-3 p-3 bg-red-50 border border-red-200 text-red-600 text-xs rounded-xl">{error}</div>}
 
+      {/* Before/After numbered steps */}
+      {isBA && (
+        <div className="mb-4 p-3 rounded-xl flex items-start gap-3"
+          style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}>
+          <span className="text-lg flex-shrink-0">↔</span>
+          <div className="text-xs leading-relaxed" style={{ color: '#92400E' }}>
+            <strong>Before/After mode:</strong> Step 1 — upload the AFTER photo below (the finished result).
+            Step 2 — upload the BEFORE photo (the state before work began).
+          </div>
+        </div>
+      )}
+
       {/* Main photo upload */}
       <div className="mb-4">
-        {isBA && photo && (
-          <div className="text-xs font-bold mb-1.5 px-1" style={{ color: '#14B8A6' }}>AFTER photo ↑</div>
+        {isBA && (
+          <div className="text-xs font-bold mb-1.5 px-1" style={{ color: '#F59E0B' }}>
+            STEP 1 — AFTER photo (the finished result)
+          </div>
         )}
         {photo ? (
           <div className="relative rounded-xl overflow-hidden aspect-video bg-gray-100">
@@ -207,7 +221,7 @@ function AddWorkItem({ proId, onAdded }: { proId: string; onAdded: (item: any) =
       {/* Before/After photo upload */}
       {isBA && (
         <div className="mb-4 p-4 rounded-xl border" style={{ background: 'rgba(245,240,232,0.5)', borderColor: '#E8E2D9' }}>
-          <div className="text-xs font-bold mb-2" style={{ color: '#F59E0B' }}>BEFORE photo</div>
+          <div className="text-xs font-bold mb-1" style={{ color: '#F59E0B' }}>STEP 2 — BEFORE photo</div>
           <div className="text-xs mb-3" style={{ color: '#A89F93' }}>Upload the state before the work was done</div>
           {beforePhoto ? (
             <div className="relative rounded-xl overflow-hidden h-32">

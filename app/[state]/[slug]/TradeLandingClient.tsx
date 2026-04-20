@@ -339,7 +339,7 @@ export default function TradeLandingClient({
             <Link href="/privacy" style={{ color: '#A89F93' }}>Privacy</Link>
             <Link href="/terms" style={{ color: '#A89F93' }}>Terms</Link>
           </div>
-          <div className="text-xs" style={{ color: '#C4BAB0' }}>© 2026 ProGuild.ai · Univaro Technologies Pvt Ltd</div>
+          <div className="text-xs" style={{ color: '#C4BAB0' }}>© 2026 ProGuild.ai</div>
         </div>
       </footer>
 
