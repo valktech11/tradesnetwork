@@ -13,8 +13,7 @@ function ProAvatar({ pro, size }: { pro: any; size: string }) {
   const [bg, fg] = avatarColor(pro?.full_name || 'A')
   if (pro?.profile_photo_url)
     return <img src={pro.profile_photo_url} alt={pro.full_name}
-      className={`${size} rounded-full object-cover flex-shrink-0 ring-2`}
-      style={{ ringColor: 'rgba(20,184,166,0.3)' }} />
+      className={`${size} rounded-full object-cover flex-shrink-0 ring-2 ring-teal-400/30`} />
   return <div className={`${size} rounded-full flex items-center justify-center font-bold flex-shrink-0`}
     style={{ background: bg, color: fg, fontSize: '1rem' }}>{initials(pro?.full_name || 'A')}</div>
 }
