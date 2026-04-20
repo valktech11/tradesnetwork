@@ -10,7 +10,7 @@ const PAGE_SIZE = 12
 // Must match homepage exactly — same order, same slugs, Florida-first
 const TRADE_GROUPS = [
   {
-    id: 'mechanical', label: 'Mechanical', icon: '⚡', accent: '#14B8A6',
+    id: 'mechanical', label: 'Mechanical', icon: '⚡', accent: '#0D9488',
     trades: [
       { label: 'HVAC Technician',     slug: 'hvac-technician' },
       { label: 'Electrician',         slug: 'electrician' },
@@ -75,15 +75,15 @@ function SkeletonCard() {
   return (
     <div className="bg-white border rounded-xl p-5 animate-pulse" style={{ borderColor: '#E8E2D9' }}>
       <div className="flex gap-3 mb-4">
-        <div className="w-11 h-11 rounded-full flex-shrink-0" style={{ background: '#F5F0E8' }} />
+        <div className="w-11 h-11 rounded-full flex-shrink-0" style={{ background: '#FAF9F6' }} />
         <div className="flex-1 space-y-2 pt-1">
-          <div className="h-3.5 w-3/5 rounded" style={{ background: '#F5F0E8' }} />
-          <div className="h-3 w-2/5 rounded" style={{ background: '#F5F0E8' }} />
+          <div className="h-3.5 w-3/5 rounded" style={{ background: '#FAF9F6' }} />
+          <div className="h-3 w-2/5 rounded" style={{ background: '#FAF9F6' }} />
         </div>
       </div>
-      <div className="h-3 w-4/5 rounded mb-2" style={{ background: '#F5F0E8' }} />
-      <div className="h-3 w-3/5 rounded mb-4" style={{ background: '#F5F0E8' }} />
-      <div className="h-8 w-full rounded-lg" style={{ background: '#F5F0E8' }} />
+      <div className="h-3 w-4/5 rounded mb-2" style={{ background: '#FAF9F6' }} />
+      <div className="h-3 w-3/5 rounded mb-4" style={{ background: '#FAF9F6' }} />
+      <div className="h-8 w-full rounded-lg" style={{ background: '#FAF9F6' }} />
     </div>
   )
 }
@@ -202,7 +202,7 @@ function SearchPageInner() {
   const hasFilters = activeTradeSlug || appliedSearch || availableOnly
 
   return (
-    <div className="min-h-screen" style={{ background: '#F5F0E8', fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="min-h-screen" style={{ background: '#FAF9F6', fontFamily: "'DM Sans', sans-serif" }}>
 
       {/* ── NAV ──────────────────────────────────────────────────────────── */}
       <nav className="sticky top-0 z-40 bg-white border-b" style={{ borderColor: '#E8E2D9' }}>
@@ -214,12 +214,12 @@ function SearchPageInner() {
               <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M16 2L4 7V16C4 22.6 9.4 28.4 16 30C22.6 28.4 28 22.6 28 16V7L16 2Z" fill="url(#sg2)"/>
                 <text x="8.5" y="21" fontSize="12" fontWeight="700" fill="white" fontFamily="DM Sans,sans-serif">PG</text>
-                <defs><linearGradient id="sg2" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse"><stop stopColor="#2DD4BF"/><stop offset="1" stopColor="#0D7377"/></linearGradient></defs>
+                <defs><linearGradient id="sg2" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse"><stop stopColor="#14B8A6"/><stop offset="1" stopColor="#0D7377"/></linearGradient></defs>
               </svg>
             </div>
             <div className="flex items-baseline gap-0.5">
               <span className="font-bold text-sm" style={{ color: '#0A1628' }}>ProGuild</span>
-              <span className="font-light text-sm" style={{ color: '#14B8A6' }}>.ai</span>
+              <span className="font-light text-sm" style={{ color: '#0D9488' }}>.ai</span>
             </div>
           </Link>
 
@@ -240,7 +240,7 @@ function SearchPageInner() {
               )}
               <button onClick={applySearch}
                 className="px-4 py-2 text-sm font-bold text-white transition-all hover:opacity-90"
-                style={{ background: 'linear-gradient(135deg, #14B8A6, #0D7377)' }}>
+                style={{ background: 'linear-gradient(135deg, #0D9488, #0D7377)' }}>
                 Search
               </button>
             </div>
@@ -250,14 +250,14 @@ function SearchPageInner() {
             <button onClick={() => setAvailableOnly(v => !v)}
               className="hidden sm:flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-all font-medium"
               style={availableOnly
-                ? { background: '#14B8A6', color: '#fff', borderColor: '#14B8A6' }
+                ? { background: '#0D9488', color: '#fff', borderColor: '#0D9488' }
                 : { color: '#6B7280', borderColor: '#E8E2D9', background: '#fff' }}>
               <span className={`w-1.5 h-1.5 rounded-full ${availableOnly ? 'bg-white animate-pulse' : 'bg-gray-300'}`} />
               Available now
             </button>
             <Link href="/login?tab=signup"
               className="text-xs font-bold px-4 py-2 rounded-lg text-white transition-all hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #14B8A6, #0D7377)' }}>
+              style={{ background: 'linear-gradient(135deg, #0D9488, #0D7377)' }}>
               Join Free
             </Link>
           </div>
@@ -330,7 +330,7 @@ function SearchPageInner() {
             <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-0.5">
               {/* Breadcrumb */}
               <Link href="/" className="text-xs flex-shrink-0 transition-colors" style={{ color: '#A89F93' }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#14B8A6')}
+                onMouseEnter={e => (e.currentTarget.style.color = '#0D9488')}
                 onMouseLeave={e => (e.currentTarget.style.color = '#A89F93')}>
                 Home
               </Link>
@@ -394,7 +394,7 @@ function SearchPageInner() {
                 <div className="text-xs font-bold uppercase tracking-widest" style={{ color: '#A89F93' }}>Trade</div>
                 {activeTradeSlug && (
                   <button onClick={clearFilters} className="text-xs font-medium transition-colors"
-                    style={{ color: '#14B8A6' }}>Clear</button>
+                    style={{ color: '#0D9488' }}>Clear</button>
                 )}
               </div>
               <div className="space-y-4">
@@ -409,9 +409,9 @@ function SearchPageInner() {
                         <button key={trade.slug} onClick={() => selectTrade(trade.slug)}
                           className="w-full text-left text-sm px-2.5 py-1.5 rounded-lg transition-all"
                           style={activeTradeSlug === trade.slug
-                            ? { background: '#F5F0E8', color: group.accent, fontWeight: 600 }
+                            ? { background: '#FAF9F6', color: group.accent, fontWeight: 600 }
                             : { color: '#6B7280' }}
-                          onMouseEnter={e => { if (activeTradeSlug !== trade.slug) e.currentTarget.style.background = '#F5F0E8' }}
+                          onMouseEnter={e => { if (activeTradeSlug !== trade.slug) e.currentTarget.style.background = '#FAF9F6' }}
                           onMouseLeave={e => { if (activeTradeSlug !== trade.slug) e.currentTarget.style.background = 'transparent' }}>
                           {trade.label}
                         </button>
@@ -436,7 +436,7 @@ function SearchPageInner() {
                     <span className="font-bold" style={{ color: '#0A1628' }}>{total.toLocaleString()}</span>
                     {' '}verified pros
                     {activeTradeSlug && (
-                      <span style={{ color: '#14B8A6' }}> · {TRADE_GROUPS.flatMap(g => g.trades).find(t => t.slug === activeTradeSlug)?.label || activeTradeSlug}</span>
+                      <span style={{ color: '#0D9488' }}> · {TRADE_GROUPS.flatMap(g => g.trades).find(t => t.slug === activeTradeSlug)?.label || activeTradeSlug}</span>
                     )}
                     {appliedSearch && <span style={{ color: '#A89F93' }}> for "{appliedSearch}"</span>}
                   </>
@@ -486,7 +486,7 @@ function SearchPageInner() {
                       {hasFilters && (
                         <button onClick={clearFilters}
                           className="text-sm font-medium transition-colors"
-                          style={{ color: '#14B8A6' }}>
+                          style={{ color: '#0D9488' }}>
                           {activeTradeSlug ? 'Browse all trades' : 'Clear filters'}
                         </button>
                       )}
@@ -508,7 +508,7 @@ function SearchPageInner() {
               <button onClick={loadMore} disabled={loadingMore}
                 className="px-8 py-3 rounded-xl text-sm font-semibold border transition-all disabled:opacity-50"
                 style={{ color: '#0A1628', borderColor: '#E8E2D9', background: '#FFFFFF' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = '#14B8A6'; e.currentTarget.style.color = '#14B8A6' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#0D9488'; e.currentTarget.style.color = '#0D9488' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E2D9'; e.currentTarget.style.color = '#0A1628' }}>
                 {loadingMore
                   ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-gray-200 border-t-teal-500 rounded-full animate-spin" />Loading...</span>
@@ -530,8 +530,8 @@ function SearchPageInner() {
 export default function SearchPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F0E8' }}>
-        <div className="w-8 h-8 border-2 border-t-teal-500 rounded-full animate-spin" style={{ borderColor: '#E8E2D9', borderTopColor: '#14B8A6' }} />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#FAF9F6' }}>
+        <div className="w-8 h-8 border-2 border-t-teal-500 rounded-full animate-spin" style={{ borderColor: '#E8E2D9', borderTopColor: '#0D9488' }} />
       </div>
     }>
       <SearchPageInner />

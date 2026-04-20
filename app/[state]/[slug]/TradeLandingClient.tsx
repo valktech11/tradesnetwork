@@ -8,7 +8,7 @@ const PAGE_SIZE = 12
 
 // Same groups as homepage/search — for related trades sidebar
 const TRADE_GROUPS = [
-  { id: 'mechanical', label: 'Mechanical', icon: '⚡', accent: '#14B8A6',
+  { id: 'mechanical', label: 'Mechanical', icon: '⚡', accent: '#0D9488',
     trades: ['hvac-technician','electrician','plumber','solar-installer','gas-fitter','fire-sprinkler'] },
   { id: 'structural', label: 'Structural', icon: '🏗', accent: '#6366F1',
     trades: ['roofer','general-contractor','impact-window-shutter','carpenter','mason','concrete-contractor','foundation-specialist'] },
@@ -28,14 +28,14 @@ function SkeletonCard() {
   return (
     <div className="bg-white rounded-xl p-5 animate-pulse" style={{ border: '1px solid #E8E2D9' }}>
       <div className="flex gap-3 mb-4">
-        <div className="w-11 h-11 rounded-full flex-shrink-0" style={{ background: '#F5F0E8' }} />
+        <div className="w-11 h-11 rounded-full flex-shrink-0" style={{ background: '#FAF9F6' }} />
         <div className="flex-1 space-y-2 pt-1">
-          <div className="h-3.5 w-3/5 rounded" style={{ background: '#F5F0E8' }} />
-          <div className="h-3 w-2/5 rounded" style={{ background: '#F5F0E8' }} />
+          <div className="h-3.5 w-3/5 rounded" style={{ background: '#FAF9F6' }} />
+          <div className="h-3 w-2/5 rounded" style={{ background: '#FAF9F6' }} />
         </div>
       </div>
-      <div className="h-3 w-4/5 rounded mb-2" style={{ background: '#F5F0E8' }} />
-      <div className="h-8 w-full rounded-lg" style={{ background: '#F5F0E8' }} />
+      <div className="h-3 w-4/5 rounded mb-2" style={{ background: '#FAF9F6' }} />
+      <div className="h-8 w-full rounded-lg" style={{ background: '#FAF9F6' }} />
     </div>
   )
 }
@@ -92,7 +92,7 @@ export default function TradeLandingClient({
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#F5F0E8', fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="min-h-screen" style={{ background: '#FAF9F6', fontFamily: "'DM Sans', sans-serif" }}>
 
       {/* ── NAV ──────────────────────────────────────────────────────────── */}
       <nav className="sticky top-0 z-40 bg-white border-b" style={{ borderColor: '#E8E2D9' }}>
@@ -102,12 +102,12 @@ export default function TradeLandingClient({
               <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M16 2L4 7V16C4 22.6 9.4 28.4 16 30C22.6 28.4 28 22.6 28 16V7L16 2Z" fill="url(#tlg)"/>
                 <text x="8.5" y="21" fontSize="12" fontWeight="700" fill="white" fontFamily="DM Sans,sans-serif">PG</text>
-                <defs><linearGradient id="tlg" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse"><stop stopColor="#2DD4BF"/><stop offset="1" stopColor="#0D7377"/></linearGradient></defs>
+                <defs><linearGradient id="tlg" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse"><stop stopColor="#14B8A6"/><stop offset="1" stopColor="#0D7377"/></linearGradient></defs>
               </svg>
             </div>
             <div className="flex items-baseline gap-0.5">
               <span className="font-bold text-sm" style={{ color: '#0A1628' }}>ProGuild</span>
-              <span className="font-light text-sm" style={{ color: '#14B8A6' }}>.ai</span>
+              <span className="font-light text-sm" style={{ color: '#0D9488' }}>.ai</span>
             </div>
           </Link>
 
@@ -123,7 +123,7 @@ export default function TradeLandingClient({
               />
               <button type="submit"
                 className="px-4 py-2 text-sm font-bold text-white hover:opacity-90 transition-all"
-                style={{ background: 'linear-gradient(135deg, #14B8A6, #0D7377)' }}>
+                style={{ background: 'linear-gradient(135deg, #0D9488, #0D7377)' }}>
                 Search
               </button>
             </div>
@@ -133,7 +133,7 @@ export default function TradeLandingClient({
             <Link href="/login" className="text-sm hidden sm:block transition-colors" style={{ color: '#6B7280' }}>Log in</Link>
             <Link href="/login?tab=signup"
               className="text-xs font-bold px-4 py-2 rounded-lg text-white hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #14B8A6, #0D7377)' }}>
+              style={{ background: 'linear-gradient(135deg, #0D9488, #0D7377)' }}>
               Join Free
             </Link>
           </div>
@@ -182,9 +182,9 @@ export default function TradeLandingClient({
                       href={`/${stateSlug}/${slug}`}
                       className="flex items-center justify-between text-sm px-2.5 py-2 rounded-lg transition-colors"
                       style={slug === tradeSlug
-                        ? { background: '#F5F0E8', color: activeGroup.accent, fontWeight: 600 }
+                        ? { background: '#FAF9F6', color: activeGroup.accent, fontWeight: 600 }
                         : { color: '#6B7280' }}
-                      onMouseEnter={e => { if (slug !== tradeSlug) { e.currentTarget.style.background = '#F5F0E8'; e.currentTarget.style.color = activeGroup.accent } }}
+                      onMouseEnter={e => { if (slug !== tradeSlug) { e.currentTarget.style.background = '#FAF9F6'; e.currentTarget.style.color = activeGroup.accent } }}
                       onMouseLeave={e => { if (slug !== tradeSlug) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6B7280' } }}>
                       <span>{slugToTitle(slug)}</span>
                       {slug === tradeSlug && (
@@ -210,7 +210,7 @@ export default function TradeLandingClient({
                     href={`/search?group=${group.id}`}
                     className="flex items-center gap-2.5 text-sm px-2.5 py-2 rounded-lg transition-colors"
                     style={{ color: '#6B7280' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = '#F5F0E8'; e.currentTarget.style.color = group.accent }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#FAF9F6'; e.currentTarget.style.color = group.accent }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6B7280' }}>
                     <span className="text-base flex-shrink-0">{group.icon}</span>
                     <span>{group.label}</span>
@@ -262,10 +262,10 @@ export default function TradeLandingClient({
               <button onClick={loadMore} disabled={loading}
                 className="px-8 py-3 rounded-xl text-sm font-semibold border transition-all disabled:opacity-50"
                 style={{ color: '#0A1628', borderColor: '#E8E2D9', background: '#FFFFFF' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = '#14B8A6'; e.currentTarget.style.color = '#14B8A6' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#0D9488'; e.currentTarget.style.color = '#0D9488' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E2D9'; e.currentTarget.style.color = '#0A1628' }}>
                 {loading
-                  ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-t-teal-500 rounded-full animate-spin" style={{ borderColor: '#E8E2D9', borderTopColor: '#14B8A6' }} />Loading...</span>
+                  ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-t-teal-500 rounded-full animate-spin" style={{ borderColor: '#E8E2D9', borderTopColor: '#0D9488' }} />Loading...</span>
                   : `Load more (${(total - pros.length).toLocaleString()} remaining)`}
               </button>
             </div>
@@ -285,7 +285,7 @@ export default function TradeLandingClient({
               </div>
               <Link href="/search"
                 className="text-sm font-medium transition-colors"
-                style={{ color: '#14B8A6' }}>
+                style={{ color: '#0D9488' }}>
                 Browse all trades →
               </Link>
             </div>
@@ -330,7 +330,7 @@ export default function TradeLandingClient({
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-baseline gap-0.5">
             <span className="font-bold" style={{ color: '#0A1628' }}>ProGuild</span>
-            <span className="font-light" style={{ color: '#14B8A6' }}>.ai</span>
+            <span className="font-light" style={{ color: '#0D9488' }}>.ai</span>
           </div>
           <div className="flex flex-wrap gap-4 text-xs" style={{ color: '#A89F93' }}>
             <Link href="/" style={{ color: '#A89F93' }}>Home</Link>

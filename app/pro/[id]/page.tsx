@@ -24,13 +24,13 @@ function ShieldBadge({ size = 16 }: { size?: number }) {
       <path d="M16 2L4 7V16C4 22.6 9.4 28.4 16 30C22.6 28.4 28 22.6 28 16V7L16 2Z" fill="url(#pg)"/>
       <path d="M11 16l3 3 7-7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
       <defs><linearGradient id="pg" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#2DD4BF"/><stop offset="1" stopColor="#0D7377"/>
+        <stop stopColor="#14B8A6"/><stop offset="1" stopColor="#0D7377"/>
       </linearGradient></defs>
     </svg>
   )
 }
 
-function BeforeAfterSlider({ afterUrl, beforeUrl, title }: { afterUrl: string; beforeUrl: string; title: string }) {
+function BeforeAfterSlider({ afterUrl, beforeUrl, title, showLabels = false }: { afterUrl: string; beforeUrl: string; title: string; showLabels?: boolean }) {
   const [pos, setPos] = useState(50)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -69,9 +69,13 @@ function BeforeAfterSlider({ afterUrl, beforeUrl, title }: { afterUrl: string; b
         </div>
       </div>
 
-      {/* Labels */}
-      <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full pointer-events-none">Before</div>
-      <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full pointer-events-none">After</div>
+      {/* Labels — only in fullscreen lightbox */}
+      {showLabels && (
+        <>
+          <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full pointer-events-none">Before</div>
+          <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full pointer-events-none">After</div>
+        </>
+      )}
     </div>
   )
 }
@@ -126,7 +130,7 @@ function ContactModal({ pro, onClose }: { pro: any; onClose: () => void }) {
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">{f.lbl}</label>
                   <input type={f.type} value={f.val} onChange={e => f.set(e.target.value)} placeholder={f.ph}
                     className="w-full px-3 py-2.5 border rounded-xl text-sm outline-none focus:border-teal-400 transition-colors"
-                    style={{ borderColor: '#E8E2D9', background: '#F5F0E8' }} />
+                    style={{ borderColor: '#E8E2D9', background: '#FAF9F6' }} />
                 </div>
               ))}
               <div>
@@ -134,11 +138,11 @@ function ContactModal({ pro, onClose }: { pro: any; onClose: () => void }) {
                 <textarea value={message} onChange={e => setMessage(e.target.value)} rows={3}
                   placeholder="Briefly describe what you need..."
                   className="w-full px-3 py-2.5 border rounded-xl text-sm outline-none focus:border-teal-400 resize-none transition-colors"
-                  style={{ borderColor: '#E8E2D9', background: '#F5F0E8' }} />
+                  style={{ borderColor: '#E8E2D9', background: '#FAF9F6' }} />
               </div>
               <button onClick={send} disabled={submitting}
                 className="w-full py-3 text-white text-sm font-bold rounded-xl disabled:opacity-50 transition-colors"
-                style={{ background: 'linear-gradient(135deg, #14B8A6, #0D7377)' }}>
+                style={{ background: 'linear-gradient(135deg, #0D9488, #0D7377)' }}>
                 {submitting ? 'Sending...' : `Send message to ${firstName} →`}
               </button>
               <p className="text-xs text-gray-400 text-center">Zero per-lead fees · Direct contact</p>
@@ -228,7 +232,7 @@ function AddWorkItem({ proId, onAdded }: { proId: string; onAdded: (item: any) =
           <button onClick={() => fileRef.current?.click()}
             className="w-full border-2 border-dashed rounded-xl p-8 text-center transition-colors"
             style={{ borderColor: '#E8E2D9' }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = '#14B8A6'}
+            onMouseEnter={e => e.currentTarget.style.borderColor = '#0D9488'}
             onMouseLeave={e => e.currentTarget.style.borderColor = '#E8E2D9'}>
             {uploading ? (
               <span className="text-sm" style={{ color: '#A89F93' }}>Uploading...</span>
@@ -273,7 +277,7 @@ function AddWorkItem({ proId, onAdded }: { proId: string; onAdded: (item: any) =
         <label className="text-xs font-bold uppercase tracking-widest mb-1.5 block" style={{ color: '#A89F93' }}>Project title *</label>
         <input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Full exterior repaint — Miami Beach residence"
           className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none focus:border-teal-400 transition-colors"
-          style={{ borderColor: '#E8E2D9', background: '#F5F0E8', color: '#0A1628' }} />
+          style={{ borderColor: '#E8E2D9', background: '#FAF9F6', color: '#0A1628' }} />
       </div>
 
       {/* Description */}
@@ -282,14 +286,14 @@ function AddWorkItem({ proId, onAdded }: { proId: string; onAdded: (item: any) =
         <textarea value={desc} onChange={e => setDesc(e.target.value)} rows={2}
           placeholder="Scope of work, materials used, challenges solved..."
           className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none focus:border-teal-400 resize-none transition-colors"
-          style={{ borderColor: '#E8E2D9', background: '#F5F0E8', color: '#0A1628' }} />
+          style={{ borderColor: '#E8E2D9', background: '#FAF9F6', color: '#0A1628' }} />
       </div>
 
       {/* Toggles */}
       <div className="flex gap-2 mb-4">
         <button onClick={() => setIsJobSite(v => !v)}
           className="flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl border transition-all"
-          style={isJobSite ? { background: '#14B8A6', color: '#fff', borderColor: '#14B8A6' } : { borderColor: '#E8E2D9', color: '#6B7280' }}>
+          style={isJobSite ? { background: '#0D9488', color: '#fff', borderColor: '#0D9488' } : { borderColor: '#E8E2D9', color: '#6B7280' }}>
           📍 GPS job site
         </button>
         <button onClick={() => { setIsBA(v => !v); setBefore('') }}
@@ -301,7 +305,7 @@ function AddWorkItem({ proId, onAdded }: { proId: string; onAdded: (item: any) =
 
       <button onClick={save} disabled={saving || !photo || !title.trim()}
         className="w-full py-3 text-white text-sm font-bold rounded-xl disabled:opacity-40 transition-all"
-        style={{ background: 'linear-gradient(135deg, #14B8A6, #0D7377)' }}>
+        style={{ background: 'linear-gradient(135deg, #0D9488, #0D7377)' }}>
         {saving ? 'Adding...' : 'Add to portfolio'}
       </button>
     </div>
@@ -320,7 +324,7 @@ function CredCard({ lic }: { lic: any }) {
   const color = status === 'active' ? { border: '#22C55E', bg: 'rgba(34,197,94,0.06)', dot: '#22C55E', text: '#15803D', label: 'Active' }
     : status === 'expiring_soon' ? { border: '#F59E0B', bg: 'rgba(245,158,11,0.06)', dot: '#F59E0B', text: '#B45309', label: daysLeft !== null ? `Expiring in ${daysLeft}d` : 'Expiring' }
     : status === 'expired' ? { border: '#EF4444', bg: 'rgba(239,68,68,0.06)', dot: '#EF4444', text: '#B91C1C', label: 'Expired' }
-    : { border: '#E8E2D9', bg: '#F5F0E8', dot: '#A89F93', text: '#6B7280', label: 'Unknown' }
+    : { border: '#E8E2D9', bg: '#FAF9F6', dot: '#A89F93', text: '#6B7280', label: 'Unknown' }
 
   return (
     <div className="rounded-xl border overflow-hidden mb-2" style={{ borderColor: color.border, borderLeftWidth: '4px', background: color.bg }}>
@@ -337,7 +341,7 @@ function CredCard({ lic }: { lic: any }) {
       </div>
       <button onClick={() => setOpen(o => !o)}
         className="w-full text-left px-4 pb-2.5 text-xs font-medium transition-colors"
-        style={{ color: '#14B8A6' }}>
+        style={{ color: '#0D9488' }}>
         Details {open ? '▲' : '▼'}
       </button>
       {open && (
@@ -349,13 +353,13 @@ function CredCard({ lic }: { lic: any }) {
                   {lic.license_number.slice(0,4)}
                   <span style={{ color: '#A89F93' }}>{revealed ? lic.license_number.slice(4,-3) : '•••'}</span>
                   {lic.license_number.slice(-3)}
-                  <button onClick={() => setRevealed(r => !r)} className="ml-2 underline text-xs" style={{ color: '#14B8A6' }}>{revealed ? 'hide' : 'reveal'}</button>
+                  <button onClick={() => setRevealed(r => !r)} className="ml-2 underline text-xs" style={{ color: '#0D9488' }}>{revealed ? 'hide' : 'reveal'}</button>
                 </>
               ) : '—'}
             </div>
             {lic.license_number && (
               <a href={`https://www.myfloridalicense.com/LicenseDetail.asp?SID=&id=${encodeURIComponent(lic.license_number)}`}
-                target="_blank" rel="noopener noreferrer" className="text-xs font-medium" style={{ color: '#14B8A6' }}>
+                target="_blank" rel="noopener noreferrer" className="text-xs font-medium" style={{ color: '#0D9488' }}>
                 Verify with DBPR →
               </a>
             )}
@@ -426,16 +430,16 @@ export default function ProProfilePage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F0E8' }}>
-      <div className="w-8 h-8 border-2 border-t-teal-500 rounded-full animate-spin" style={{ borderColor: '#E8E2D9', borderTopColor: '#14B8A6' }} />
+    <div className="min-h-screen flex items-center justify-center" style={{ background: '#FAF9F6' }}>
+      <div className="w-8 h-8 border-2 border-t-teal-500 rounded-full animate-spin" style={{ borderColor: '#E8E2D9', borderTopColor: '#0D9488' }} />
     </div>
   )
 
   if (error || !pro) return (
-    <div className="min-h-screen flex items-center justify-center text-center" style={{ background: '#F5F0E8' }}>
+    <div className="min-h-screen flex items-center justify-center text-center" style={{ background: '#FAF9F6' }}>
       <div>
         <div className="text-2xl font-bold mb-3" style={{ color: '#0A1628' }}>Pro not found</div>
-        <Link href="/" className="text-sm" style={{ color: '#14B8A6' }}>← Back to search</Link>
+        <Link href="/" className="text-sm" style={{ color: '#0D9488' }}>← Back to search</Link>
       </div>
     </div>
   )
@@ -459,7 +463,7 @@ export default function ProProfilePage() {
   ]
 
   return (
-    <div className="min-h-screen" style={{ background: '#F5F0E8', fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="min-h-screen" style={{ background: '#FAF9F6', fontFamily: "'DM Sans', sans-serif" }}>
 
       {/* Lightbox */}
       {lightbox && (
@@ -467,7 +471,7 @@ export default function ProProfilePage() {
           <button className="absolute top-4 right-4 text-white text-2xl z-10 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors">✕</button>
           {lightbox.before ? (
             <div className="w-full max-w-4xl" style={{ height: '80vh' }} onClick={e => e.stopPropagation()}>
-              <BeforeAfterSlider afterUrl={lightbox.after} beforeUrl={lightbox.before} title={lightbox.title || ''} />
+              <BeforeAfterSlider afterUrl={lightbox.after} beforeUrl={lightbox.before} title={lightbox.title || ''} showLabels={true} />
             </div>
           ) : (
             <img src={lightbox.after} className="max-h-[90vh] max-w-[90vw] rounded-xl object-contain" onClick={e => e.stopPropagation()} />
@@ -493,7 +497,7 @@ export default function ProProfilePage() {
             <div className="flex items-center gap-2">
               <Link href="/edit-profile"
                 className="text-xs font-bold px-4 py-1.5 rounded-lg text-white transition-all"
-                style={{ background: 'linear-gradient(135deg, #14B8A6, #0D7377)' }}>
+                style={{ background: 'linear-gradient(135deg, #0D9488, #0D7377)' }}>
                 ✏️ Edit profile
               </Link>
               <Link href="/dashboard"
@@ -511,9 +515,9 @@ export default function ProProfilePage() {
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-7 h-7">
-              <svg viewBox="0 0 32 32" fill="none"><path d="M16 2L4 7V16C4 22.6 9.4 28.4 16 30C22.6 28.4 28 22.6 28 16V7L16 2Z" fill="url(#nav-g)"/><text x="8.5" y="21" fontSize="12" fontWeight="700" fill="white" fontFamily="DM Sans,sans-serif">PG</text><defs><linearGradient id="nav-g" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse"><stop stopColor="#2DD4BF"/><stop offset="1" stopColor="#0D7377"/></linearGradient></defs></svg>
+              <svg viewBox="0 0 32 32" fill="none"><path d="M16 2L4 7V16C4 22.6 9.4 28.4 16 30C22.6 28.4 28 22.6 28 16V7L16 2Z" fill="url(#nav-g)"/><text x="8.5" y="21" fontSize="12" fontWeight="700" fill="white" fontFamily="DM Sans,sans-serif">PG</text><defs><linearGradient id="nav-g" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse"><stop stopColor="#14B8A6"/><stop offset="1" stopColor="#0D7377"/></linearGradient></defs></svg>
             </div>
-            <span className="font-bold text-sm" style={{ color: '#0A1628' }}>ProGuild<span style={{ color: '#14B8A6', fontWeight: 300 }}>.ai</span></span>
+            <span className="font-bold text-sm" style={{ color: '#0A1628' }}>ProGuild<span style={{ color: '#0D9488', fontWeight: 300 }}>.ai</span></span>
           </Link>
           <div className="flex items-center gap-2">
             <Link href="/search" className="text-xs hidden sm:block transition-colors" style={{ color: '#A89F93' }}>← Find a pro</Link>
@@ -522,14 +526,14 @@ export default function ProProfilePage() {
                 className="text-xs font-bold px-3 py-1.5 rounded-lg border transition-all"
                 style={isFollowing
                   ? { borderColor: '#E8E2D9', color: '#6B7280' }
-                  : { background: 'linear-gradient(135deg, #14B8A6, #0D7377)', color: '#fff', borderColor: '#14B8A6' }}>
+                  : { background: 'linear-gradient(135deg, #0D9488, #0D7377)', color: '#fff', borderColor: '#0D9488' }}>
                 {isFollowing ? '✓ Following' : '+ Follow'}
               </button>
             )}
             {!isOwner && (
               <button onClick={() => setShowModal(true)}
                 className="text-xs font-bold px-4 py-2 rounded-lg text-white sm:hidden"
-                style={{ background: 'linear-gradient(135deg, #14B8A6, #0D7377)' }}>
+                style={{ background: 'linear-gradient(135deg, #0D9488, #0D7377)' }}>
                 Contact
               </button>
             )}
@@ -566,7 +570,7 @@ export default function ProProfilePage() {
               {!isOwner && (
                 <button onClick={() => setShowModal(true)}
                   className="hidden sm:flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
-                  style={{ background: 'linear-gradient(135deg, #14B8A6, #0D7377)' }}>
+                  style={{ background: 'linear-gradient(135deg, #0D9488, #0D7377)' }}>
                   Contact {firstName}
                 </button>
               )}
@@ -576,7 +580,7 @@ export default function ProProfilePage() {
             <h1 className="text-xl sm:text-2xl font-bold mb-0.5" style={{ color: '#0A1628', fontFamily: "'DM Serif Display', serif" }}>
               {pro.full_name}
             </h1>
-            <div className="text-sm font-semibold mb-0.5" style={{ color: '#14B8A6' }}>{trade}</div>
+            <div className="text-sm font-semibold mb-0.5" style={{ color: '#0D9488' }}>{trade}</div>
             <div className="text-sm mb-3" style={{ color: '#A89F93' }}>
               📍 {location || 'Florida'}
               {pro.years_experience ? ` · ${pro.years_experience} yrs exp` : ''}
@@ -598,19 +602,19 @@ export default function ProProfilePage() {
               )}
               {hasLicense && (
                 <span className="text-xs font-semibold px-2.5 py-1 rounded-full"
-                  style={{ background: '#F5F0E8', color: '#6B7280', border: '1px solid #E8E2D9' }}>
+                  style={{ background: '#FAF9F6', color: '#6B7280', border: '1px solid #E8E2D9' }}>
                   🏛 DBPR Licensed
                 </span>
               )}
               {hasOsha && (
                 <span className="text-xs font-semibold px-2.5 py-1 rounded-full"
-                  style={{ background: '#F5F0E8', color: '#6B7280', border: '1px solid #E8E2D9' }}>
+                  style={{ background: '#FAF9F6', color: '#6B7280', border: '1px solid #E8E2D9' }}>
                   🦺 {pro.osha_card_type}
                 </span>
               )}
               {hasInsurance && (
                 <span className="text-xs font-semibold px-2.5 py-1 rounded-full"
-                  style={{ background: '#F5F0E8', color: '#6B7280', border: '1px solid #E8E2D9' }}>
+                  style={{ background: '#FAF9F6', color: '#6B7280', border: '1px solid #E8E2D9' }}>
                   🛡 Insured
                 </span>
               )}
@@ -642,14 +646,14 @@ export default function ProProfilePage() {
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 className="flex-shrink-0 flex items-center gap-1.5 px-5 py-3.5 text-sm font-semibold transition-all border-b-2"
                 style={activeTab === tab.id
-                  ? { borderBottomColor: '#14B8A6', color: '#14B8A6' }
+                  ? { borderBottomColor: '#0D9488', color: '#0D9488' }
                   : { borderBottomColor: 'transparent', color: '#6B7280' }}>
                 {tab.label}
                 {tab.count !== undefined && tab.count > 0 && (
                   <span className="text-xs px-1.5 py-0.5 rounded-full font-bold"
                     style={activeTab === tab.id
-                      ? { background: 'rgba(20,184,166,0.15)', color: '#14B8A6' }
-                      : { background: '#F5F0E8', color: '#A89F93' }}>
+                      ? { background: 'rgba(20,184,166,0.15)', color: '#0D9488' }
+                      : { background: '#FAF9F6', color: '#A89F93' }}>
                     {tab.count}
                   </span>
                 )}
@@ -699,7 +703,7 @@ export default function ProProfilePage() {
                   <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: '#E8E2D9' }}>
                     <div className="px-5 pt-4 pb-3 flex items-center justify-between">
                       <div className="text-xs font-bold uppercase tracking-widest" style={{ color: '#A89F93' }}>Project work</div>
-                      <button onClick={() => setActiveTab('work')} className="text-xs font-semibold" style={{ color: '#14B8A6' }}>
+                      <button onClick={() => setActiveTab('work')} className="text-xs font-semibold" style={{ color: '#0D9488' }}>
                         See all {portfolio.length} →
                       </button>
                     </div>
@@ -724,13 +728,13 @@ export default function ProProfilePage() {
                   <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: '#E8E2D9' }}>
                     <div className="px-5 pt-4 pb-3 flex items-center justify-between">
                       <div className="text-xs font-bold uppercase tracking-widest" style={{ color: '#A89F93' }}>Recent reviews</div>
-                      <button onClick={() => setActiveTab('reviews')} className="text-xs font-semibold" style={{ color: '#14B8A6' }}>
+                      <button onClick={() => setActiveTab('reviews')} className="text-xs font-semibold" style={{ color: '#0D9488' }}>
                         See all {reviewCnt} →
                       </button>
                     </div>
                     <div className="px-4 pb-4 space-y-3">
                       {reviews.slice(0, 2).map(rev => (
-                        <div key={rev.id} className="p-4 rounded-xl" style={{ background: '#F5F0E8' }}>
+                        <div key={rev.id} className="p-4 rounded-xl" style={{ background: '#FAF9F6' }}>
                           <div className="flex items-center justify-between mb-1.5">
                             <div className="font-semibold text-sm" style={{ color: '#0A1628' }}>{rev.reviewer_name || 'Anonymous'}</div>
                             <div className="text-amber-400 text-xs">{starsHtml(rev.rating)}</div>
@@ -785,7 +789,7 @@ export default function ProProfilePage() {
                             ? <BeforeAfterSlider afterUrl={item.photo_url} beforeUrl={item.before_photo_url} title={item.title} />
                             : item.photo_url
                               ? <img src={item.photo_url} alt={item.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
-                              : <div className="w-full h-full flex items-center justify-center text-3xl" style={{ background: '#F5F0E8', color: '#E8E2D9' }}>🖼</div>
+                              : <div className="w-full h-full flex items-center justify-center text-3xl" style={{ background: '#FAF9F6', color: '#E8E2D9' }}>🖼</div>
                           }
                           {item.is_job_site && !item.is_before_after && (
                             <div className="absolute top-2 left-2 bg-green-700/90 rounded-full px-2 py-0.5">
@@ -829,7 +833,7 @@ export default function ProProfilePage() {
                           return (
                             <div key={star} className="flex items-center gap-2 text-xs">
                               <span className="w-3 text-right" style={{ color: '#A89F93' }}>{star}</span>
-                              <div className="flex-1 rounded-full h-1.5" style={{ background: '#F5F0E8' }}>
+                              <div className="flex-1 rounded-full h-1.5" style={{ background: '#FAF9F6' }}>
                                 <div className="h-1.5 rounded-full" style={{ width: `${pct}%`, background: '#F59E0B' }} />
                               </div>
                               <span className="w-4" style={{ color: '#A89F93' }}>{cnt}</span>
@@ -846,7 +850,7 @@ export default function ProProfilePage() {
                   <a href={`/reviews/${id}`}
                     className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border font-semibold text-sm transition-all"
                     style={{ borderColor: '#E8E2D9', color: '#0A1628', background: '#fff' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#14B8A6'; e.currentTarget.style.color = '#14B8A6' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#0D9488'; e.currentTarget.style.color = '#0D9488' }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E2D9'; e.currentTarget.style.color = '#0A1628' }}>
                     ⭐ Write a review
                   </a>
@@ -945,14 +949,14 @@ export default function ProProfilePage() {
                 <div className="bg-white rounded-2xl border p-4" style={{ borderColor: '#E8E2D9' }}>
                   <button onClick={() => setShowModal(true)}
                     className="w-full py-3 text-white text-sm font-bold rounded-xl mb-3 transition-all hover:opacity-90"
-                    style={{ background: 'linear-gradient(135deg, #14B8A6, #0D7377)' }}>
+                    style={{ background: 'linear-gradient(135deg, #0D9488, #0D7377)' }}>
                     Contact {firstName}
                   </button>
                   {pro.phone && (
                     <a href={`tel:${pro.phone}`}
                       className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border text-sm font-semibold transition-all"
                       style={{ borderColor: '#E8E2D9', color: '#0A1628' }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#14B8A6'; e.currentTarget.style.color = '#14B8A6' }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#0D9488'; e.currentTarget.style.color = '#0D9488' }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E2D9'; e.currentTarget.style.color = '#0A1628' }}>
                       📞 Call {firstName}
                     </a>
@@ -966,7 +970,7 @@ export default function ProProfilePage() {
                 <div className="bg-white rounded-2xl border p-4 space-y-2" style={{ borderColor: '#E8E2D9' }}>
                   <Link href="/edit-profile"
                     className="flex items-center justify-center gap-2 w-full py-2.5 text-white text-sm font-bold rounded-xl transition-all hover:opacity-90"
-                    style={{ background: 'linear-gradient(135deg, #14B8A6, #0D7377)' }}>
+                    style={{ background: 'linear-gradient(135deg, #0D9488, #0D7377)' }}>
                     ✏️ Edit profile
                   </Link>
                   <Link href="/dashboard"
@@ -988,7 +992,7 @@ export default function ProProfilePage() {
                   className="w-full py-2.5 text-sm font-bold rounded-xl border transition-all"
                   style={isFollowing
                     ? { borderColor: '#E8E2D9', color: '#6B7280', background: '#fff' }
-                    : { borderColor: '#14B8A6', color: '#0D7377', background: 'rgba(20,184,166,0.05)' }}>
+                    : { borderColor: '#0D9488', color: '#0D7377', background: 'rgba(20,184,166,0.05)' }}>
                   {isFollowing ? '✓ Following' : '+ Follow'}
                 </button>
               )}
@@ -1021,13 +1025,13 @@ export default function ProProfilePage() {
             {pro.phone ? (
               <a href={`tel:${pro.phone}`}
                 className="flex-1 flex items-center justify-center gap-2 py-3 text-white text-sm font-bold rounded-xl"
-                style={{ background: 'linear-gradient(135deg, #14B8A6, #0D7377)' }}>
+                style={{ background: 'linear-gradient(135deg, #0D9488, #0D7377)' }}>
                 📞 Call
               </a>
             ) : (
               <button onClick={() => setShowModal(true)}
                 className="flex-1 flex items-center justify-center gap-2 py-3 text-white text-sm font-bold rounded-xl"
-                style={{ background: 'linear-gradient(135deg, #14B8A6, #0D7377)' }}>
+                style={{ background: 'linear-gradient(135deg, #0D9488, #0D7377)' }}>
                 Contact
               </button>
             )}
@@ -1043,7 +1047,7 @@ export default function ProProfilePage() {
       {/* Footer */}
       <footer className="border-t py-8 px-6 mt-8" style={{ borderColor: '#E8E2D9', background: '#fff', paddingBottom: !isOwner ? 'calc(80px + env(safe-area-inset-bottom))' : undefined }}>
         <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          <span className="font-bold text-sm" style={{ color: '#0A1628' }}>ProGuild<span style={{ color: '#14B8A6', fontWeight: 300 }}>.ai</span></span>
+          <span className="font-bold text-sm" style={{ color: '#0A1628' }}>ProGuild<span style={{ color: '#0D9488', fontWeight: 300 }}>.ai</span></span>
           <div className="flex gap-4 text-xs" style={{ color: '#A89F93' }}>
             {[['/', 'Home'],['/search', 'Find a Pro'],['/privacy', 'Privacy'],['/terms', 'Terms']].map(([href, label]) => (
               <Link key={href} href={href} style={{ color: '#A89F93' }}>{label}</Link>

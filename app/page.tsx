@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 // ── Colour tokens ─────────────────────────────────────────────────────────────
-// BG:      #F5F0E8  warm cream (Claude-inspired)
+// BG:      #FAF9F6  warm cream (Claude-inspired)
 // NAV:     #FFFFFF  white card
 // CARD:    #FFFFFF  white
 // DARK:    #0A1628  navy (headlines, footer)
@@ -20,7 +20,7 @@ const TRADE_GROUPS = [
     id: 'mechanical',
     label: 'Mechanical',
     icon: '⚡',
-    accent: '#14B8A6',
+    accent: '#0D9488',
     trades: [
       // Florida-first: HVAC is #1 search, then Electrician, Plumber, Solar
       { label: 'HVAC Technician',     slug: 'hvac-technician' },
@@ -138,7 +138,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#F5F0E8', fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="min-h-screen" style={{ background: '#FAF9F6', fontFamily: "'DM Sans', sans-serif" }}>
 
       {/* ── NAV ──────────────────────────────────────────────────────────── */}
       <nav className="sticky top-0 z-50 bg-white border-b" style={{ borderColor: '#E8E2D9' }}>
@@ -150,12 +150,12 @@ export default function HomePage() {
               <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M16 2L4 7V16C4 22.6 9.4 28.4 16 30C22.6 28.4 28 22.6 28 16V7L16 2Z" fill="url(#ng)"/>
                 <text x="8.5" y="21" fontSize="12" fontWeight="700" fill="white" fontFamily="DM Sans,sans-serif">PG</text>
-                <defs><linearGradient id="ng" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse"><stop stopColor="#2DD4BF"/><stop offset="1" stopColor="#0D7377"/></linearGradient></defs>
+                <defs><linearGradient id="ng" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse"><stop stopColor="#14B8A6"/><stop offset="1" stopColor="#0D7377"/></linearGradient></defs>
               </svg>
             </div>
             <div className="flex items-baseline gap-0.5">
               <span className="text-lg font-bold" style={{ color: '#0A1628' }}>ProGuild</span>
-              <span className="text-lg font-light" style={{ color: '#14B8A6' }}>.ai</span>
+              <span className="text-lg font-light" style={{ color: '#0D9488' }}>.ai</span>
             </div>
           </Link>
 
@@ -186,7 +186,7 @@ export default function HomePage() {
             </Link>
             <Link href="/login?tab=signup"
               className="text-sm font-bold px-5 py-2.5 rounded-xl text-white transition-all hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #14B8A6, #0D7377)' }}>
+              style={{ background: 'linear-gradient(135deg, #0D9488, #0D7377)' }}>
               Join Free
             </Link>
           </div>
@@ -207,7 +207,7 @@ export default function HomePage() {
         <h1 className="font-bold leading-none tracking-tight mb-6"
           style={{ fontSize: 'clamp(3.5rem, 9vw, 7rem)', fontFamily: "'DM Serif Display', serif", color: '#0A1628' }}>
           CRAFT.<br />
-          <span style={{ color: '#14B8A6' }}>GUILD.</span><br />
+          <span style={{ color: '#0D9488' }}>GUILD.</span><br />
           VERIFIED.
         </h1>
 
@@ -235,7 +235,7 @@ export default function HomePage() {
             )}
             <button type="submit"
               className="px-7 py-4 text-sm font-bold text-white transition-all hover:opacity-90 flex-shrink-0"
-              style={{ background: 'linear-gradient(135deg, #14B8A6, #0D7377)' }}>
+              style={{ background: 'linear-gradient(135deg, #0D9488, #0D7377)' }}>
               Search
             </button>
           </div>
@@ -260,7 +260,7 @@ export default function HomePage() {
             </p>
             <Link href="/search"
               className="inline-flex items-center gap-2 text-sm font-bold px-5 py-2.5 rounded-xl text-white transition-all hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #14B8A6, #0D7377)' }}>
+              style={{ background: 'linear-gradient(135deg, #0D9488, #0D7377)' }}>
               Find a Pro →
             </Link>
           </div>
@@ -312,7 +312,7 @@ export default function HomePage() {
                       href={`/${scopeState}/${trade.slug}`}
                       className="flex items-center justify-between text-sm py-1.5 px-2 rounded-lg transition-all"
                       style={{ color: '#4B5563' }}
-                      onMouseEnter={e => { e.currentTarget.style.background = '#F5F0E8'; e.currentTarget.style.color = group.accent }}
+                      onMouseEnter={e => { e.currentTarget.style.background = '#FAF9F6'; e.currentTarget.style.color = group.accent }}
                       onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#4B5563' }}>
                       <span>{trade.label}</span>
                       <span className="text-xs" style={{ opacity: 0, transition: 'opacity 0.15s' }}>→</span>
@@ -343,9 +343,9 @@ export default function HomePage() {
                     <Link key={trade.slug}
                       href={`/${scopeState}/${trade.slug}`}
                       className="text-xs font-medium px-3 py-1.5 rounded-full border transition-all"
-                      style={{ color: '#4B5563', borderColor: '#E8E2D9', background: '#F5F0E8' }}
+                      style={{ color: '#4B5563', borderColor: '#E8E2D9', background: '#FAF9F6' }}
                       onMouseEnter={e => { e.currentTarget.style.borderColor = group.accent; e.currentTarget.style.color = group.accent; e.currentTarget.style.background = '#fff' }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E2D9'; e.currentTarget.style.color = '#4B5563'; e.currentTarget.style.background = '#F5F0E8' }}>
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E2D9'; e.currentTarget.style.color = '#4B5563'; e.currentTarget.style.background = '#FAF9F6' }}>
                       {trade.label}
                     </Link>
                   ))}
@@ -387,7 +387,7 @@ export default function HomePage() {
               <button key={tab} onClick={() => setActiveTab(tab)}
                 className="px-5 py-2 rounded-lg text-sm font-semibold transition-all"
                 style={activeTab === tab
-                  ? { background: '#14B8A6', color: '#FFFFFF' }
+                  ? { background: '#0D9488', color: '#FFFFFF' }
                   : { color: '#6B7280' }}>
                 {tab === 'homeowner' ? '🏠 For homeowners' : '🔧 For pros'}
               </button>
@@ -426,7 +426,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/login?tab=signup"
               className="px-8 py-3.5 rounded-xl font-bold text-white transition-all hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #14B8A6, #0D7377)' }}>
+              style={{ background: 'linear-gradient(135deg, #0D9488, #0D7377)' }}>
               Join the Guild — Free
             </Link>
             <Link href="/community"
@@ -445,7 +445,7 @@ export default function HomePage() {
             <div className="max-w-xs">
               <div className="flex items-baseline gap-0.5 mb-3">
                 <span className="text-xl font-bold" style={{ color: '#0A1628' }}>ProGuild</span>
-                <span className="text-xl font-light" style={{ color: '#14B8A6' }}>.ai</span>
+                <span className="text-xl font-light" style={{ color: '#0D9488' }}>.ai</span>
               </div>
               <p className="text-sm leading-relaxed" style={{ color: '#A89F93' }}>
                 {scopeLabel}'s verified professional trades network. DBPR-integrated. Zero lead fees. Your Craft. Your Guild.
@@ -460,7 +460,7 @@ export default function HomePage() {
                     <Link key={href} href={href}
                       className="block transition-colors text-sm"
                       style={{ color: '#6B7280' }}
-                      onMouseEnter={e => (e.currentTarget.style.color = '#14B8A6')}
+                      onMouseEnter={e => (e.currentTarget.style.color = '#0D9488')}
                       onMouseLeave={e => (e.currentTarget.style.color = '#6B7280')}>
                       {label}
                     </Link>
@@ -474,7 +474,7 @@ export default function HomePage() {
                     <Link key={href} href={href}
                       className="block transition-colors text-sm"
                       style={{ color: '#6B7280' }}
-                      onMouseEnter={e => (e.currentTarget.style.color = '#14B8A6')}
+                      onMouseEnter={e => (e.currentTarget.style.color = '#0D9488')}
                       onMouseLeave={e => (e.currentTarget.style.color = '#6B7280')}>
                       {label}
                     </Link>
@@ -488,7 +488,7 @@ export default function HomePage() {
                     <Link key={slug} href={`/${scopeState}/${slug}`}
                       className="block transition-colors text-sm"
                       style={{ color: '#6B7280' }}
-                      onMouseEnter={e => (e.currentTarget.style.color = '#14B8A6')}
+                      onMouseEnter={e => (e.currentTarget.style.color = '#0D9488')}
                       onMouseLeave={e => (e.currentTarget.style.color = '#6B7280')}>
                       {label}
                     </Link>
