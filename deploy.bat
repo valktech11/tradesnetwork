@@ -1,7 +1,5 @@
 @echo off
-cd /d "%~dp0"
-SET PROJECT=%~dp0
-SET PROJECT=%PROJECT:~0,-1%
+SET PROJECT=C:\Raju\VALK\tradesnetwork-next
 SET DOWNLOADS=%USERPROFILE%\Downloads
 SET ZIPNAME=%~1
 SET MSG=%~2

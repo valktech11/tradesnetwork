@@ -7,7 +7,7 @@ interface ProCardProps {
     trade_score?: number
     osha_card_type?: string
     insurance_status?: string
-    license_number?: string
+    license_number?: string | null
     is_claimed?: boolean
   }
   index?: number
