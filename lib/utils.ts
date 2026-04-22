@@ -1,6 +1,35 @@
 import { PlanTier, PAID_PLANS, ELITE_PLANS } from '@/types'
 
+// Suffixes that indicate a business name rather than a person's name
+const BUSINESS_SUFFIXES = /\b(LLC|Inc\.?|Corp\.?|Co\.|Company|Services|Group|Solutions|Contractors?|Builders?|Construction|Enterprises?|Associates?|Partners?|Industries|Systems|Technologies|Management|Properties|Realty|Restoration|Renovations?|Roofing|Electric|Plumbing|HVAC|Painting|Flooring|Landscaping|Pools?)\b/i
+
+export function isBusinessName(name: string): boolean {
+  return BUSINESS_SUFFIXES.test(name)
+}
+
+// Returns a friendly first name for a pro — handles business names gracefully
+// e.g. "James Miller" → "James"
+//      "Infinity Roofing LLC" → "the team"
+//      "A&R Electric Inc" → "the team"
+export function proFirstName(name: string): string {
+  if (!name) return 'the team'
+  if (isBusinessName(name)) return 'the team'
+  return name.split(' ')[0]
+}
+
 export function initials(name: string): string {
+  if (!name) return '?'
+  // For business names: strip suffixes, take first letters of first 2 meaningful words
+  if (isBusinessName(name)) {
+    const stripped = name
+      .replace(BUSINESS_SUFFIXES, '')
+      .replace(/[&,\.]/g, ' ')
+      .trim()
+    const words = stripped.split(/\s+/).filter(w => w.length > 1)
+    if (words.length === 0) return name.slice(0, 2).toUpperCase()
+    if (words.length === 1) return words[0].slice(0, 2).toUpperCase()
+    return (words[0][0] + words[1][0]).toUpperCase()
+  }
   return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
 }
 

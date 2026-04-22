@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { initials, avatarColor, starsHtml, formatReviewDate, isPaid, isElite } from '@/lib/utils'
+import { initials, avatarColor, starsHtml, formatReviewDate, isPaid, isElite, proFirstName } from '@/lib/utils'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Tab = 'overview' | 'work' | 'reviews' | 'credentials'
@@ -87,7 +87,7 @@ function ContactModal({ pro, onClose }: { pro: any; onClose: () => void }) {
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
   const [err, setErr] = useState('')
-  const firstName = pro.full_name.split(' ')[0]
+  const firstName = proFirstName(pro.full_name)
 
   async function send() {
     if (!name || !phone) { setErr('Name and phone are required'); return }
@@ -449,7 +449,7 @@ export default function ProProfilePage() {
   const location  = [pro.city, pro.state].filter(Boolean).join(', ')
   const rating    = pro.avg_rating || 0
   const reviewCnt = pro.review_count || reviews.length || 0
-  const firstName = pro.full_name.split(' ')[0]
+  const firstName = proFirstName(pro.full_name)
   const hasLicense    = proLicenses.length > 0 || !!pro.license_number
   const hasOsha       = !!pro.osha_card_type
   const hasInsurance  = pro.insurance_status === 'active'
@@ -566,7 +566,14 @@ export default function ProProfilePage() {
                   <span className="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full border-2 border-white" style={{ background: '#22C55E' }} />
                 )}
               </div>
-
+              {/* Desktop contact CTA */}
+              {!isOwner && (
+                <button onClick={() => setShowModal(true)}
+                  className="hidden sm:flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
+                  style={{ background: 'linear-gradient(135deg, #0D9488, #0D7377)' }}>
+                  Contact {firstName}
+                </button>
+              )}
             </div>
 
             {/* Name + trade */}

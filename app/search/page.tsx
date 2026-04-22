@@ -385,6 +385,7 @@ function SearchPageInner() {
                 <option value="default">Top credentialed</option>
                 <option value="reviews">Most reviews</option>
                 <option value="name_asc">Name A–Z</option>
+                <option value="name_desc">Name Z–A</option>
               </select>
             </div>
 
@@ -460,6 +461,7 @@ function SearchPageInner() {
               <option value="default">Top credentialed</option>
               <option value="reviews">Most reviews</option>
               <option value="name_asc">Name A–Z</option>
+              <option value="name_desc">Name Z–A</option>
             </select>
           </div>
 
