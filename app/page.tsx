@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation'
 // TEAL:    #0F766E  primary accent (v56)
 // BORDER:  #E8E2D9  warm gray
 
-// ── 8 primary trade tiles — direct to /fl/[slug] ─────────────────────────────
+// ── 6 primary trade tiles — 3×2 grid, direct to /fl/[slug] ──────────────────
 const PRIMARY_TRADES = [
   { slug: 'hvac-technician',    label: 'HVAC',               icon: '❄️', count: '430+' },
   { slug: 'electrician',        label: 'Electrician',        icon: '⚡', count: '154+' },
@@ -18,12 +18,12 @@ const PRIMARY_TRADES = [
   { slug: 'roofer',             label: 'Roofer',             icon: '🏠', count: '1,386+' },
   { slug: 'general-contractor', label: 'General Contractor', icon: '🏗️', count: '2,751+' },
   { slug: 'pool-spa',           label: 'Pool & Spa',         icon: '🏊', count: '128+' },
-  { slug: 'painter',            label: 'Painter',            icon: '🎨', count: '' },
-  { slug: 'landscaper',         label: 'Landscaper',         icon: '🌿', count: '' },
 ]
 
-// Secondary trades shown as pills below
+// Secondary trades — pills below the main grid
 const SECONDARY_TRADES = [
+  { slug: 'painter',                label: 'Painter' },
+  { slug: 'landscaper',             label: 'Landscaper' },
   { slug: 'solar-installer',        label: 'Solar Installer' },
   { slug: 'drywall',                label: 'Drywall' },
   { slug: 'impact-window-shutter',  label: 'Impact Windows' },
@@ -32,80 +32,6 @@ const SECONDARY_TRADES = [
   { slug: 'marine-contractor',      label: 'Marine / Dock' },
   { slug: 'carpenter',              label: 'Carpenter' },
   { slug: 'irrigation',             label: 'Irrigation' },
-]
-    label: 'Mechanical',
-    icon: '⚡',
-    accent: '#0F766E',
-    trades: [
-      // Florida-first: HVAC is #1 search, then Electrician, Plumber, Solar
-      { label: 'HVAC Technician',     slug: 'hvac-technician' },
-      { label: 'Electrician',         slug: 'electrician' },
-      { label: 'Plumber',             slug: 'plumber' },
-      { label: 'Solar Installer',     slug: 'solar-installer' },
-      { label: 'Gas Fitter',          slug: 'gas-fitter' },
-      { label: 'Fire Sprinkler',      slug: 'fire-sprinkler' },
-    ],
-  },
-  {
-    id: 'structural',
-    label: 'Structural',
-    icon: '🏗',
-    accent: '#6366F1',
-    trades: [
-      // Roofer #1 in FL post-hurricane season, GC #2, Impact Windows added
-      { label: 'Roofer',                      slug: 'roofer' },
-      { label: 'General Contractor',          slug: 'general-contractor' },
-      { label: 'Impact Window & Shutter',     slug: 'impact-window-shutter' },
-      { label: 'Framing Carpenter',           slug: 'carpenter' },
-      { label: 'Mason',                       slug: 'mason' },
-      { label: 'Concrete',                    slug: 'concrete-contractor' },
-      { label: 'Foundation',                  slug: 'foundation-specialist' },
-    ],
-  },
-  {
-    id: 'finishing',
-    label: 'Finishing',
-    icon: '🎨',
-    accent: '#F59E0B',
-    trades: [
-      { label: 'Painter',             slug: 'painter' },
-      { label: 'Flooring',            slug: 'flooring' },
-      { label: 'Drywall',             slug: 'drywall' },
-      { label: 'Tile Setter',         slug: 'tile-setter' },
-      { label: 'Insulation',          slug: 'insulation-contractor' },
-      { label: 'Windows & Doors',     slug: 'windows-doors' },
-    ],
-  },
-  {
-    id: 'property',
-    label: 'Property',
-    icon: '🌿',
-    accent: '#10B981',
-    trades: [
-      // Pool & Spa #1 in FL — daily search term
-      { label: 'Pool & Spa',          slug: 'pool-spa' },
-      { label: 'Landscaper',          slug: 'landscaper' },
-      { label: 'Pest Control',        slug: 'pest-control' },
-      { label: 'Irrigation',          slug: 'irrigation' },
-      { label: 'Handyman',            slug: 'handyman' },
-      { label: 'Home Inspector',      slug: 'home-inspector' },
-    ],
-  },
-  {
-    id: 'specialty',
-    label: 'Specialty',
-    icon: '🔐',
-    accent: '#8B5CF6',
-    trades: [
-      // Marine/Dock #1 in coastal FL — Jacksonville, Miami, Tampa
-      { label: 'Marine / Dock',       slug: 'marine-contractor' },
-      { label: 'Alarm & Security',    slug: 'alarm-security' },
-      { label: 'Low-Voltage / AV',    slug: 'low-voltage' },
-      { label: 'Septic & Drain',      slug: 'septic-drain' },
-      { label: 'Welder',              slug: 'welder' },
-      { label: 'Elevator Tech',       slug: 'elevator-technician' },
-    ],
-  },
 ]
 
 const HOW_STEPS_HOMEOWNER = [
@@ -301,8 +227,8 @@ export default function HomePage() {
           </h2>
         </div>
 
-        {/* 4×2 primary trade grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+        {/* 3×2 primary trade grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
           {PRIMARY_TRADES.map(trade => (
             <Link key={trade.slug} href={`/${scopeState}/${trade.slug}`}
               className="group bg-white rounded-2xl border p-4 flex flex-col hover:-translate-y-0.5 transition-all duration-200"
