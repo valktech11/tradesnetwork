@@ -121,9 +121,8 @@ export default function HomePage() {
           <div className="hidden md:flex items-center gap-1">
             {[
               ['/search',    'Find a Pro'],
-              ['/post-job',  'Post a Job'],
+              ['/post-job',  'Request a Pro'],
               ['/community', 'Community'],
-              ['/jobs',      'Jobs'],
             ].map(([href, label]) => (
               <Link key={href} href={href}
                 className="text-sm px-3 py-2 rounded-lg transition-colors font-medium"
@@ -163,7 +162,7 @@ export default function HomePage() {
 
         {/* Headline */}
         <h1 className="font-bold leading-none tracking-tight mb-6"
-          style={{ fontSize: 'clamp(3.5rem, 9vw, 7rem)', fontFamily: "'DM Serif Display', serif", color: '#0A1628' }}>
+          style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', fontFamily: "'DM Serif Display', serif", color: '#0A1628' }}>
           CRAFT.<br />
           <span style={{ color: '#0F766E' }}>GUILD.</span><br />
           VERIFIED.
@@ -303,7 +302,7 @@ export default function HomePage() {
           {(activeTab === 'homeowner' ? HOW_STEPS_HOMEOWNER : HOW_STEPS_PRO).map((step, i) => (
             <div key={step.n} className="relative">
 
-              <div className="text-3xl font-bold mb-4" style={{ color: '#E8E2D9', fontFamily: "'DM Serif Display', serif" }}>
+              <div className="text-3xl font-bold mb-4" style={{ color: '#A89F93', fontFamily: "'DM Serif Display', serif" }}>
                 {step.n}
               </div>
               <div className="font-bold mb-2" style={{ color: '#0A1628' }}>{step.title}</div>
@@ -360,7 +359,7 @@ export default function HomePage() {
               <div>
                 <div className="font-bold mb-4 text-xs uppercase tracking-widest" style={{ color: '#A89F93' }}>Platform</div>
                 <div className="space-y-3">
-                  {[['/search','Find a Pro'],['/post-job','Post a Job'],['/jobs','Browse Jobs'],['/community','Community']].map(([href, label]) => (
+                  {[['/search','Find a Pro'],['/post-job','Request a Pro'],['/jobs','Find Work'],['/community','Community']].map(([href, label]) => (
                     <Link key={href} href={href}
                       className="block transition-colors text-sm"
                       style={{ color: '#6B7280' }}

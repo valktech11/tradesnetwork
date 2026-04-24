@@ -113,7 +113,7 @@ export default function PostJobPage() {
         <div className="lg:col-span-2">
           <div className="mb-2">
             <span className="inline-block text-xs font-semibold tracking-widest uppercase text-teal-600 bg-teal-50 px-3 py-1 rounded-full mb-4">Free to post</span>
-            <h1 className="font-serif text-3xl text-gray-900 mb-2">Post a job, get matched with pros</h1>
+            <h1 className="font-serif text-3xl text-gray-900 mb-2">Request a Pro — get matched fast</h1>
             <p className="text-gray-400 font-light">Describe what you need and qualified professionals will reach out.</p>
           </div>
 
