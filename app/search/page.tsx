@@ -219,7 +219,7 @@ function SearchPageInner() {
             </div>
             <div className="flex items-baseline gap-0.5">
               <span className="font-bold text-sm" style={{ color: '#0A1628' }}>ProGuild</span>
-              <span className="font-light text-sm" style={{ color: '#0F766E' }}>.ai</span>
+              <span className="font-medium text-sm" style={{ color: '#0F766E' }}>.ai</span>
             </div>
           </Link>
 

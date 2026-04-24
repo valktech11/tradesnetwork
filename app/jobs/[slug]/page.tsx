@@ -72,8 +72,8 @@ export default async function JobsSlugPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <nav className="bg-white border-b border-gray-100 px-6 h-[60px] flex items-center justify-between sticky top-0 z-40">
-        <Link href="/" className="font-serif text-xl text-gray-900">Pro<span className="text-teal-600">Guild</span><span className="text-gray-400 font-sans font-light text-base">.ai</span></Link>
+      <nav className="bg-white border-b border-gray-100 px-6 h-14 flex items-center justify-between sticky top-0 z-40">
+        <Link href="/" className="font-serif text-xl text-gray-900">Pro<span className="text-teal-600">Guild</span><span className="text-gray-500 font-sans font-medium text-sm">.ai</span></Link>
         <div className="flex items-center gap-4">
           <Link href="/jobs" className="text-sm text-gray-400 hover:text-gray-700 transition-colors">← All jobs</Link>
           <Link href="/hire/post" className="text-sm font-semibold px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">Post a job</Link>

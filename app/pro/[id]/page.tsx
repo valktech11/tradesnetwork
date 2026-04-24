@@ -517,7 +517,7 @@ export default function ProProfilePage() {
             <div className="w-7 h-7">
               <svg viewBox="0 0 32 32" fill="none"><path d="M16 2L4 7V16C4 22.6 9.4 28.4 16 30C22.6 28.4 28 22.6 28 16V7L16 2Z" fill="url(#nav-g)"/><text x="8.5" y="21" fontSize="12" fontWeight="700" fill="white" fontFamily="DM Sans,sans-serif">PG</text><defs><linearGradient id="nav-g" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse"><stop stopColor="#14B8A6"/><stop offset="1" stopColor="#0C5F57"/></linearGradient></defs></svg>
             </div>
-            <span className="font-bold text-sm" style={{ color: '#0A1628' }}>ProGuild<span style={{ color: '#0F766E', fontWeight: 300 }}>.ai</span></span>
+            <span className="font-bold text-sm" style={{ color: '#0A1628' }}>ProGuild<span style={{ color: '#0F766E', fontWeight: 500 }}>.ai</span></span>
           </Link>
           <div className="flex items-center gap-2">
             <Link href="/search" className="text-xs hidden sm:block transition-colors" style={{ color: '#A89F93' }}>← Find a pro</Link>
@@ -1063,7 +1063,7 @@ export default function ProProfilePage() {
       {/* Footer */}
       <footer className="border-t py-8 px-6 mt-8" style={{ borderColor: '#E8E2D9', background: '#fff', paddingBottom: !isOwner ? 'calc(80px + env(safe-area-inset-bottom))' : undefined }}>
         <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          <span className="font-bold text-sm" style={{ color: '#0A1628' }}>ProGuild<span style={{ color: '#0F766E', fontWeight: 300 }}>.ai</span></span>
+          <span className="font-bold text-sm" style={{ color: '#0A1628' }}>ProGuild<span style={{ color: '#0F766E', fontWeight: 500 }}>.ai</span></span>
           <div className="flex gap-4 text-xs" style={{ color: '#A89F93' }}>
             {[['/', 'Home'],['/search', 'Find a Pro'],['/privacy', 'Privacy'],['/terms', 'Terms']].map(([href, label]) => (
               <Link key={href} href={href} style={{ color: '#A89F93' }}>{label}</Link>

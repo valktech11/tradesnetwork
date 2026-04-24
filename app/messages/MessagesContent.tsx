@@ -89,7 +89,7 @@ export default function MessagesContent() {
               </linearGradient></defs></svg>
             </div>
             <span className="font-bold text-sm" style={{ color: '#1C1917' }}>
-              ProGuild<span style={{ color: '#0F766E', fontWeight: 300 }}>.ai</span>
+              ProGuild<span style={{ color: '#0F766E', fontWeight: 500 }}>.ai</span>
             </span>
           </Link>
           <Link href="/dashboard" className="text-sm transition-colors" style={{ color: '#A89F93' }}

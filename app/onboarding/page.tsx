@@ -74,8 +74,8 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen bg-stone-50 flex flex-col">
       {/* Nav */}
-      <nav className="bg-white border-b border-gray-100 px-6 h-[60px] flex items-center justify-between">
-        <Link href="/" className="font-serif text-xl text-gray-900">Pro<span className="text-teal-600">Guild</span><span className="text-gray-400 font-sans font-light text-base">.ai</span></Link>
+      <nav className="bg-white/95 backdrop-blur border-b px-6 h-14 flex items-center justify-between" style={{ borderColor: '#E8E2D9' }}>
+        <Link href="/" className="font-serif text-xl text-gray-900">Pro<span className="text-teal-600">Guild</span><span className="text-gray-500 font-sans font-medium text-sm">.ai</span></Link>
         <button onClick={skip} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
           Skip for now →
         </button>

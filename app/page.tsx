@@ -141,12 +141,12 @@ export default function HomePage() {
     <div className="min-h-screen" style={{ background: '#FAF9F6', fontFamily: "'DM Sans', sans-serif" }}>
 
       {/* ── NAV ──────────────────────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-50 bg-white border-b" style={{ borderColor: '#E8E2D9' }}>
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b" style={{ borderColor: '#E8E2D9' }}>
+        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-            <div className="w-8 h-8">
+          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+            <div className="w-7 h-7">
               <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M16 2L4 7V16C4 22.6 9.4 28.4 16 30C22.6 28.4 28 22.6 28 16V7L16 2Z" fill="url(#ng)"/>
                 <text x="8.5" y="21" fontSize="12" fontWeight="700" fill="white" fontFamily="DM Sans,sans-serif">PG</text>
@@ -154,8 +154,8 @@ export default function HomePage() {
               </svg>
             </div>
             <div className="flex items-baseline gap-0.5">
-              <span className="text-lg font-bold" style={{ color: '#0A1628' }}>ProGuild</span>
-              <span className="text-lg font-light" style={{ color: '#0F766E' }}>.ai</span>
+              <span className="font-serif text-lg font-bold" style={{ color: '#0A1628' }}>ProGuild</span>
+              <span className="font-sans font-medium text-sm" style={{ color: '#0F766E' }}>.ai</span>
             </div>
           </Link>
 
@@ -445,7 +445,7 @@ export default function HomePage() {
             <div className="max-w-xs">
               <div className="flex items-baseline gap-0.5 mb-3">
                 <span className="text-xl font-bold" style={{ color: '#0A1628' }}>ProGuild</span>
-                <span className="text-xl font-light" style={{ color: '#0F766E' }}>.ai</span>
+                <span className="font-sans font-medium text-sm" style={{ color: '#0F766E' }}>.ai</span>
               </div>
               <p className="text-sm leading-relaxed" style={{ color: '#A89F93' }}>
                 {scopeLabel}'s verified professional trades network. DBPR-integrated. Zero lead fees. Your Craft. Your Guild.

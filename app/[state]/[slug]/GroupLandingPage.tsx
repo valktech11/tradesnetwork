@@ -35,7 +35,7 @@ export default function GroupLandingPage({
             <div className="w-7 h-7">
               <svg viewBox="0 0 32 32" fill="none"><path d="M16 2L4 7V16C4 22.6 9.4 28.4 16 30C22.6 28.4 28 22.6 28 16V7L16 2Z" fill="url(#glg)"/><text x="8.5" y="21" fontSize="12" fontWeight="700" fill="white" fontFamily="DM Sans,sans-serif">PG</text><defs><linearGradient id="glg" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse"><stop stopColor="#14B8A6"/><stop offset="1" stopColor="#0C5F57"/></linearGradient></defs></svg>
             </div>
-            <span className="font-bold text-sm" style={{ color: '#0A1628' }}>ProGuild<span style={{ color: '#0F766E', fontWeight: 300 }}>.ai</span></span>
+            <span className="font-bold text-sm" style={{ color: '#0A1628' }}>ProGuild<span style={{ color: '#0F766E', fontWeight: 500 }}>.ai</span></span>
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/login" className="text-sm hidden sm:block" style={{ color: '#6B7280' }}>Log in</Link>
@@ -169,7 +169,7 @@ export default function GroupLandingPage({
       {/* FOOTER */}
       <footer className="border-t py-8 px-6 mt-8" style={{ borderColor: '#E8E2D9', background: '#FFFFFF' }}>
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          <span className="font-bold text-sm" style={{ color: '#0A1628' }}>ProGuild<span style={{ color: '#0F766E', fontWeight: 300 }}>.ai</span></span>
+          <span className="font-bold text-sm" style={{ color: '#0A1628' }}>ProGuild<span style={{ color: '#0F766E', fontWeight: 500 }}>.ai</span></span>
           <div className="flex flex-wrap gap-4 text-xs" style={{ color: '#A89F93' }}>
             {[['/', 'Home'],[`/${stateSlug}`, stateName],['/search', 'Find a Pro'],['/privacy', 'Privacy']].map(([href, label]) => (
               <Link key={href} href={href} style={{ color: '#A89F93' }}>{label}</Link>

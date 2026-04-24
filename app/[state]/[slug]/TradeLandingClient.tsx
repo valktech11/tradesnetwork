@@ -107,7 +107,7 @@ export default function TradeLandingClient({
             </div>
             <div className="flex items-baseline gap-0.5">
               <span className="font-bold text-sm" style={{ color: '#0A1628' }}>ProGuild</span>
-              <span className="font-light text-sm" style={{ color: '#0F766E' }}>.ai</span>
+              <span className="font-medium text-sm" style={{ color: '#0F766E' }}>.ai</span>
             </div>
           </Link>
 
@@ -330,7 +330,7 @@ export default function TradeLandingClient({
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-baseline gap-0.5">
             <span className="font-bold" style={{ color: '#0A1628' }}>ProGuild</span>
-            <span className="font-light" style={{ color: '#0F766E' }}>.ai</span>
+            <span className="font-medium" style={{ color: '#0F766E' }}>.ai</span>
           </div>
           <div className="flex flex-wrap gap-4 text-xs" style={{ color: '#A89F93' }}>
             <Link href="/" style={{ color: '#A89F93' }}>Home</Link>

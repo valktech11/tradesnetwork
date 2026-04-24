@@ -63,8 +63,8 @@ export default async function TradeCityPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <nav className="bg-white border-b border-gray-100 px-6 h-[60px] flex items-center justify-between">
-        <Link href="/" className="font-serif text-xl text-gray-900">Pro<span className="text-teal-600">Guild</span><span className="text-gray-400 font-sans font-light text-base">.ai</span></Link>
+      <nav className="bg-white/95 backdrop-blur border-b px-6 h-14 flex items-center justify-between" style={{ borderColor: '#E8E2D9' }}>
+        <Link href="/" className="font-serif text-xl text-gray-900">Pro<span className="text-teal-600">Guild</span><span className="text-gray-500 font-sans font-medium text-sm">.ai</span></Link>
         <div className="flex items-center gap-4">
           <Link href="/" className="text-sm text-gray-500 hover:text-gray-700 transition-colors">All trades</Link>
           <Link href="/post-job" className="text-sm font-semibold px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">Post a job</Link>

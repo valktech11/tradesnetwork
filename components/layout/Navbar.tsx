@@ -71,12 +71,22 @@ export default function Navbar() {
   const [bg, fg] = session ? avatarColor(session.name) : ['#e5e7eb', '#6b7280']
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100">
+    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b"  style={{ borderColor: '#E8E2D9' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-[56px] flex items-center justify-between gap-3">
 
         {/* Logo */}
-        <Link href="/" className="font-serif text-xl text-gray-900 tracking-tight flex-shrink-0">
-          Pro<span className="text-teal-600">Guild</span><span className="text-gray-400 font-sans font-light text-base">.ai</span>
+        <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+          <div className="w-7 h-7 flex-shrink-0">
+            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 2L4 7V16C4 22.6 9.4 28.4 16 30C22.6 28.4 28 22.6 28 16V7L16 2Z" fill="url(#nb)"/>
+              <text x="8.5" y="21" fontSize="12" fontWeight="700" fill="white" fontFamily="DM Sans,sans-serif">PG</text>
+              <defs><linearGradient id="nb" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse"><stop stopColor="#14B8A6"/><stop offset="1" stopColor="#0C5F57"/></linearGradient></defs>
+            </svg>
+          </div>
+          <div className="flex items-baseline gap-0.5">
+            <span className="font-serif text-lg font-bold tracking-tight" style={{ color: '#0A1628' }}>ProGuild</span>
+            <span className="font-sans font-medium text-sm" style={{ color: '#0F766E' }}>.ai</span>
+          </div>
         </Link>
 
         {/* Desktop nav links */}

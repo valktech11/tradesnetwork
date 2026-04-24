@@ -64,7 +64,7 @@ function SuccessInner() {
         </div>
 
         <div className="mt-8 pt-6 border-t border-gray-100">
-          <div className="font-serif text-sm text-gray-900">Pro<span className="text-teal-600">Guild</span><span className="text-gray-400 font-sans font-light text-base">.ai</span></div>
+          <div className="font-serif text-sm text-gray-900">Pro<span className="text-teal-600">Guild</span><span className="text-gray-500 font-sans font-medium text-sm">.ai</span></div>
           <div className="text-xs text-gray-400 mt-1">Zero per-lead fees · Forever</div>
         </div>
       </div>

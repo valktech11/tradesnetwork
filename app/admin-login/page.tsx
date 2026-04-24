@@ -69,7 +69,7 @@ function AdminLoginInner() {
       {/* Brand */}
       <div className="mb-8 text-center">
         <div className="font-serif text-2xl text-white mb-1">
-          Pro<span className="text-teal-500">Guild</span><span className="text-gray-400 font-sans font-light text-sm">.ai</span>
+          Pro<span className="text-teal-500">Guild</span><span className="font-sans font-medium text-sm" style={{ color: "#0F766E" }}>.ai</span>
         </div>
         <div className="text-xs text-gray-500 uppercase tracking-widest">Admin Access</div>
       </div>
