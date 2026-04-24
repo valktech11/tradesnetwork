@@ -110,7 +110,7 @@ export default function MaintenanceGate({ children }: { children: React.ReactNod
 
       {/* Brand */}
       <div className="mt-8 text-gray-700 text-sm font-serif">
-        Trades<span className="text-teal-600">Network</span>
+        Pro<span className="text-teal-600">Guild</span><span className="text-gray-400 font-sans font-light text-base">.ai</span>
       </div>
     </div>
   )

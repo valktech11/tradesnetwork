@@ -548,7 +548,7 @@ export default function CommunityPage() {
       {/* Nav */}
       <nav className="bg-white border-b border-gray-200 px-6 h-[56px] flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-5">
-          <Link href="/" className="font-serif text-xl text-gray-900">Trades<span className="text-teal-600">Network</span></Link>
+          <Link href="/" className="font-serif text-xl text-gray-900">Pro<span className="text-teal-600">Guild</span><span className="text-gray-400 font-sans font-light text-base">.ai</span></Link>
           <div className="hidden md:flex items-center gap-1">
             <Link href="/community" className="text-sm font-semibold px-3 py-1.5 rounded-lg bg-teal-50 text-teal-700">Feed</Link>
             <Link href="/" className="text-sm text-gray-500 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors">Find a pro</Link>
@@ -653,7 +653,7 @@ export default function CommunityPage() {
           {!session && (
             <div className="bg-white border border-teal-200 rounded-xl p-5 mb-4 flex items-center justify-between gap-4">
               <div>
-                <div className="text-sm font-semibold text-gray-900 mb-0.5">Join Florida's verified trades network</div>
+                <div className="text-sm font-semibold text-gray-900 mb-0.5">Join Florida's verified trades community</div>
                 <div className="text-xs text-gray-500">Share work, ask questions, find local pros — free forever.</div>
               </div>
               <div className="flex gap-2 flex-shrink-0">
@@ -737,7 +737,7 @@ export default function CommunityPage() {
             <div className="bg-white border border-gray-200 rounded-xl p-5">
               <div className="text-sm font-bold text-gray-900 mb-1">New to ProGuild.ai?</div>
               <p className="text-xs text-gray-500 mb-4 leading-relaxed">
-                Florida's verified trades network. Share your work, connect with GCs, find jobs — free forever.
+                Florida's verified trades community. Share your work, connect with GCs, find jobs — free forever.
               </p>
               <Link href="/login?tab=signup"
                 className="block w-full py-2.5 text-center bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 transition-colors mb-2">

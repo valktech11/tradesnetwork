@@ -189,7 +189,7 @@ export default function AdminPage() {
       {/* Sidebar */}
       <div className="w-56 bg-gray-900 flex flex-col flex-shrink-0 border-r border-gray-800">
         <div className="px-5 py-5 border-b border-gray-800">
-          <div className="font-serif text-white text-lg">Trades<span className="text-teal-400">Network</span></div>
+          <div className="font-serif text-white text-lg">Pro<span className="text-teal-400">Guild</span><span className="text-gray-400 font-sans font-light text-base">.ai</span></div>
           <div className="text-xs text-gray-500 mt-0.5">Admin Panel</div>
         </div>
         <nav className="flex-1 py-4">

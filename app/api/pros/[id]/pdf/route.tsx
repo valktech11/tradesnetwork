@@ -62,7 +62,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
         <View style={styles.header}>
           <View>
             <Text style={styles.logo}>ProGuild.ai</Text>
-            <Text style={styles.logoSub}>Florida's Verified Trades Network</Text>
+            <Text style={styles.logoSub}>Florida's Verified Trades Community</Text>
           </View>
           <View>
             <Text style={styles.docTitle}>Verified Credential Report</Text>

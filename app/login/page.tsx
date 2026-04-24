@@ -19,7 +19,7 @@ function LoginPageInner() {
     <div className="min-h-screen bg-stone-50 flex flex-col">
       <nav className="bg-white border-b border-gray-100 px-8 h-15 flex items-center justify-between">
         <Link href="/" className="font-serif text-xl text-gray-900">
-          Trades<span className="text-teal-600">Network</span>
+          Pro<span className="text-teal-600">Guild</span><span className="text-gray-400 font-sans font-light text-base">.ai</span>
         </Link>
         <Link href="/" className="text-sm text-gray-400 hover:text-teal-600 transition-colors">← Back to search</Link>
       </nav>

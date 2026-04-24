@@ -187,7 +187,7 @@ export default function DigitalCardPage() {
         {/* Footer brand */}
         <div className="bg-gray-50 border-t border-gray-100 px-6 py-3 flex items-center justify-between">
           <span className="text-xs text-gray-400">Powered by</span>
-          <Link href="/" className="font-serif text-sm text-gray-900">Trades<span className="text-teal-600">Network</span></Link>
+          <Link href="/" className="font-serif text-sm text-gray-900">Pro<span className="text-teal-600">Guild</span><span className="text-gray-400 font-sans font-light text-base">.ai</span></Link>
         </div>
       </div>
 

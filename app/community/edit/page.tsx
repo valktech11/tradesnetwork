@@ -132,7 +132,7 @@ export default function CommunityEditPage() {
   return (
     <div className="min-h-screen bg-stone-50">
       <nav className="bg-white border-b border-gray-100 px-6 h-[60px] flex items-center justify-between sticky top-0 z-50">
-        <Link href="/" className="font-serif text-xl text-gray-900">Trades<span className="text-teal-600">Network</span></Link>
+        <Link href="/" className="font-serif text-xl text-gray-900">Pro<span className="text-teal-600">Guild</span><span className="text-gray-400 font-sans font-light text-base">.ai</span></Link>
         <div className="flex items-center gap-3">
           <Link href={`/community/profile/${session?.id}`} className="text-sm text-gray-400 hover:text-gray-700 transition-colors">← My profile</Link>
           <Link href="/edit-profile" className="text-sm text-gray-400 hover:text-teal-600 transition-colors">Account settings</Link>
