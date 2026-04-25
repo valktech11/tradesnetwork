@@ -11,6 +11,7 @@ interface ProCardProps {
 
 function UnclaimedContactForm({ pro }: { pro: ProCardProps['pro'] }) {
   const [name, setName]     = useState('')
+  const [email, setEmail]   = useState('')
   const [phone, setPhone]   = useState('')
   const [need, setNeed]     = useState('')
   const [loading, setLoading] = useState(false)
@@ -21,6 +22,7 @@ function UnclaimedContactForm({ pro }: { pro: ProCardProps['pro'] }) {
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     if (!name.trim() || !need.trim()) { setErr('Please fill in your name and what you need.'); return }
+    if (!phone.trim() && !email.trim()) { setErr('Please provide a phone number or email so the pro can reach you.'); return }
     setLoading(true); setErr('')
     try {
       const res = await fetch('/api/contact-pro', {
@@ -29,6 +31,7 @@ function UnclaimedContactForm({ pro }: { pro: ProCardProps['pro'] }) {
         body: JSON.stringify({
           pro_id: pro.id,
           contact_name: name.trim(),
+          contact_email: email.trim() || null,
           contact_phone: phone.trim() || null,
           message: need.trim(),
           lead_source: 'Registry_Card',
@@ -81,8 +84,12 @@ function UnclaimedContactForm({ pro }: { pro: ProCardProps['pro'] }) {
       <input value={name} onChange={e => setName(e.target.value)}
         placeholder="Your name *" className="w-full px-3 py-2 text-sm rounded-lg border outline-none"
         style={{ borderColor: '#E8E2D9', color: '#0A1628' }} />
+      <input value={email} onChange={e => setEmail(e.target.value)}
+        placeholder="Your email (optional)" type="email"
+        className="w-full px-3 py-2 text-sm rounded-lg border outline-none"
+        style={{ borderColor: '#E8E2D9', color: '#0A1628' }} />
       <input value={phone} onChange={e => setPhone(e.target.value)}
-        placeholder="Your phone number" type="tel"
+        placeholder="Your phone number *" type="tel"
         className="w-full px-3 py-2 text-sm rounded-lg border outline-none"
         style={{ borderColor: '#E8E2D9', color: '#0A1628' }} />
       <textarea value={need} onChange={e => setNeed(e.target.value)}
