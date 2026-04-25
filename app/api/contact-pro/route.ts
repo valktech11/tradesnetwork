@@ -12,7 +12,7 @@ function isRealEmail(email: string): boolean {
 }
 
 function outreachEmail(pro: any, contact: {
-  name: string; email: string; phone: string; need: string
+  name: string; email: string; phone: string; need: string; tradeName: string
 }): string {
   const claimUrl  = `https://proguild.ai/claim/${pro.id}`
   const firstName = pro.full_name?.split(' ')[0] || 'there'
@@ -27,7 +27,7 @@ function outreachEmail(pro: any, contact: {
   <tr><td style="padding:32px;">
     <p style="font-size:15px;color:#0A1628;margin:0 0 20px;">Hi ${firstName},</p>
     <p style="font-size:14px;color:#4B5563;margin:0 0 20px;line-height:1.6;">
-      A homeowner reached out through your ProGuild.ai profile looking for a licensed ${tradeName} in ${pro.city || 'your area'}.
+      A homeowner reached out through your ProGuild.ai profile looking for a licensed ${contact.tradeName} in ${pro.city || 'your area'}.
       Their details are below.
     </p>
 
@@ -127,6 +127,7 @@ export async function POST(req: NextRequest) {
             email: contact_email || '',
             phone: contact_phone || '',
             need: message,
+            tradeName,
           }),
         })
         emailSent = true
