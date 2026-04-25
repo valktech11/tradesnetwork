@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import Navbar from '@/components/layout/Navbar'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getSupabaseAdmin } from '@/lib/supabase'
