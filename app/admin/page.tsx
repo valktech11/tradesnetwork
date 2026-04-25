@@ -38,9 +38,10 @@ function Toggle({ value, onChange, label, sub }: { value: boolean; onChange: (v:
 export default function AdminPage() {
   const router = useRouter()
   const [session, setSession] = useState<Session | null>(null)
-  const [section, setSection] = useState<Section>('dashboard')
-  const [data, setData]       = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const [section, setSection]     = useState<Section>('dashboard')
+  const [data, setData]           = useState<any>(null)
+  const [loading, setLoading]     = useState(true)
+  const [leadFilter, setLeadFilter] = useState<string>('All')
   const [saving, setSaving]   = useState<string | null>(null)
   const [toast, setToast]     = useState('')
   const [accessDenied, setAccessDenied] = useState(false)
@@ -330,40 +331,160 @@ export default function AdminPage() {
           {/* ── LEADS ── */}
           {section === 'leads' && (
             <div>
-              <h1 className="font-serif text-2xl text-white mb-6">Leads Overview</h1>
-              <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
-                <div className="grid grid-cols-12 gap-2 px-4 py-2.5 bg-gray-50 text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                  <div className="col-span-2">From</div>
-                  <div className="col-span-2">To (Pro)</div>
-                  <div className="col-span-3">Message</div>
-                  <div className="col-span-2">Trade</div>
-                  <div className="col-span-2">Status</div>
-                  <div className="col-span-1">When</div>
-                </div>
-                {(data?.leads || []).map((lead: any) => (
-                  <div key={lead.id} className="grid grid-cols-12 gap-2 px-4 py-3 border-t border-gray-50 text-xs text-gray-600">
-                    <div className="col-span-2">
-                      <div className="font-medium text-gray-900">{lead.contact_name}</div>
-                      <div className="text-gray-400 truncate">{lead.contact_email}</div>
-                    </div>
-                    <div className="col-span-2">
-                      <div className="font-medium text-gray-900 truncate">{lead.pro?.full_name || '—'}</div>
-                      <div className="text-gray-400">{lead.pro?.city}</div>
-                    </div>
-                    <div className="col-span-3 text-gray-500 truncate">{lead.message}</div>
-                    <div className="col-span-2 text-gray-500">{lead.pro?.trade_category?.category_name || '—'}</div>
-                    <div className="col-span-2">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                        lead.status === 'New' ? 'bg-blue-50 text-blue-700' :
-                        lead.status === 'Contacted' ? 'bg-amber-50 text-amber-700' :
-                        'bg-teal-50 text-teal-700'
-                      }`}>{lead.status}</span>
-                    </div>
-                    <div className="col-span-1 text-gray-400">{timeAgo(lead.created_at)}</div>
-                  </div>
-                ))}
+              <h1 className="font-serif text-2xl text-white mb-2">Lead Review</h1>
+              <p className="text-gray-400 text-sm mb-6">
+                Registry leads from homeowners on unclaimed pro cards.
+                Review each lead then click <strong className="text-white">Send Email</strong> to notify the pro.
+                Email auto-send is <span className="text-amber-400 font-semibold">OFF</span> — manual review required.
+              </p>
+
+              {/* Filter tabs */}
+              {['All', 'Registry_Card', 'Queued_Manual', 'New', 'Contacted'].map(filter => {
+                const count = filter === 'All'
+                  ? (data?.leads || []).length
+                  : (data?.leads || []).filter((l: any) => l.lead_source === filter || l.lead_status === filter).length
+                return (
+                  <button key={filter}
+                    onClick={() => setLeadFilter?.(filter)}
+                    className={`mr-2 mb-4 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                      (leadFilter || 'All') === filter
+                        ? 'bg-teal-600 text-white border-teal-600'
+                        : 'bg-white text-gray-600 border-gray-200'
+                    }`}>
+                    {filter === 'Registry_Card' ? '📥 Registry Leads' :
+                     filter === 'Queued_Manual' ? '📞 Phone Follow-up' :
+                     filter === 'Contacted' ? '✓ Sent' : filter} ({count})
+                  </button>
+                )
+              })}
+
+              <div className="space-y-3">
+                {(data?.leads || [])
+                  .filter((l: any) => {
+                    const f = leadFilter || 'All'
+                    if (f === 'All') return true
+                    if (f === 'Registry_Card') return l.lead_source === 'Registry_Card'
+                    if (f === 'Queued_Manual') return l.lead_status === 'Queued_Manual'
+                    if (f === 'New') return l.lead_status === 'New'
+                    if (f === 'Contacted') return l.lead_status === 'Contacted'
+                    return true
+                  })
+                  .map((lead: any) => {
+                    const pro    = lead.pro
+                    const trade  = Array.isArray(pro?.trade_category)
+                      ? pro.trade_category[0]?.category_name
+                      : pro?.trade_category?.category_name || '—'
+                    const hasRealEmail = pro?.email &&
+                      !pro.email.includes('placeholder') &&
+                      !pro.email.includes('@sms.') &&
+                      pro.email.includes('@')
+                    const isRegistry = lead.lead_source === 'Registry_Card'
+                    const isContacted = lead.lead_status === 'Contacted'
+                    const isQueued = lead.lead_status === 'Queued_Manual'
+
+                    return (
+                      <div key={lead.id}
+                        className={`bg-white rounded-xl border p-5 ${isContacted ? 'opacity-60' : ''}`}
+                        style={{ borderColor: isRegistry && !isContacted ? '#0F766E40' : '#E8E2D9' }}>
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            {/* Source badge */}
+                            <div className="flex items-center gap-2 mb-3">
+                              {isRegistry && (
+                                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
+                                  📥 Registry Lead
+                                </span>
+                              )}
+                              {isQueued && (
+                                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                                  📞 Phone Follow-up
+                                </span>
+                              )}
+                              {isContacted && (
+                                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200">
+                                  ✓ Email Sent
+                                </span>
+                              )}
+                              <span className="text-xs text-gray-400">{timeAgo(lead.created_at)}</span>
+                            </div>
+
+                            {/* Two column layout */}
+                            <div className="grid grid-cols-2 gap-4">
+                              {/* Homeowner */}
+                              <div>
+                                <div className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Homeowner</div>
+                                <div className="text-sm font-semibold text-gray-900">{lead.contact_name}</div>
+                                {lead.contact_email && <div className="text-xs text-gray-500">{lead.contact_email}</div>}
+                                {lead.contact_phone && <div className="text-xs text-gray-500">{lead.contact_phone}</div>}
+                                <div className="mt-2 text-sm text-gray-600 leading-relaxed">
+                                  "{lead.message}"
+                                </div>
+                              </div>
+
+                              {/* Pro */}
+                              <div>
+                                <div className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Pro to notify</div>
+                                <div className="text-sm font-semibold text-gray-900">{pro?.full_name || '—'}</div>
+                                <div className="text-xs text-gray-500">{trade}</div>
+                                <div className="text-xs text-gray-500">{pro?.city}, {pro?.state}</div>
+                                {pro?.license_number && (
+                                  <div className="text-xs font-mono text-teal-600 mt-0.5">#{pro.license_number}</div>
+                                )}
+                                <div className="mt-1">
+                                  {hasRealEmail
+                                    ? <div className="text-xs text-green-600">✓ Has real email</div>
+                                    : <div className="text-xs text-amber-600">⚠ Phone only — {pro?.phone_cell || 'no phone'}</div>
+                                  }
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Action buttons */}
+                          {!isContacted && (
+                            <div className="flex flex-col gap-2 flex-shrink-0">
+                              {hasRealEmail ? (
+                                <button
+                                  onClick={async () => {
+                                    if (!confirm(`Send email to ${pro?.full_name} at ${pro?.email}?`)) return
+                                    const res = await fetch('/api/contact-pro/send', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ lead_id: lead.id }),
+                                    })
+                                    if (res.ok) {
+                                      alert('✓ Email sent successfully')
+                                      // Refresh
+                                      window.location.reload()
+                                    } else {
+                                      const err = await res.json()
+                                      alert(`Failed: ${err.error}`)
+                                    }
+                                  }}
+                                  className="px-4 py-2 rounded-lg text-sm font-semibold text-white whitespace-nowrap"
+                                  style={{ background: 'linear-gradient(135deg, #0F766E, #0C5F57)' }}>
+                                  Send Email →
+                                </button>
+                              ) : (
+                                <div className="px-4 py-2 rounded-lg text-sm font-semibold text-center bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap">
+                                  Call: {pro?.phone_cell || '—'}
+                                </div>
+                              )}
+                              <a href={`/pro/${pro?.id}`} target="_blank"
+                                className="px-4 py-2 rounded-lg text-xs font-medium text-center border border-gray-200 text-gray-500 hover:bg-gray-50 whitespace-nowrap">
+                                View profile ↗
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+
                 {!(data?.leads?.length) && !loading && (
-                  <div className="py-12 text-center text-gray-400 text-sm">No leads yet</div>
+                  <div className="py-12 text-center text-gray-400 text-sm bg-white rounded-xl border border-gray-100">
+                    No leads yet — registry contact captures will appear here
+                  </div>
                 )}
               </div>
             </div>

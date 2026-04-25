@@ -86,8 +86,8 @@ export async function GET(req: NextRequest) {
 
   if (section === 'leads') {
     const { data } = await sb.from('leads')
-      .select('*, pro:pros(full_name, email, city, trade_category:trade_categories(category_name))')
-      .order('created_at', { ascending: false }).limit(100)
+      .select('*, pro:pros(id, full_name, email, phone_cell, city, state, license_number, trade_category:trade_categories(category_name))')
+      .order('created_at', { ascending: false }).limit(200)
     return NextResponse.json({ leads: data || [] })
   }
 
