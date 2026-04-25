@@ -383,14 +383,14 @@ export default function TradeLandingClient({
             </div>
           )}
 
-
-      <style>{`
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(8px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .card-enter { animation: fadeUp 0.2s ease-out both; }
-      `}</style>
+          <style>{`
+            @keyframes fadeUp {
+              from { opacity: 0; transform: translateY(8px); }
+              to   { opacity: 1; transform: translateY(0); }
+            }
+            .card-enter { animation: fadeUp 0.2s ease-out both; }
+          `}</style>
+        </div>
     </div>
   )
 }

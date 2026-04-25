@@ -439,12 +439,6 @@ function SearchPageInner() {
                         style={{ background: 'linear-gradient(135deg, #0F766E, #0C5F57)' }}>
                         Request a Pro →
                       </a>
-                        <button onClick={clearFilters}
-                          className="text-sm font-medium transition-colors"
-                          style={{ color: '#0F766E' }}>
-                          {activeTradeSlug ? 'Browse all trades' : 'Clear filters'}
-                        </button>
-                      )}
                     </div>
                   )
                   : pros.map((pro, i) => (
