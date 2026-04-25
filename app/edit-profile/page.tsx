@@ -102,6 +102,9 @@ export default function EditProfilePage() {
   const [availableNote, setAvailableNote] = useState('')
   const [language, setLanguage]         = useState('en')
   const [counties, setCounties]         = useState<string[]>([])
+  const [services, setServices]         = useState<string[]>([])
+  const [serviceInput, setServiceInput] = useState('')
+  const [pricingNote, setPricingNote]   = useState('')
 
   const [bg, fg] = COLORS[fullName.charCodeAt(0) % COLORS.length] || COLORS[0]
 
@@ -144,6 +147,8 @@ export default function EditProfilePage() {
         setAvailableNote(p.available_note || '')
         setLanguage(p.preferred_language || 'en')
         setCounties(p.counties_served || [])
+        setServices((p as any).services || [])
+        setPricingNote((p as any).pricing_note || '')
       }
       setCategories(catData.categories || [])
       setEquipment(eqData.equipment || [])
@@ -216,6 +221,8 @@ export default function EditProfilePage() {
         osha_card_type: oshaType || null, osha_card_number: oshaNumber || null, osha_card_expiry: oshaExpiry || null,
         available_for_work: available, available_note: availableNote || null,
         preferred_language: language, counties_served: counties.length ? counties : null,
+        services: services.length ? services : null,
+        pricing_note: pricingNote.trim() || null,
       }),
     })
     setSaving(false)
@@ -635,6 +642,72 @@ export default function EditProfilePage() {
 
               {/* Counties served */}
               <div className="bg-white border border-gray-100 rounded-2xl p-7">
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">Services Offered</div>
+                <p className="text-xs text-gray-400 mb-4">Add specific services you offer — shown on your profile as tags. e.g. "Panel upgrades", "EV charger install", "Generator hookup"</p>
+
+                {/* Service tags */}
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {services.map(svc => (
+                    <span key={svc} className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full"
+                      style={{ background: 'rgba(15,118,110,0.08)', color: '#0C5F57', border: '1px solid rgba(15,118,110,0.2)' }}>
+                      ✓ {svc}
+                      <button onClick={() => setServices(prev => prev.filter(s => s !== svc))}
+                        className="ml-0.5 hover:opacity-70 text-sm">×</button>
+                    </span>
+                  ))}
+                </div>
+
+                {/* Add service input */}
+                <div className="flex gap-2 mb-8">
+                  <input
+                    value={serviceInput}
+                    onChange={e => setServiceInput(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && serviceInput.trim()) {
+                        e.preventDefault()
+                        if (!services.includes(serviceInput.trim())) {
+                          setServices(prev => [...prev, serviceInput.trim()])
+                        }
+                        setServiceInput('')
+                      }
+                    }}
+                    placeholder='Type a service and press Enter — e.g. "Panel upgrades"'
+                    className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-xl outline-none focus:border-teal-400"
+                  />
+                  <button
+                    onClick={() => {
+                      if (serviceInput.trim() && !services.includes(serviceInput.trim())) {
+                        setServices(prev => [...prev, serviceInput.trim()])
+                        setServiceInput('')
+                      }
+                    }}
+                    className="px-4 py-2 rounded-xl text-sm font-semibold text-white"
+                    style={{ background: 'linear-gradient(135deg, #0F766E, #0C5F57)' }}>
+                    Add
+                  </button>
+                </div>
+
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3 pb-3 border-b border-gray-100">Pricing</div>
+                <p className="text-xs text-gray-400 mb-3">Give homeowners a pricing signal — helps set expectations and increases contact rate.</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+                  {['Free estimates', 'Free consultations', 'Starting at $75/hr', 'Starting at $150/hr', 'Starting at $500', 'Contact for pricing'].map(opt => (
+                    <button key={opt}
+                      onClick={() => setPricingNote(opt)}
+                      className="px-3 py-2 text-xs font-medium rounded-xl border text-left transition-all"
+                      style={pricingNote === opt
+                        ? { background: 'rgba(15,118,110,0.08)', color: '#0C5F57', borderColor: 'rgba(15,118,110,0.3)' }
+                        : { background: '#F9F8F5', color: '#6B7280', borderColor: '#E8E2D9' }}>
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  value={pricingNote}
+                  onChange={e => setPricingNote(e.target.value)}
+                  placeholder='Or type your own — e.g. "Starting at $200 for most jobs"'
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl outline-none focus:border-teal-400 mb-8"
+                />
+
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">Counties served</div>
                 <p className="text-xs text-gray-400 mb-4">Select all Florida counties you serve. Shown on your public profile.</p>
                 <div className="flex flex-wrap gap-2 max-h-56 overflow-y-auto pr-1">

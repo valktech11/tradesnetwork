@@ -714,7 +714,62 @@ export default function ProProfilePage() {
                   </div>
                 )}
 
+                {/* Services offered */}
+                {(pro as any).services?.length > 0 && (
+                  <div className="bg-white rounded-2xl border p-5" style={{ borderColor: '#E8E2D9' }}>
+                    <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#A89F93' }}>Services Offered</div>
+                    <div className="flex flex-wrap gap-2">
+                      {(pro as any).services.map((s: string) => (
+                        <span key={s} className="text-sm font-medium px-3 py-1.5 rounded-full"
+                          style={{ background: 'rgba(15,118,110,0.06)', color: '#0C5F57', border: '1px solid rgba(15,118,110,0.15)' }}>
+                          ✓ {s}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Pricing signal */}
+                {(pro as any).pricing_note && (
+                  <div className="bg-white rounded-2xl border p-5 flex items-center gap-4" style={{ borderColor: '#E8E2D9' }}>
+                    <div className="text-3xl">💰</div>
+                    <div>
+                      <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#A89F93' }}>Pricing</div>
+                      <div className="text-base font-semibold" style={{ color: '#0A1628' }}>{(pro as any).pricing_note}</div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Counties served */}
+                {/* Services list */}
+                {(pro as any).services?.length > 0 && (
+                  <div className="bg-white rounded-2xl border p-5" style={{ borderColor: '#E8E2D9' }}>
+                    <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#A89F93' }}>Services Offered</div>
+                    <div className="flex flex-wrap gap-2">
+                      {(pro as any).services.map((svc: string) => (
+                        <span key={svc}
+                          className="text-sm font-medium px-3 py-1.5 rounded-full border"
+                          style={{ background: 'rgba(15,118,110,0.06)', color: '#0C5F57', borderColor: 'rgba(15,118,110,0.2)' }}>
+                          ✓ {svc}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Pricing signal */}
+                {(pro as any).pricing_note && (
+                  <div className="bg-white rounded-2xl border p-5" style={{ borderColor: '#E8E2D9' }}>
+                    <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#A89F93' }}>Pricing</div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">💰</span>
+                      <span className="text-base font-semibold" style={{ color: '#0A1628' }}>
+                        {(pro as any).pricing_note}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 {(pro as any).counties_served?.length > 0 && (
                   <div className="bg-white rounded-2xl border p-5" style={{ borderColor: '#E8E2D9' }}>
                     <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#A89F93' }}>Counties Served</div>

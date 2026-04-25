@@ -1,8 +1,9 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
+import SearchAutocomplete from '@/components/ui/SearchAutocomplete'
+import SearchBar from '@/components/ui/SearchBar'
 
 // ── Colour tokens ─────────────────────────────────────────────────────────────
 // BG:      #FAF9F6  warm cream
@@ -104,11 +105,11 @@ export default function HomePage() {
     }
   }
 
-  async function handleSearch(e?: React.FormEvent) {
+  async function handleSearch(e?: React.FormEvent, overrideTrade?: string, overrideCity?: string) {
     e?.preventDefault()
-    const t = trade.trim()
-    const c = city.trim()
-    if (!t && !c) { tradeRef.current?.focus(); return }
+    const t = (overrideTrade ?? trade).trim()
+    const c = (overrideCity  ?? city).trim()
+    if (!t && !c) return
 
     if (t) {
       const res  = await fetch('/api/match-trade', {
@@ -174,55 +175,17 @@ export default function HomePage() {
           {scopeLabel !== 'Florida' ? scopeLabel + "'s" : 'The'} verified trades network — for homeowners who need a pro, and pros who deserve better.
         </p>
 
-        {/* ── TWO-FIELD SEARCH BAR ─────────────────────────────────────── */}
-        <form onSubmit={handleSearch} className="max-w-3xl mx-auto mb-5">
-          <div className="flex flex-col sm:flex-row bg-white rounded-2xl shadow-md border overflow-hidden"
-            style={{ borderColor: '#E8E2D9' }}>
-
-            {/* Trade field */}
-            <div className="flex items-center flex-1 px-4 py-4 gap-3 border-b sm:border-b-0 sm:border-r"
-              style={{ borderColor: '#E8E2D9' }}>
-              <svg className="w-5 h-5 flex-shrink-0" style={{ color: '#A89F93' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-              </svg>
-              <input ref={tradeRef} type="text" value={trade}
-                onChange={e => setTrade(e.target.value)}
-                placeholder='What do you need? e.g. "electrician", "AC repair"'
-                className="flex-1 text-base outline-none bg-transparent"
-                style={{ color: '#0A1628' }} />
-              {trade && <button type="button" onClick={() => setTrade('')} className="text-gray-300 hover:text-gray-500 flex-shrink-0 text-lg">×</button>}
-            </div>
-
-            {/* City / ZIP field */}
-            <div className="flex items-center px-4 py-4 gap-3 sm:w-56 border-b sm:border-b-0"
-              style={{ borderColor: '#E8E2D9' }}>
-              <svg className="w-5 h-5 flex-shrink-0" style={{ color: '#A89F93' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-              </svg>
-              <input ref={cityRef} type="text" value={city}
-                onChange={e => setCity(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSearch()}
-                placeholder="City or ZIP code"
-                className="flex-1 text-base outline-none bg-transparent"
-                style={{ color: '#0A1628' }} />
-              {city
-                ? <button type="button" onClick={() => setCity('')} className="text-gray-300 hover:text-gray-500 flex-shrink-0 text-lg">×</button>
-                : <button type="button" onClick={detectLocation} title="Use my location"
-                    className="text-lg flex-shrink-0" style={{ color: '#0F766E' }}>📍</button>
-              }
-            </div>
-
-            {/* Submit */}
-            <button type="submit"
-              className="px-8 py-4 text-base font-bold text-white flex items-center justify-center gap-2 flex-shrink-0"
-              style={{ background: 'linear-gradient(135deg, #0F766E, #0C5F57)' }}>
-              {zipResolving
-                ? <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                : <><span>Find Pros</span><span className="hidden sm:inline ml-1">→</span></>
-              }
-            </button>
-          </div>
-        </form>
+        {/* ── SEARCH BAR — autocomplete + fuzzy matching ───────────────── */}
+        <div className="max-w-3xl mx-auto mb-5">
+          <SearchAutocomplete
+            tradeValue={trade}
+            cityValue={city}
+            onTradeChange={setTrade}
+            onCityChange={setCity}
+            onSearch={(t, c) => handleSearch(undefined, t, c)}
+            loading={zipResolving}
+          />
+        </div>
 
         {/* AI hint */}
         <div className="flex items-center justify-center gap-2 mb-5">

@@ -64,8 +64,16 @@ export default function TradeLandingClient({
   const fromAI       = searchParams.get('from') === 'ai'
   const aiQuery      = searchParams.get('q') || ''
   const [showAIBanner, setShowAIBanner] = useState(fromAI)
-  const [cityInput, setCityInput]       = useState('')
+  const [cityInput, setCityInput]         = useState('')
   const [nearMeLoading, setNearMeLoading] = useState(false)
+  const [activeSort, setActiveSort]       = useState<'rating' | 'reviews' | 'experience' | 'default'>('rating')
+
+  const SORT_OPTIONS = [
+    { key: 'rating',     label: 'Highest Rated' },
+    { key: 'reviews',    label: 'Most Reviews' },
+    { key: 'experience', label: 'Most Experienced' },
+    { key: 'default',    label: 'Best Match' },
+  ] as const
 
   function cityToSlug(c: string) {
     return c.toLowerCase().replace(/\./g, '').replace(/\s+/g, '-')
@@ -96,10 +104,29 @@ export default function TradeLandingClient({
   const [hasMore, setHasMore]     = useState(totalCount > PAGE_SIZE)
   const [loading, setLoading]     = useState(false)
   const [search, setSearch]       = useState('')
+  const [sort, setSort]           = useState('rating')
   const offset = useRef(PAGE_SIZE)
 
   // Find which group this trade belongs to
   const activeGroup = TRADE_GROUPS.find(g => g.trades.includes(tradeSlug)) || null
+
+  async function changeSort(newSort: string) {
+    setSort(newSort)
+    setLoading(true)
+    offset.current = 0
+    try {
+      const params = new URLSearchParams({
+        trade: tradeCategoryId, state: stateAbbr,
+        limit: String(PAGE_SIZE), offset: '0', sort: newSort,
+      })
+      const r = await fetch(`/api/pros?${params}`)
+      const d = await r.json()
+      setPros(d.pros || [])
+      setHasMore(d.hasMore || false)
+      offset.current = PAGE_SIZE
+    } catch {}
+    setLoading(false)
+  }
 
   async function loadMore() {
     if (loading || !hasMore) return
@@ -110,7 +137,7 @@ export default function TradeLandingClient({
         state: stateAbbr,
         limit: String(PAGE_SIZE),
         offset: String(offset.current),
-        sort: 'rating',
+        sort,
       })
       const r = await fetch(`/api/pros?${params}`)
       const d = await r.json()
@@ -303,7 +330,58 @@ export default function TradeLandingClient({
             </div>
           </div>
 
-          {/* Pro grid — SSR initial data, then load more */}
+          {/* Sort pills */}
+          <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+            <span className="text-sm text-gray-400 flex-shrink-0">Sort:</span>
+            {[
+              { value: 'rating',     label: '⭐ Highest rated' },
+              { value: 'reviews',    label: '💬 Most reviews' },
+              { value: 'experience', label: '🏆 Most experienced' },
+              { value: 'default',    label: '✦ Best match' },
+            ].map(s => (
+              <button key={s.value} onClick={() => changeSort(s.value)}
+                className="flex-shrink-0 text-sm font-semibold px-3 py-1.5 rounded-full border transition-all"
+                style={sort === s.value
+                  ? { background: '#0F766E', color: 'white', borderColor: '#0F766E' }
+                  : { background: 'white', color: '#6B7280', borderColor: '#E8E2D9' }}>
+                {s.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Sort pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 mb-4" style={{ scrollbarWidth: 'none' }}>
+            <span className="text-sm text-gray-400 flex-shrink-0">Sort:</span>
+            {SORT_OPTIONS.map(opt => (
+              <button key={opt.key}
+                onClick={async () => {
+                  setActiveSort(opt.key)
+                  // Re-fetch first page with new sort
+                  const params = new URLSearchParams({
+                    trade: tradeCategoryId,
+                    state: stateAbbr,
+                    limit: String(PAGE_SIZE),
+                    offset: '0',
+                    sort: opt.key,
+                  })
+                  try {
+                    const r = await fetch(`/api/pros?${params}`)
+                    const d = await r.json()
+                    setPros(d.pros || [])
+                    setHasMore(d.hasMore || false)
+                    offset.current = PAGE_SIZE
+                  } catch {}
+                }}
+                className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-semibold border transition-all"
+                style={activeSort === opt.key
+                  ? { background: '#0F766E', color: 'white', borderColor: '#0F766E' }
+                  : { background: 'white', color: '#6B7280', borderColor: '#E8E2D9' }}>
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Pro grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
             {pros.map((pro, i) => (
               <div key={pro.id} className="card-enter" style={{ animationDelay: `${Math.min(i * 25, 150)}ms` }}>
