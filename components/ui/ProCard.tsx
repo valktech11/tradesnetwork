@@ -37,10 +37,11 @@ function UnclaimedContactForm({ pro }: { pro: ProCardProps['pro'] }) {
           lead_source: 'Registry_Card',
         }),
       })
-      if (!res.ok) throw new Error('Failed')
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || data.detail?.message || 'Failed')
       setSent(true)
-    } catch {
-      setErr('Something went wrong. Please try again.')
+    } catch (e: any) {
+      setErr(e.message || 'Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }

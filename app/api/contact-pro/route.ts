@@ -109,8 +109,8 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (leadErr) {
-      console.error('[contact-pro] Lead insert error:', leadErr)
-      return NextResponse.json({ error: 'Failed to save lead' }, { status: 500 })
+      console.error('[contact-pro] Lead insert error:', JSON.stringify(leadErr))
+      return NextResponse.json({ error: leadErr.message || 'Failed to save lead', detail: leadErr }, { status: 500 })
     }
 
     // Send outreach email to pro only if AUTO_SEND_EMAIL is enabled
