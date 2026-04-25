@@ -27,7 +27,7 @@ function outreachEmail(pro: any, contact: {
   <tr><td style="padding:32px;">
     <p style="font-size:15px;color:#0A1628;margin:0 0 20px;">Hi ${firstName},</p>
     <p style="font-size:14px;color:#4B5563;margin:0 0 20px;line-height:1.6;">
-      A homeowner reached out through your ProGuild.ai profile looking for a licensed ${pro.trade_category?.category_name || 'trade professional'} in ${pro.city || 'your area'}.
+      A homeowner reached out through your ProGuild.ai profile looking for a licensed ${tradeName} in ${pro.city || 'your area'}.
       Their details are below.
     </p>
 
@@ -86,6 +86,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Pro not found' }, { status: 404 })
     }
 
+    const tradeName = Array.isArray(pro.trade_category)
+      ? (pro.trade_category[0] as any)?.category_name
+      : (pro.trade_category as any)?.category_name || 'pro'
+
     // Save lead to DB regardless of email/phone status
     const { data: lead, error: leadErr } = await sb
       .from('leads')
@@ -117,7 +121,7 @@ export async function POST(req: NextRequest) {
         await resend.emails.send({
           from: process.env.EMAIL_FROM || 'hello@proguild.ai',
           to: proEmail,
-          subject: `${contact_name} in ${pro.city || 'your area'} needs a ${pro.trade_category?.category_name || 'pro'} — ProGuild.ai`,
+          subject: `${contact_name} in ${pro.city || 'your area'} needs a ${tradeName} — ProGuild.ai`,
           html: outreachEmail(pro, {
             name: contact_name,
             email: contact_email || '',
