@@ -1,4 +1,5 @@
 'use client'
+import Navbar from '@/components/layout/Navbar'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Session } from '@/types'
@@ -52,10 +53,7 @@ export default function UpgradePage() {
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <nav className="bg-white/95 backdrop-blur border-b px-8 h-14 flex items-center justify-between" style={{ borderColor: '#E8E2D9' }}>
-        <Link href="/" className="font-serif text-xl text-gray-900">Pro<span className="text-teal-600">Guild</span><span className="text-gray-500 font-sans font-medium text-sm">.ai</span></Link>
-        <Link href="/dashboard" className="text-sm text-gray-400 hover:text-teal-600 transition-colors">← Back to dashboard</Link>
-      </nav>
+      <Navbar />
 
       <div className="max-w-5xl mx-auto px-6 py-14">
         {/* Header */}

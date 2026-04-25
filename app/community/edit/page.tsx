@@ -1,4 +1,5 @@
 'use client'
+import Navbar from '@/components/layout/Navbar'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -131,13 +132,7 @@ export default function CommunityEditPage() {
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <nav className="bg-white border-b border-gray-100 px-6 h-14 flex items-center justify-between sticky top-0 z-50">
-        <Link href="/" className="font-serif text-xl text-gray-900">Pro<span className="text-teal-600">Guild</span><span className="text-gray-500 font-sans font-medium text-sm">.ai</span></Link>
-        <div className="flex items-center gap-3">
-          <Link href={`/community/profile/${session?.id}`} className="text-sm text-gray-400 hover:text-gray-700 transition-colors">← My profile</Link>
-          <Link href="/edit-profile" className="text-sm text-gray-400 hover:text-teal-600 transition-colors">Account settings</Link>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="max-w-3xl mx-auto px-6 py-10">
         <div className="mb-8">

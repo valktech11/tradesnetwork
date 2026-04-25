@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Navbar from '@/components/layout/Navbar'
 import { initials, avatarColor, starsHtml, formatReviewDate, isPaid, isElite, proFirstName } from '@/lib/utils'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -540,35 +541,7 @@ export default function ProProfilePage() {
       )}
 
       {/* ── NAV ──────────────────────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-40 bg-white border-b" style={{ borderColor: '#E8E2D9' }}>
-        <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7">
-              <svg viewBox="0 0 32 32" fill="none"><path d="M16 2L4 7V16C4 22.6 9.4 28.4 16 30C22.6 28.4 28 22.6 28 16V7L16 2Z" fill="url(#nav-g)"/><text x="8.5" y="21" fontSize="12" fontWeight="700" fill="white" fontFamily="DM Sans,sans-serif">PG</text><defs><linearGradient id="nav-g" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse"><stop stopColor="#14B8A6"/><stop offset="1" stopColor="#0C5F57"/></linearGradient></defs></svg>
-            </div>
-            <span className="font-bold text-sm" style={{ color: '#0A1628' }}>ProGuild<span style={{ color: '#0F766E', fontWeight: 500 }}>.ai</span></span>
-          </Link>
-          <div className="flex items-center gap-2">
-            <Link href="/search" className="text-xs hidden sm:block transition-colors" style={{ color: '#A89F93' }}>← Find a pro</Link>
-            {session && !isOwner && (
-              <button onClick={toggleFollow}
-                className="text-xs font-bold px-3 py-1.5 rounded-lg border transition-all"
-                style={isFollowing
-                  ? { borderColor: '#E8E2D9', color: '#6B7280' }
-                  : { background: 'linear-gradient(135deg, #0F766E, #0C5F57)', color: '#fff', borderColor: '#0F766E' }}>
-                {isFollowing ? '✓ Following' : '+ Follow'}
-              </button>
-            )}
-            {!isOwner && (
-              <button onClick={() => setShowModal(true)}
-                className="text-xs font-bold px-4 py-2 rounded-lg text-white sm:hidden"
-                style={{ background: 'linear-gradient(135deg, #0F766E, #0C5F57)' }}>
-                Contact
-              </button>
-            )}
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-4 sm:px-5 pt-6">
@@ -663,9 +636,39 @@ export default function ProProfilePage() {
                 <span className="text-sm" style={{ color: '#A89F93' }}>({reviewCnt} reviews)</span>
               </div>
             )}
+
+            {/* Stats row — key trust signals at a glance */}
+            <div className="flex flex-wrap gap-x-5 gap-y-2 mt-4 pt-4 border-t" style={{ borderColor: '#F0EDE8' }}>
+              {reviewCnt > 0 && (
+                <div className="text-center">
+                  <div className="text-base font-bold" style={{ color: '#0A1628' }}>{reviewCnt}</div>
+                  <div className="text-xs" style={{ color: '#A89F93' }}>Reviews</div>
+                </div>
+              )}
+              {pro.years_experience > 0 && (
+                <div className="text-center">
+                  <div className="text-base font-bold" style={{ color: '#0A1628' }}>{pro.years_experience}</div>
+                  <div className="text-xs" style={{ color: '#A89F93' }}>Yrs experience</div>
+                </div>
+              )}
+              {pro.license_number && (
+                <div>
+                  <div className="text-xs font-semibold mb-0.5" style={{ color: '#A89F93' }}>DBPR License</div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-bold font-mono" style={{ color: '#0A1628' }}>{pro.license_number}</span>
+                    <a href={`https://www.myfloridalicense.com/LicenseDetail.asp?SID=&id=${pro.license_number}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="text-xs font-semibold underline" style={{ color: '#0F766E' }}>
+                      Verify ↗
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
+
 
       {/* ── TABS ─────────────────────────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-4 sm:px-5 mt-4">

@@ -1,4 +1,5 @@
 'use client'
+import Navbar from '@/components/layout/Navbar'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -75,31 +76,7 @@ export default function MessagesContent() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#FAF9F6', fontFamily: "'DM Sans', sans-serif" }}>
-
-      {/* NAV */}
-      <nav className="bg-white border-b sticky top-0 z-50 px-6 h-14 flex items-center justify-between"
-        style={{ borderColor: '#E5E0D8' }}>
-        <div className="flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7">
-              <svg viewBox="0 0 32 32" fill="none"><path d="M16 2L4 7V16C4 22.6 9.4 28.4 16 30C22.6 28.4 28 22.6 28 16V7L16 2Z" fill="url(#mg)"/>
-              <text x="8.5" y="21" fontSize="12" fontWeight="700" fill="white" fontFamily="DM Sans,sans-serif">PG</text>
-              <defs><linearGradient id="mg" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#14B8A6"/><stop offset="1" stopColor="#0C5F57"/>
-              </linearGradient></defs></svg>
-            </div>
-            <span className="font-bold text-sm" style={{ color: '#1C1917' }}>
-              ProGuild<span style={{ color: '#0F766E', fontWeight: 500 }}>.ai</span>
-            </span>
-          </Link>
-          <Link href="/dashboard" className="text-sm transition-colors" style={{ color: '#A89F93' }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#1C1917')}
-            onMouseLeave={e => (e.currentTarget.style.color = '#A89F93')}>
-            ← Dashboard
-          </Link>
-        </div>
-        <div className="text-sm font-medium" style={{ color: '#6B7280' }}>{session.name}</div>
-      </nav>
+      <Navbar />
 
       <div className="flex-1 flex max-w-6xl mx-auto w-full">
 

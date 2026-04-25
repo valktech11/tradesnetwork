@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import Navbar from '@/components/layout/Navbar'
 
 // ── Colour tokens ─────────────────────────────────────────────────────────────
 // BG:      #FAF9F6  warm cream
@@ -98,57 +99,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen" style={{ background: '#FAF9F6', fontFamily: "'DM Sans', sans-serif" }}>
 
-      {/* ── NAV ──────────────────────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b" style={{ borderColor: '#E8E2D9' }}>
-        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-7 h-7">
-              <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M16 2L4 7V16C4 22.6 9.4 28.4 16 30C22.6 28.4 28 22.6 28 16V7L16 2Z" fill="url(#ng)"/>
-                <text x="8.5" y="21" fontSize="12" fontWeight="700" fill="white" fontFamily="DM Sans,sans-serif">PG</text>
-                <defs><linearGradient id="ng" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse"><stop stopColor="#14B8A6"/><stop offset="1" stopColor="#0C5F57"/></linearGradient></defs>
-              </svg>
-            </div>
-            <div className="flex items-baseline gap-0.5">
-              <span className="font-serif text-lg font-bold" style={{ color: '#0A1628' }}>ProGuild</span>
-              <span className="font-sans font-medium text-sm" style={{ color: '#0F766E' }}>.ai</span>
-            </div>
-          </Link>
-
-          {/* Nav links */}
-          <div className="hidden md:flex items-center gap-1">
-            {[
-              ['/search',    'Find a Pro'],
-              ['/post-job',  'Request a Pro'],
-              ['/community', 'Community'],
-            ].map(([href, label]) => (
-              <Link key={href} href={href}
-                className="text-sm px-3 py-2 rounded-lg transition-colors font-medium"
-                style={{ color: '#6B7280' }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#0A1628')}
-                onMouseLeave={e => (e.currentTarget.style.color = '#6B7280')}>
-                {label}
-              </Link>
-            ))}
-          </div>
-
-          {/* Auth */}
-          <div className="flex items-center gap-3">
-            <Link href="/login"
-              className="text-sm font-medium hidden sm:block transition-colors"
-              style={{ color: '#6B7280' }}>
-              Pro Log In
-            </Link>
-            <Link href="/login?tab=signup"
-              className="text-sm font-bold px-5 py-2.5 rounded-xl text-white transition-all hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #0F766E, #0C5F57)' }}>
-              Join Free
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section className="max-w-5xl mx-auto px-6 pt-20 pb-16 text-center">
@@ -205,17 +156,33 @@ export default function HomePage() {
         </form>
 
         {/* AI hint */}
-        <div className="flex items-center justify-center gap-1.5 mb-4">
-          <span style={{ color: '#0F766E' }}>✦</span>
-          <span className="text-xs" style={{ color: '#6B7280' }}>
+        <div className="flex items-center justify-center gap-2 mb-5">
+          <span className="text-base" style={{ color: '#0F766E' }}>✦</span>
+          <span className="text-sm font-medium" style={{ color: '#4B5563' }}>
             Describe your problem — AI finds the right trade automatically
           </span>
         </div>
 
-        {/* Trust line */}
-        <p className="text-xs" style={{ color: '#6B7280' }}>
-          134,000+ DBPR-verified {scopeLabel} pros · Zero lead fees · License checked
-        </p>
+        {/* Trust stats — three columns */}
+        <div className="flex items-center justify-center gap-6 flex-wrap mb-2">
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm">🛡</span>
+            <span className="text-sm font-semibold" style={{ color: '#0A1628' }}>134,000+</span>
+            <span className="text-sm" style={{ color: '#6B7280' }}>DBPR-verified FL pros</span>
+          </div>
+          <div className="w-px h-4 bg-gray-200 hidden sm:block" />
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm">✦</span>
+            <span className="text-sm font-semibold" style={{ color: '#0A1628' }}>Zero</span>
+            <span className="text-sm" style={{ color: '#6B7280' }}>lead fees, ever</span>
+          </div>
+          <div className="w-px h-4 bg-gray-200 hidden sm:block" />
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm">✓</span>
+            <span className="text-sm font-semibold" style={{ color: '#0A1628' }}>License</span>
+            <span className="text-sm" style={{ color: '#6B7280' }}>state-verified</span>
+          </div>
+        </div>
       </section>
 
       {/* ── TRADE TILES ──────────────────────────────────────────────────── */}
@@ -236,7 +203,7 @@ export default function HomePage() {
               <span className="text-2xl mb-2">{trade.icon}</span>
               <span className="text-sm font-semibold mb-0.5" style={{ color: '#0A1628' }}>{trade.label}</span>
               {trade.count && (
-                <span className="text-xs" style={{ color: '#A89F93' }}>{trade.count} FL licensed</span>
+                <span className="text-sm font-medium" style={{ color: '#6B7280' }}>{trade.count} FL licensed</span>
               )}
               <span className="text-xs font-semibold mt-2 opacity-0 group-hover:opacity-100 transition-opacity"
                 style={{ color: '#0F766E' }}>Find pros →</span>

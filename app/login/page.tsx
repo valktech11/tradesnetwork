@@ -1,4 +1,5 @@
 'use client'
+import Navbar from '@/components/layout/Navbar'
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -17,12 +18,7 @@ function LoginPageInner() {
 
   return (
     <div className="min-h-screen bg-stone-50 flex flex-col">
-      <nav className="bg-white/95 backdrop-blur border-b px-8 h-14 flex items-center justify-between" style={{ borderColor: '#E8E2D9' }}>
-        <Link href="/" className="font-serif text-xl text-gray-900">
-          Pro<span className="text-teal-600">Guild</span><span className="text-gray-500 font-sans font-medium text-sm">.ai</span>
-        </Link>
-        <Link href="/" className="text-sm text-gray-400 hover:text-teal-600 transition-colors">← Back to search</Link>
-      </nav>
+      <Navbar />
 
       <main className="flex-1 flex items-center justify-center p-4 py-12">
         <div className="w-full max-w-md">

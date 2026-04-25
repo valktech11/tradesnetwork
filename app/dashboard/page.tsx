@@ -1,4 +1,5 @@
 'use client'
+import Navbar from '@/components/layout/Navbar'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -177,76 +178,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen" style={{background:"#FAF9F6",fontFamily:"'DM Sans',sans-serif"}}>
-
-      {/* NAV */}
-      <nav className="bg-white border-b px-4 sm:px-6 h-[56px] flex items-center justify-between sticky top-0 z-50" style={{borderColor:"#E8E2D9"}}>
-        <div className="flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-2"><div className="w-7 h-7"><svg viewBox="0 0 32 32" fill="none"><path d="M16 2L4 7V16C4 22.6 9.4 28.4 16 30C22.6 28.4 28 22.6 28 16V7L16 2Z" fill="url(#dg)"/><text x="8.5" y="21" fontSize="12" fontWeight="700" fill="white" fontFamily="DM Sans,sans-serif">PG</text><defs><linearGradient id="dg" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse"><stop stopColor="#14B8A6"/><stop offset="1" stopColor="#0C5F57"/></linearGradient></defs></svg></div><span className="font-bold text-sm" style={{color:"#0A1628"}}>ProGuild<span style={{color:"#0F766E",fontWeight:500}}>.ai</span></span></Link>
-          <div className="hidden md:flex items-center gap-1">
-            {[
-              { href: '/dashboard', label: 'Dashboard', active: true },
-              { href: '/community', label: 'Community', active: false },
-              { href: '/pro/' + session.id, label: 'My profile', active: false },
-              { href: '/messages', label: 'Messages', active: false },
-            ].map(l => (
-              <Link key={l.href} href={l.href}
-                className={'text-sm px-3 py-1.5 rounded-lg transition-colors ' + (l.active ? 'bg-stone-100 text-gray-700 font-medium' : 'text-gray-500 hover:bg-stone-100')}>
-                {l.label}
-                {l.href === '/messages' && unreadMessages > 0 && (
-                  <span className="ml-1.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full inline-flex items-center justify-center">{unreadMessages}</span>
-                )}
-              </Link>
-            ))}
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className={'text-xs font-semibold px-2.5 py-1 rounded-full hidden sm:inline ' + (elite ? 'bg-purple-50 text-purple-700' : paid ? 'bg-teal-50 text-teal-700' : 'bg-gray-100 text-gray-500')}>
-            {planLabel(session.plan)}
-          </span>
-          <span className="text-sm font-medium text-gray-700 hidden md:block">{session.name}</span>
-          <div className="relative">
-            <button onClick={() => {
-              setShowNotifs(s => !s)
-              if (unreadCount > 0) {
-                fetch('/api/notifications', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pro_id: session.id }) })
-                setUnreadCount(0)
-              }
-            }} className="relative p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-              </svg>
-              {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">{unreadCount > 9 ? '9+' : unreadCount}</span>
-              )}
-            </button>
-            {showNotifs && (
-              <div className="absolute right-0 top-10 w-80 bg-white border border-gray-100 rounded-2xl shadow-xl z-50 overflow-hidden">
-                <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center">
-                  <span className="text-sm font-semibold text-gray-900">Notifications</span>
-                  <button onClick={() => setShowNotifs(false)} className="text-gray-400 hover:text-gray-600 text-xs">✕</button>
-                </div>
-                <div className="max-h-72 overflow-y-auto">
-                  {notifications.length === 0
-                    ? <div className="text-center py-8 text-sm text-gray-400">No notifications yet</div>
-                    : notifications.map(n => (
-                      <div key={n.id} className={'flex gap-3 px-4 py-3 border-b border-gray-50 ' + (!n.is_read ? 'bg-teal-50/50' : '')}>
-                        <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-xs font-semibold text-teal-700 flex-shrink-0">
-                          {n.actor?.full_name?.[0] || '?'}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs text-gray-700 leading-relaxed">{n.message}</div>
-                          <div className="text-xs text-gray-400 mt-0.5">{timeAgo(n.created_at)}</div>
-                        </div>
-                      </div>
-                    ))
-                  }
-                </div>
-              </div>
-            )}
-          </div>
-          <button onClick={logout} className="text-sm text-gray-400 hover:text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors hidden sm:block">Log out</button>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-7">
 

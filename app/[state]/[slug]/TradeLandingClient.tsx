@@ -1,4 +1,5 @@
 'use client'
+import Navbar from '@/components/layout/Navbar'
 import { useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -97,52 +98,7 @@ export default function TradeLandingClient({
 
   return (
     <div className="min-h-screen" style={{ background: '#FAF9F6', fontFamily: "'DM Sans', sans-serif" }}>
-
-      {/* ── NAV ──────────────────────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-40 bg-white border-b" style={{ borderColor: '#E8E2D9' }}>
-        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-7 h-7">
-              <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M16 2L4 7V16C4 22.6 9.4 28.4 16 30C22.6 28.4 28 22.6 28 16V7L16 2Z" fill="url(#tlg)"/>
-                <text x="8.5" y="21" fontSize="12" fontWeight="700" fill="white" fontFamily="DM Sans,sans-serif">PG</text>
-                <defs><linearGradient id="tlg" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse"><stop stopColor="#14B8A6"/><stop offset="1" stopColor="#0C5F57"/></linearGradient></defs>
-              </svg>
-            </div>
-            <div className="flex items-baseline gap-0.5">
-              <span className="font-bold text-sm" style={{ color: '#0A1628' }}>ProGuild</span>
-              <span className="font-medium text-sm" style={{ color: '#0F766E' }}>.ai</span>
-            </div>
-          </Link>
-
-          {/* Inline search */}
-          <form onSubmit={handleSearch} className="flex-1 max-w-xl">
-            <div className="flex rounded-xl overflow-hidden border bg-white" style={{ borderColor: '#E8E2D9' }}>
-              <input
-                type="text" value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder={`Search ${tradeTitle.toLowerCase()}s in ${stateName}...`}
-                className="flex-1 px-4 py-2 text-sm outline-none"
-                style={{ background: 'transparent', color: '#0A1628' }}
-              />
-              <button type="submit"
-                className="px-4 py-2 text-sm font-bold text-white hover:opacity-90 transition-all"
-                style={{ background: 'linear-gradient(135deg, #0F766E, #0C5F57)' }}>
-                Search
-              </button>
-            </div>
-          </form>
-
-          <div className="flex items-center gap-3 ml-auto flex-shrink-0">
-            <Link href="/login" className="text-sm hidden sm:block transition-colors" style={{ color: '#6B7280' }}>Log in</Link>
-            <Link href="/login?tab=signup"
-              className="text-xs font-bold px-4 py-2 rounded-lg text-white hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #0F766E, #0C5F57)' }}>
-              Join Free
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* ── AI MATCH BANNER ───────────────────────────────────────────── */}
       {showAIBanner && aiQuery && (
