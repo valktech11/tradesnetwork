@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
 
-const BASE = 'https://proguild.ai'
+const BASE  = 'https://proguild.ai'
 const LIMIT = 45000
 
 export async function GET() {
@@ -14,9 +14,9 @@ export async function GET() {
     const proCount   = count || 0
     const proBatches = Math.ceil(proCount / LIMIT)
 
+    // Only reference routes that actually exist
     const sitemaps = [
       `${BASE}/sitemaps/static`,
-      `${BASE}/sitemaps/trades`,
       ...Array.from({ length: proBatches }, (_, i) => `${BASE}/sitemaps/pros/${i}`),
     ]
 
@@ -26,9 +26,13 @@ ${sitemaps.map(url => `  <sitemap><loc>${url}</loc></sitemap>`).join('\n')}
 </sitemapindex>`
 
     return new NextResponse(xml, {
-      headers: { 'Content-Type': 'application/xml' },
+      headers: {
+        'Content-Type': 'application/xml; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600',
+      },
     })
-  } catch {
-    return new NextResponse('Error', { status: 500 })
+  } catch (err) {
+    console.error('[sitemaps] error:', err)
+    return new NextResponse('Error generating sitemap index', { status: 500 })
   }
 }
