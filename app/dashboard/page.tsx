@@ -227,8 +227,6 @@ export default function DashboardPage() {
           reviewCount={reviews.length}
           pipelineValue={pipelineValue}
           loading={loading}
-          onLeadsClick={() => pipelineRef.current?.scrollIntoView({ behavior: 'smooth' })}
-          onRatingClick={() => reviewsRef.current?.scrollIntoView({ behavior: 'smooth' })}
         />
 
         {/* ── MAIN GRID ─────────────────────────────────────────────────── */}
@@ -253,20 +251,20 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* REVENUE SNAPSHOT */}
-            <div className="bg-white border border-gray-100 rounded-2xl p-5">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-semibold text-gray-900">Revenue</span>
-                <span className="text-xs text-gray-400">from your pipeline</span>
+            {/* REVENUE SNAPSHOT — only shows as full card when there's real data */}
+            {paidLeads.length === 0 ? (
+              <div className="flex items-center gap-2 px-4 py-3 bg-white border border-gray-100 rounded-2xl text-sm text-gray-400">
+                <span>💰</span>
+                <span>Revenue tracking starts when you mark a job </span>
+                <span className="font-semibold text-teal-600">Paid</span>
+                <span> in your pipeline.</span>
               </div>
-              {paidLeads.length === 0 ? (
-                <div className="text-center py-4">
-                  <p className="text-sm text-gray-400 mb-1">No paid jobs yet</p>
-                  <p className="text-xs text-gray-400">
-                    Move a lead to <span className="font-semibold text-teal-600">Paid</span> in your pipeline to start tracking revenue
-                  </p>
+            ) : (
+              <div className="bg-white border border-gray-100 rounded-2xl p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-sm font-semibold text-gray-900">Revenue</span>
+                  <span className="text-xs text-gray-400">from pipeline data</span>
                 </div>
-              ) : (
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1">This month</div>
@@ -285,8 +283,8 @@ export default function DashboardPage() {
                     </div>
                   )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* REVIEWS */}
             <div ref={reviewsRef} className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
@@ -297,7 +295,9 @@ export default function DashboardPage() {
                     <span className="text-xs text-gray-400">{avgRating.toFixed(1)} avg · {reviews.length} total</span>
                   )}
                 </div>
-                <Link href={'/pro/' + session.id} className="text-xs text-teal-600 hover:underline">View all →</Link>
+                <Link href={'/pro/' + session.id} className="text-xs font-semibold text-teal-600 hover:underline">
+                  View all →
+                </Link>
               </div>
 
               {/* Low rating tip */}
@@ -378,11 +378,11 @@ export default function DashboardPage() {
 
               {/* Avatar */}
               <div className="text-center mb-4">
-                <div className="relative w-16 h-16 mx-auto mb-3 group cursor-pointer"
+                <div className="relative w-24 h-24 mx-auto mb-3 group cursor-pointer"
                   onClick={() => document.getElementById('avatar-input')?.click()}>
                   {proData?.profile_photo_url
-                    ? <img src={proData.profile_photo_url} alt={session.name} className="w-16 h-16 rounded-full object-cover" />
-                    : <div className="w-16 h-16 rounded-full flex items-center justify-center font-serif text-xl"
+                    ? <img src={proData.profile_photo_url} alt={session.name} className="w-24 h-24 rounded-full object-cover" />
+                    : <div className="w-24 h-24 rounded-full flex items-center justify-center font-serif text-2xl"
                         style={{ background: bg, color: fg }}>{initials(session.name)}</div>
                   }
                   <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">

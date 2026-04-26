@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { Lead } from '@/types'
 import { initials, avatarColor, timeAgo } from '@/lib/utils'
 
-// ── Pipeline stages ───────────────────────────────────────────────────────────
 export const PIPELINE_STAGES = [
   { key: 'New',       label: 'New',       color: '#F59E0B', bg: '#FEF3C7', dot: '#F59E0B' },
   { key: 'Contacted', label: 'Contacted', color: '#3B82F6', bg: '#EFF6FF', dot: '#3B82F6' },
@@ -15,6 +14,11 @@ export const PIPELINE_STAGES = [
 
 type StageKey = typeof PIPELINE_STAGES[number]['key']
 
+// Stage order for direction detection
+const STAGE_ORDER: Record<string, number> = {
+  New: 0, Contacted: 1, Quoted: 2, Scheduled: 3, Completed: 4, Paid: 5, Lost: 6,
+}
+
 interface Props {
   leads: Lead[]
   onStatusChange: (leadId: string, status: string) => Promise<void>
@@ -22,6 +26,7 @@ interface Props {
   isPaid: boolean
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function daysSince(dateStr: string): number {
   return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000)
 }
@@ -33,10 +38,74 @@ function DaysChip({ days }: { days: number }) {
     days >= 2 ? { bg: '#FEF3C7', color: '#B45309' } :
                 { bg: '#D1FAE5', color: '#065F46' }
   return (
-    <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0"
-      style={{ background: style.bg, color: style.color }}>
+    <span
+      className="text-xs font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0"
+      style={{ background: style.bg, color: style.color }}
+      title={`${days} day${days !== 1 ? 's' : ''} in this stage`}
+    >
       {days}d
     </span>
+  )
+}
+
+// ── Backward move confirmation modal ──────────────────────────────────────────
+function BackwardConfirm({
+  fromStage,
+  toStage,
+  isPaidMove,
+  onConfirm,
+  onCancel,
+}: {
+  fromStage: string
+  toStage: string
+  isPaidMove: boolean
+  onConfirm: () => void
+  onCancel: () => void
+}) {
+  return (
+    <div
+      className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4"
+      onClick={onCancel}
+    >
+      <div
+        className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mb-4 mx-auto">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round">
+            <path d="M11 8v4M11 14.5v.5" />
+            <circle cx="11" cy="11" r="9" />
+          </svg>
+        </div>
+        <h3 className="text-base font-bold text-gray-900 text-center mb-2">
+          Move back to {toStage}?
+        </h3>
+        <p className="text-sm text-gray-500 text-center mb-2">
+          This lead is currently <span className="font-semibold text-gray-700">{fromStage}</span>.
+          Moving it back to <span className="font-semibold text-gray-700">{toStage}</span> is allowed but tracked.
+        </p>
+        {isPaidMove && (
+          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-center mb-2">
+            ⚠️ This lead was marked <strong>Paid</strong>. Moving it back will affect your revenue stats.
+          </p>
+        )}
+        <div className="flex gap-3 mt-4">
+          <button
+            onClick={onCancel}
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors"
+            style={{ background: 'linear-gradient(135deg, #0F766E, #0C5F57)' }}
+          >
+            Yes, move back
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -54,6 +123,27 @@ function LeadModal({ lead, onClose, onStatusChange, onUpdate }: {
   const [saving, setSaving]       = useState(false)
   const [status, setStatus]       = useState(lead.lead_status)
 
+  // Backward move confirmation state
+  const [pendingStage, setPendingStage] = useState<string | null>(null)
+
+  function handleStageClick(newStage: string) {
+    if (newStage === status) return
+    const currentOrder = STAGE_ORDER[status] ?? 0
+    const newOrder     = STAGE_ORDER[newStage] ?? 0
+    const isBackward   = newOrder < currentOrder
+
+    if (isBackward) {
+      setPendingStage(newStage) // show confirmation
+    } else {
+      setStatus(newStage as any)
+    }
+  }
+
+  function confirmBackward() {
+    if (pendingStage) setStatus(pendingStage as any)
+    setPendingStage(null)
+  }
+
   async function save() {
     setSaving(true)
     await onUpdate(lead.id, {
@@ -68,93 +158,147 @@ function LeadModal({ lead, onClose, onStatusChange, onUpdate }: {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
-      onClick={onClose}>
-      <div className="bg-white w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl"
-        onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: '#E8E2D9' }}>
-          <div>
-            <div className="text-base font-bold" style={{ color: '#0A1628' }}>{lead.contact_name}</div>
-            <div className="text-xs" style={{ color: '#A89F93' }}>{timeAgo(lead.created_at)} · {lead.lead_source?.replace('_', ' ')}</div>
+    <>
+      {pendingStage && (
+        <BackwardConfirm
+          fromStage={status}
+          toStage={pendingStage}
+          isPaidMove={status === 'Paid'}
+          onConfirm={confirmBackward}
+          onCancel={() => setPendingStage(null)}
+        />
+      )}
+
+      <div
+        className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+        onClick={onClose}
+      >
+        <div
+          className="bg-white w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl"
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: '#E8E2D9' }}>
+            <div>
+              <div className="text-base font-bold" style={{ color: '#0A1628' }}>{lead.contact_name}</div>
+              <div className="text-xs" style={{ color: '#A89F93' }}>
+                {timeAgo(lead.created_at)} · {lead.lead_source?.replace('_', ' ')}
+              </div>
+            </div>
+            <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400">✕</button>
           </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400">✕</button>
-        </div>
-        <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
-          <div className="p-4 rounded-xl" style={{ background: '#FAF9F6', border: '1px solid #E8E2D9' }}>
-            <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#A89F93' }}>Request</div>
-            <div className="text-sm leading-relaxed" style={{ color: '#4B5563' }}>{lead.message}</div>
-          </div>
-          <div className="flex gap-2">
-            {lead.contact_phone && (
-              <a href={`tel:${lead.contact_phone}`}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white"
+
+          <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+
+            {/* Message */}
+            <div className="p-4 rounded-xl" style={{ background: '#FAF9F6', border: '1px solid #E8E2D9' }}>
+              <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#A89F93' }}>Request</div>
+              <div className="text-sm leading-relaxed" style={{ color: '#4B5563' }}>{lead.message}</div>
+            </div>
+
+            {/* Contact */}
+            <div className="flex gap-2">
+              {lead.contact_phone && (
+                <a href={`tel:${lead.contact_phone}`}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white"
+                  style={{ background: 'linear-gradient(135deg, #0F766E, #0C5F57)' }}>
+                  📞 Call {lead.contact_name.split(' ')[0]}
+                </a>
+              )}
+              {lead.contact_email && (
+                <a href={`mailto:${lead.contact_email}`}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold border"
+                  style={{ borderColor: '#E8E2D9', color: '#0A1628' }}>
+                  ✉ Email
+                </a>
+              )}
+            </div>
+
+            {/* Stage buttons — with visual direction cue */}
+            <div>
+              <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#A89F93' }}>
+                Pipeline stage
+                <span className="ml-2 normal-case font-normal text-gray-400">
+                  — moving backward will ask for confirmation
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-1.5">
+                {PIPELINE_STAGES.map(s => {
+                  const currentOrder = STAGE_ORDER[status] ?? 0
+                  const thisOrder    = STAGE_ORDER[s.key] ?? 0
+                  const isBackward   = thisOrder < currentOrder
+                  const isCurrent    = status === s.key
+                  return (
+                    <button key={s.key}
+                      onClick={() => handleStageClick(s.key)}
+                      className="py-2 rounded-lg text-xs font-semibold border transition-all relative"
+                      style={isCurrent
+                        ? { background: s.bg, color: s.color, borderColor: s.color }
+                        : { background: 'white', color: '#6B7280', borderColor: '#E8E2D9' }}
+                    >
+                      {isBackward && !isCurrent && (
+                        <span className="absolute top-0.5 right-1 text-gray-300 text-xs">↩</span>
+                      )}
+                      {s.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Quote */}
+            <div>
+              <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#A89F93' }}>Quote amount</div>
+              <div className="flex items-center border rounded-xl overflow-hidden" style={{ borderColor: '#E8E2D9' }}>
+                <span className="px-3 py-2.5 text-sm font-semibold" style={{ color: '#A89F93', background: '#FAF9F6' }}>$</span>
+                <input type="number" value={amount} onChange={e => setAmount(e.target.value)}
+                  placeholder="0.00" className="flex-1 px-3 py-2.5 text-sm outline-none bg-white" style={{ color: '#0A1628' }} />
+              </div>
+            </div>
+
+            {/* Dates */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#A89F93' }}>Scheduled date</div>
+                <input type="date" value={schedDate} onChange={e => setSchedDate(e.target.value)}
+                  className="w-full px-3 py-2.5 text-sm border rounded-xl outline-none"
+                  style={{ borderColor: '#E8E2D9', color: '#0A1628' }} />
+              </div>
+              <div>
+                <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#A89F93' }}>Follow-up date</div>
+                <input type="date" value={followUp} onChange={e => setFollowUp(e.target.value)}
+                  className="w-full px-3 py-2.5 text-sm border rounded-xl outline-none"
+                  style={{ borderColor: '#E8E2D9', color: '#0A1628' }} />
+              </div>
+            </div>
+
+            {/* Notes */}
+            <div>
+              <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#A89F93' }}>Notes</div>
+              <textarea value={notes} onChange={e => setNotes(e.target.value)}
+                placeholder="Left voicemail, quoted $850, customer wants work done by Friday..."
+                rows={3} className="w-full px-3 py-2.5 text-sm border rounded-xl outline-none resize-none"
+                style={{ borderColor: '#E8E2D9', color: '#0A1628' }} />
+            </div>
+
+            {/* Save / Lost */}
+            <div className="flex gap-2 pt-2 border-t" style={{ borderColor: '#E8E2D9' }}>
+              <button
+                onClick={async () => { await onStatusChange(lead.id, 'Lost'); onClose() }}
+                className="flex-1 py-2 rounded-xl text-xs font-semibold border border-red-200 text-red-400 hover:bg-red-50 transition-colors"
+              >
+                Mark Lost
+              </button>
+              <button onClick={save} disabled={saving}
+                className="flex-1 py-2 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
                 style={{ background: 'linear-gradient(135deg, #0F766E, #0C5F57)' }}>
-                📞 Call {lead.contact_name.split(' ')[0]}
-              </a>
-            )}
-            {lead.contact_email && (
-              <a href={`mailto:${lead.contact_email}`}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold border"
-                style={{ borderColor: '#E8E2D9', color: '#0A1628' }}>
-                ✉ Email
-              </a>
-            )}
-          </div>
-          <div>
-            <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#A89F93' }}>Pipeline stage</div>
-            <div className="grid grid-cols-3 gap-1.5">
-              {PIPELINE_STAGES.map(s => (
-                <button key={s.key} onClick={() => setStatus(s.key as any)}
-                  className="py-2 rounded-lg text-xs font-semibold border transition-all"
-                  style={status === s.key
-                    ? { background: s.bg, color: s.color, borderColor: s.color }
-                    : { background: 'white', color: '#6B7280', borderColor: '#E8E2D9' }}>
-                  {s.label}
-                </button>
-              ))}
+                {saving ? 'Saving...' : 'Save'}
+              </button>
             </div>
-          </div>
-          <div>
-            <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#A89F93' }}>Quote amount</div>
-            <div className="flex items-center border rounded-xl overflow-hidden" style={{ borderColor: '#E8E2D9' }}>
-              <span className="px-3 py-2.5 text-sm font-semibold" style={{ color: '#A89F93', background: '#FAF9F6' }}>$</span>
-              <input type="number" value={amount} onChange={e => setAmount(e.target.value)}
-                placeholder="0.00" className="flex-1 px-3 py-2.5 text-sm outline-none bg-white" style={{ color: '#0A1628' }} />
-            </div>
-          </div>
-          <div>
-            <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#A89F93' }}>Scheduled date</div>
-            <input type="date" value={schedDate} onChange={e => setSchedDate(e.target.value)}
-              className="w-full px-3 py-2.5 text-sm border rounded-xl outline-none"
-              style={{ borderColor: '#E8E2D9', color: '#0A1628' }} />
-          </div>
-          <div>
-            <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#A89F93' }}>Follow-up date</div>
-            <input type="date" value={followUp} onChange={e => setFollowUp(e.target.value)}
-              className="w-full px-3 py-2.5 text-sm border rounded-xl outline-none"
-              style={{ borderColor: '#E8E2D9', color: '#0A1628' }} />
-          </div>
-          <div>
-            <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#A89F93' }}>Notes</div>
-            <textarea value={notes} onChange={e => setNotes(e.target.value)}
-              placeholder="Left voicemail, quoted $850, customer wants work done by Friday..."
-              rows={3} className="w-full px-3 py-2.5 text-sm border rounded-xl outline-none resize-none"
-              style={{ borderColor: '#E8E2D9', color: '#0A1628' }} />
-          </div>
-          <div className="flex gap-2 pt-2 border-t" style={{ borderColor: '#E8E2D9' }}>
-            <button onClick={async () => { await onStatusChange(lead.id, 'Lost'); onClose() }}
-              className="flex-1 py-2 rounded-xl text-xs font-semibold border border-red-200 text-red-400 hover:bg-red-50 transition-colors">
-              Mark Lost
-            </button>
-            <button onClick={save} disabled={saving}
-              className="flex-1 py-2 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
-              style={{ background: 'linear-gradient(135deg, #0F766E, #0C5F57)' }}>
-              {saving ? 'Saving...' : 'Save'}
-            </button>
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 
@@ -168,10 +312,12 @@ function PaidPrompt({ lead, onDismiss }: { lead: Lead; onDismiss: () => void }) 
         Job marked paid — send <span className="font-semibold">{lead.contact_name}</span> a review request?
       </p>
       {lead.contact_email && (
-        <a href={`mailto:${lead.contact_email}?subject=How did we do?&body=Hi ${lead.contact_name.split(' ')[0]}, thanks for choosing us! We'd love a review on ProGuild: https://proguild.ai`}
+        <a
+          href={`mailto:${lead.contact_email}?subject=How did we do?&body=Hi ${lead.contact_name.split(' ')[0]}, thanks for choosing us! We'd love a review on ProGuild: https://proguild.ai`}
           className="text-xs font-semibold text-white px-3 py-1.5 rounded-full hover:opacity-90"
           style={{ background: '#0F766E' }}
-          onClick={onDismiss}>
+          onClick={onDismiss}
+        >
           Send request
         </a>
       )}
@@ -181,20 +327,23 @@ function PaidPrompt({ lead, onDismiss }: { lead: Lead; onDismiss: () => void }) 
 }
 
 // ── Lead card ─────────────────────────────────────────────────────────────────
-function LeadCard({ lead, onOpen }: { lead: Lead; onOpen: () => void }) {
+function LeadCard({ lead, stage, onOpen }: { lead: Lead; stage: typeof PIPELINE_STAGES[number]; onOpen: () => void }) {
   const [bg, fg] = avatarColor(lead.contact_name)
-  const days = daysSince(lead.created_at)
+  const days     = daysSince(lead.created_at)
   const isOverdue = days > 3
-  const today = new Date(); today.setHours(0,0,0,0)
+  const today = new Date(); today.setHours(0, 0, 0, 0)
   const followUpDue = lead.follow_up_date ? new Date(lead.follow_up_date) <= today : false
 
   return (
-    <div onClick={onOpen}
+    <div
+      onClick={onOpen}
       className="bg-white rounded-xl cursor-pointer hover:-translate-y-0.5 hover:shadow-md transition-all p-3.5"
       style={{
-        border: isOverdue ? '1.5px solid #FCA5A5' : '1px solid #E8E2D9',
+        border: isOverdue ? '1.5px solid #FCA5A5' : `1.5px solid ${stage.color}33`,
+        borderLeft: `3px solid ${stage.color}`,
         boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-      }}>
+      }}
+    >
       <div className="flex items-start gap-2.5 mb-2">
         <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
           style={{ background: bg, color: fg }}>
@@ -206,7 +355,9 @@ function LeadCard({ lead, onOpen }: { lead: Lead; onOpen: () => void }) {
         </div>
         <DaysChip days={days} />
       </div>
+
       <div className="text-xs leading-relaxed line-clamp-2 mb-2.5" style={{ color: '#6B7280' }}>{lead.message}</div>
+
       <div className="flex items-center gap-1.5 flex-wrap">
         {lead.contact_phone && (
           <a href={`tel:${lead.contact_phone}`} onClick={e => e.stopPropagation()}
@@ -232,7 +383,8 @@ function LeadCard({ lead, onOpen }: { lead: Lead; onOpen: () => void }) {
           </span>
         )}
         {lead.lead_source === 'Registry_Card' && (
-          <span className="text-xs px-1.5 py-0.5 rounded ml-auto" style={{ background: '#FEF3C7', color: '#92400E' }}>Registry</span>
+          <span className="text-xs px-1.5 py-0.5 rounded ml-auto"
+            style={{ background: '#FEF3C7', color: '#92400E' }}>Registry</span>
         )}
       </div>
     </div>
@@ -242,14 +394,14 @@ function LeadCard({ lead, onOpen }: { lead: Lead; onOpen: () => void }) {
 // ── Pipeline header ───────────────────────────────────────────────────────────
 function PipelineHeader({ leads }: { leads: Lead[] }) {
   const pipelineValue = leads
-    .filter(l => l.quoted_amount && !['Lost','Archived'].includes(l.lead_status))
+    .filter(l => l.quoted_amount && !['Lost', 'Archived'].includes(l.lead_status))
     .reduce((sum, l) => sum + (l.quoted_amount || 0), 0)
   const needAction = leads
-    .filter(l => !['Paid','Lost','Archived'].includes(l.lead_status) && daysSince(l.created_at) > 3).length
+    .filter(l => !['Paid', 'Lost', 'Archived'].includes(l.lead_status) && daysSince(l.created_at) > 3).length
   const newCount = leads.filter(l => l.lead_status === 'New').length
 
   return (
-    <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+    <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-wrap gap-2">
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-sm font-semibold text-gray-900">Lead Pipeline</span>
         {newCount > 0 && (
@@ -270,9 +422,10 @@ function PipelineHeader({ leads }: { leads: Lead[] }) {
           </span>
         )}
       </div>
+      {/* "Tap to manage" hint — shown always for now, v72 will use localStorage to show once */}
       <span className="text-xs font-medium px-2 py-1 rounded-lg"
         style={{ background: 'rgba(15,118,110,0.06)', color: '#0F766E' }}>
-        Tap any card to manage
+        Tap card to manage
       </span>
     </div>
   )
@@ -328,7 +481,7 @@ export default function LeadPipeline({ leads, onStatusChange, onUpdate, isPaid }
           </div>
         ) : (
           <>
-            {/* Mobile tabs */}
+            {/* Mobile: stage tabs + single column */}
             <div className="md:hidden flex gap-1 mb-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
               {PIPELINE_STAGES.map(s => {
                 const cnt = leadsForStage(s.key).length
@@ -346,48 +499,83 @@ export default function LeadPipeline({ leads, onStatusChange, onUpdate, isPaid }
             <div className="md:hidden space-y-2">
               {leadsForStage(mobileStage).length === 0
                 ? <div className="text-center py-8 text-sm" style={{ color: '#A89F93' }}>No leads in {mobileStage}</div>
-                : leadsForStage(mobileStage).map(lead => (
-                    <LeadCard key={lead.id} lead={lead} onOpen={() => setSelectedLead(lead)} />
-                  ))
+                : leadsForStage(mobileStage).map(lead => {
+                    const stage = PIPELINE_STAGES.find(s => s.key === lead.lead_status) || PIPELINE_STAGES[0]
+                    return <LeadCard key={lead.id} lead={lead} stage={stage} onOpen={() => setSelectedLead(lead)} />
+                  })
               }
             </div>
 
-            {/* Desktop Kanban */}
-            <div className="hidden md:grid gap-3" style={{ gridTemplateColumns: 'repeat(6, minmax(160px, 1fr))' }}>
-              {PIPELINE_STAGES.map(stage => {
-                const stageLeads = leadsForStage(stage.key)
-                return (
-                  <div key={stage.key} className="flex flex-col min-h-64">
-                    <div className="flex items-center justify-between mb-2 px-1">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full" style={{ background: stage.dot }} />
-                        <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#6B7280' }}>{stage.label}</span>
+            {/* Desktop: horizontally scrollable Kanban
+                - overflow-x-auto so all 6 columns are reachable
+                - fixed 180px columns, height auto-sizes to content
+                - empty columns are visually de-emphasised */}
+            <div className="hidden md:block overflow-x-auto pb-2">
+              <div className="flex gap-3" style={{ minWidth: 'max-content' }}>
+                {PIPELINE_STAGES.map(stage => {
+                  const stageLeads = leadsForStage(stage.key)
+                  const hasLeads   = stageLeads.length > 0
+
+                  return (
+                    <div key={stage.key} style={{ width: 180, flexShrink: 0 }}>
+                      {/* Column header — coloured when active */}
+                      <div
+                        className="flex items-center justify-between mb-2 px-2 py-1.5 rounded-lg"
+                        style={hasLeads
+                          ? { background: stage.bg }
+                          : { background: 'transparent' }
+                        }
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2 h-2 rounded-full" style={{ background: stage.dot, opacity: hasLeads ? 1 : 0.4 }} />
+                          <span
+                            className="text-xs font-bold uppercase tracking-widest"
+                            style={{ color: hasLeads ? stage.color : '#C4BCAF' }}
+                          >
+                            {stage.label}
+                          </span>
+                        </div>
+                        {hasLeads && (
+                          <span
+                            className="text-xs font-bold px-1.5 py-0.5 rounded-full"
+                            style={{ background: 'white', color: stage.color }}
+                          >
+                            {stageLeads.length}
+                          </span>
+                        )}
                       </div>
-                      {stageLeads.length > 0 && (
-                        <span className="text-xs font-bold px-1.5 py-0.5 rounded-full"
-                          style={{ background: stage.bg, color: stage.color }}>
-                          {stageLeads.length}
-                        </span>
-                      )}
+
+                      {/* Cards — no fixed height, sizes to content */}
+                      <div className="space-y-2">
+                        {!hasLeads ? (
+                          <div
+                            className="flex items-center justify-center text-xs rounded-xl py-6"
+                            style={{
+                              color: '#D1CBC3',
+                              border: '1.5px dashed #E8E2D9',
+                            }}
+                          >
+                            Empty
+                          </div>
+                        ) : stageLeads.map(lead => (
+                          <LeadCard
+                            key={lead.id}
+                            lead={lead}
+                            stage={stage}
+                            onOpen={() => setSelectedLead(lead)}
+                          />
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex-1 space-y-2 min-h-16 rounded-xl p-1"
-                      style={{ background: stageLeads.length === 0 ? 'rgba(0,0,0,0.02)' : 'transparent' }}>
-                      {stageLeads.length === 0
-                        ? <div className="h-full flex items-center justify-center text-xs" style={{ color: '#D1CBC3' }}>Empty</div>
-                        : stageLeads.map(lead => (
-                            <LeadCard key={lead.id} lead={lead} onOpen={() => setSelectedLead(lead)} />
-                          ))
-                      }
-                    </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
             </div>
 
             {leads.filter(l => l.lead_status === 'Lost').length > 0 && (
-              <div className="mt-4 text-center">
+              <div className="mt-3 text-center">
                 <span className="text-xs" style={{ color: '#A89F93' }}>
-                  {leads.filter(l => l.lead_status === 'Lost').length} lost leads hidden
+                  {leads.filter(l => l.lead_status === 'Lost').length} lost lead{leads.filter(l => l.lead_status === 'Lost').length !== 1 ? 's' : ''} hidden
                 </span>
               </div>
             )}

@@ -15,38 +15,36 @@ function daysSince(dateStr: string): number {
 export default function ActionAlert({ leads, onRespond }: ActionAlertProps) {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
 
-  // Build alerts from leads — no API call, all client-side from existing data
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  const alerts: Array<{
+  // Build alerts — ONE per lead maximum. Overdue takes priority over follow-up.
+  const alertMap = new Map<string, {
     id: string
     lead_id: string
     type: 'overdue' | 'followup'
     contact_name: string
     days: number
-  }> = []
+  }>()
 
   leads
     .filter(l => !['Completed', 'Paid', 'Lost', 'Archived'].includes(l.lead_status))
     .forEach(l => {
-      // Overdue: no activity for 3+ days
       const days = daysSince(l.created_at)
       if (days >= 3) {
-        alerts.push({
+        // Overdue — takes priority, overwrites any followup for same lead
+        alertMap.set(l.id, {
           id: `overdue-${l.id}`,
           lead_id: l.id,
           type: 'overdue',
           contact_name: l.contact_name,
           days,
         })
-      }
-      // Follow-up due today or past due
-      if (l.follow_up_date) {
+      } else if (l.follow_up_date && !alertMap.has(l.id)) {
         const fDate = new Date(l.follow_up_date)
         fDate.setHours(0, 0, 0, 0)
         if (fDate <= today) {
-          alerts.push({
+          alertMap.set(l.id, {
             id: `followup-${l.id}`,
             lead_id: l.id,
             type: 'followup',
@@ -57,56 +55,61 @@ export default function ActionAlert({ leads, onRespond }: ActionAlertProps) {
       }
     })
 
+  const alerts = Array.from(alertMap.values())
   const visible = alerts.filter(a => !dismissed.has(a.id))
+
   if (visible.length === 0) return null
 
   return (
-    <div className="mb-5 rounded-2xl overflow-hidden border border-amber-200">
+    <div className="mb-5 rounded-2xl overflow-hidden border border-amber-200 bg-amber-50">
+      {/* Header row */}
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-amber-200">
+        <div className="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0">
+          <span className="text-white text-xs font-bold">{visible.length}</span>
+        </div>
+        <p className="text-sm font-semibold text-amber-900 flex-1">
+          {visible.length === 1
+            ? '1 lead needs your attention'
+            : `${visible.length} leads need your attention`}
+        </p>
+      </div>
+
+      {/* Individual alerts */}
       {visible.map((alert, i) => (
         <div
           key={alert.id}
-          className={`flex items-center gap-3 px-4 py-3 ${
-            i > 0 ? 'border-t border-amber-200' : ''
-          } ${alert.type === 'overdue' ? 'bg-amber-50' : 'bg-blue-50'}`}
+          className={`flex items-center gap-3 px-4 py-3 ${i > 0 ? 'border-t border-amber-100' : ''}`}
         >
-          {/* Urgency dot */}
-          <div
-            className={`w-2 h-2 rounded-full flex-shrink-0 ${
-              alert.type === 'overdue'
-                ? alert.days > 5 ? 'bg-red-500 animate-pulse' : 'bg-amber-400'
-                : 'bg-blue-500'
-            }`}
-          />
+          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+            alert.type === 'overdue'
+              ? alert.days > 7 ? 'bg-red-500 animate-pulse' : 'bg-amber-400'
+              : 'bg-blue-400'
+          }`} />
 
-          {/* Message */}
-          <p className="text-sm text-gray-800 flex-1">
+          <p className="text-sm text-amber-800 flex-1">
             {alert.type === 'overdue' ? (
               <>
                 <span className="font-semibold">{alert.contact_name}</span>
-                {' '}hasn't been contacted in{' '}
-                <span className="font-semibold text-red-600">{alert.days} day{alert.days !== 1 ? 's' : ''}</span>
+                {' '}— no contact in{' '}
+                <span className="font-semibold text-red-600">{alert.days} days</span>
               </>
             ) : (
               <>
-                Follow-up with{' '}
-                <span className="font-semibold">{alert.contact_name}</span>
-                {' '}is due today
+                Follow-up with <span className="font-semibold">{alert.contact_name}</span> due today
               </>
             )}
           </p>
 
-          {/* Respond CTA */}
           <button
             onClick={() => onRespond(alert.lead_id)}
-            className="text-sm font-semibold text-teal-700 hover:text-teal-900 whitespace-nowrap transition-colors"
+            className="text-sm font-semibold text-teal-700 hover:text-teal-900 whitespace-nowrap transition-colors border border-teal-200 bg-white rounded-lg px-3 py-1"
           >
-            Respond →
+            Open →
           </button>
 
-          {/* Dismiss — session only, reappears next visit if still overdue */}
           <button
             onClick={() => setDismissed(prev => new Set([...prev, alert.id]))}
-            className="text-gray-400 hover:text-gray-600 transition-colors text-xl leading-none ml-1"
+            className="text-amber-400 hover:text-amber-600 transition-colors text-xl leading-none"
             aria-label="Dismiss"
           >
             ×
