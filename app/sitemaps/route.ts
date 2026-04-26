@@ -1,0 +1,34 @@
+import { NextResponse } from 'next/server'
+import { getSupabaseAdmin } from '@/lib/supabase'
+
+const BASE = 'https://proguild.ai'
+const LIMIT = 45000
+
+export async function GET() {
+  try {
+    const { count } = await getSupabaseAdmin()
+      .from('pros')
+      .select('id', { count: 'exact', head: true })
+      .eq('profile_status', 'Active')
+
+    const proCount   = count || 0
+    const proBatches = Math.ceil(proCount / LIMIT)
+
+    const sitemaps = [
+      `${BASE}/sitemaps/static`,
+      `${BASE}/sitemaps/trades`,
+      ...Array.from({ length: proBatches }, (_, i) => `${BASE}/sitemaps/pros/${i}`),
+    ]
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${sitemaps.map(url => `  <sitemap><loc>${url}</loc></sitemap>`).join('\n')}
+</sitemapindex>`
+
+    return new NextResponse(xml, {
+      headers: { 'Content-Type': 'application/xml' },
+    })
+  } catch {
+    return new NextResponse('Error', { status: 500 })
+  }
+}
