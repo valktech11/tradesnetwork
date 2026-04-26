@@ -302,11 +302,9 @@ export default function MessagesContent() {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#FAF9F6', fontFamily: "'DM Sans', sans-serif" }}>
       <Navbar />
-      {/* Mobile: spacer for bottom nav */}
-      <div className="h-16 md:hidden" />
 
       {/* ── MOBILE: single panel, switch between threads and conversation ── */}
-      <div className="md:hidden flex-1 flex flex-col" style={{ height: 'calc(100vh - 64px - 64px)' }}>
+      <div className="md:hidden flex-1 flex flex-col" style={{ height: 'calc(100vh - 56px - 64px)' }}>
         {mobileView === 'threads' || !withId ? ThreadList : ConversationPanel}
       </div>
 
