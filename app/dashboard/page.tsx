@@ -227,6 +227,8 @@ export default function DashboardPage() {
           reviewCount={reviews.length}
           pipelineValue={pipelineValue}
           loading={loading}
+          onLeadsClick={() => pipelineRef.current?.scrollIntoView({ behavior: 'smooth' })}
+          onRatingClick={() => reviewsRef.current?.scrollIntoView({ behavior: 'smooth' })}
         />
 
         {/* ── MAIN GRID ─────────────────────────────────────────────────── */}
