@@ -89,10 +89,16 @@ function UnclaimedContactForm({ pro }: { pro: ProCardProps['pro'] }) {
         placeholder="Your email (optional)" type="email"
         className="w-full px-3 py-2 text-sm rounded-lg border outline-none"
         style={{ borderColor: '#E8E2D9', color: '#0A1628' }} />
-      <input value={phone} onChange={e => setPhone(e.target.value)}
-        placeholder="Your phone number *" type="tel"
+      <input
+        value={phone}
+        onChange={e => setPhone(e.target.value.replace(/[^\d\s\-\(\)\+]/g, ''))}
+        placeholder="(555) 555-5555"
+        type="tel"
+        inputMode="numeric"
+        maxLength={15}
         className="w-full px-3 py-2 text-sm rounded-lg border outline-none"
-        style={{ borderColor: '#E8E2D9', color: '#0A1628' }} />
+        style={{ borderColor: '#E8E2D9', color: '#0A1628' }}
+      />
       <textarea value={need} onChange={e => setNeed(e.target.value)}
         placeholder="What do you need done? *" rows={2}
         className="w-full px-3 py-2 text-sm rounded-lg border outline-none resize-none"
