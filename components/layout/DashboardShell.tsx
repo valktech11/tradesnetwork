@@ -250,7 +250,7 @@ function MoreDrawer({ open, onClose, session, newLeads }: {
         {session && (
           <div className="flex items-center gap-3 px-5 py-3 border-b border-white/10 mb-2">
             <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
-              style={{ backgroundColor: avatarColor(session.name) }}>
+              style={{ backgroundColor: avatarColor(session.name)[0], color: avatarColor(session.name)[1] }}>
               {initials(session.name)}
             </div>
             <div>
@@ -427,7 +427,7 @@ export default function DashboardShell({
               style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                  style={{ backgroundColor: avatarColor(session.name) }}>
+                  style={{ backgroundColor: avatarColor(session.name)[0], color: avatarColor(session.name)[1] }}>
                   {initials(session.name)}
                 </div>
                 <div className="min-w-0">
