@@ -35,12 +35,13 @@ export default function PipelinePage() {
 
   if (loading) {
     return (
-      <DashboardShell session={null} newLeads={0}>
-        <div className="flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+      <div className="fixed inset-0 flex items-center justify-center" style={{ backgroundColor: '#F5F4F0' }}>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 rounded-full animate-spin"
             style={{ borderColor: TEAL, borderTopColor: 'transparent' }} />
+          <span className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Loading...</span>
         </div>
-      </DashboardShell>
+      </div>
     )
   }
 
