@@ -416,62 +416,70 @@ function LeadCard({ lead, stage, onOpen }: {
   return (
     <div
       onClick={onOpen}
-      className="bg-white rounded-xl cursor-pointer hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] transition-all p-3.5"
+      className="bg-white rounded-xl cursor-pointer group transition-all"
       style={{
-        borderLeft: `4px solid ${stage.color}`,
-        border: isOverdue
-          ? '1.5px solid #FCA5A5'
-          : `1px solid ${stage.color}33`,
-        borderLeftWidth: 4,
-        borderLeftColor: stage.color,
-        boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+        border: isOverdue ? '1px solid #FCA5A5' : '1px solid #EAE6E1',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+        padding: '12px 14px',
       }}
+      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-1px)' }}
+      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)'; (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)' }}
     >
-      <div className="flex items-start gap-2.5 mb-2">
-        <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+      {/* Top: avatar + name + overdue chip */}
+      <div className="flex items-center gap-2 mb-1.5">
+        <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
           style={{ background: bg, color: fg }}>
           {initials(lead.contact_name)}
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold truncate text-gray-900">{lead.contact_name}</p>
-          <p className="text-xs text-gray-400">{timeAgo(lead.created_at)}</p>
-        </div>
-        <DaysChip days={days} />
+        <span className="text-[13px] font-semibold flex-1 min-w-0 truncate" style={{ color: '#0A1628' }}>
+          {lead.contact_name}
+        </span>
+        {isOverdue && (
+          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0"
+            style={{ backgroundColor: '#FEE2E2', color: '#B91C1C' }}>
+            {days}d
+          </span>
+        )}
       </div>
 
-      <p className="text-xs leading-relaxed line-clamp-2 mb-2.5 text-gray-600">{lead.message}</p>
+      {/* Message preview — single line */}
+      <p className="text-[11.5px] leading-snug line-clamp-1 mb-2" style={{ color: '#9CA3AF' }}>
+        {lead.message}
+      </p>
 
-      <div className="flex items-center gap-1.5 flex-wrap">
+      {/* Bottom: metadata row */}
+      <div className="flex items-center gap-1.5">
+        <span className="text-[10.5px]" style={{ color: '#C4BCAF' }}>{timeAgo(lead.created_at)}</span>
+        <span className="text-[10.5px]" style={{ color: '#E0DDD8' }}>·</span>
+        <span className="text-[10.5px]" style={{ color: '#C4BCAF' }}>
+          {lead.lead_source?.replace(/_/g, ' ')}
+        </span>
+        {lead.quoted_amount && (
+          <>
+            <span className="text-[10.5px] ml-auto font-bold" style={{ color: '#7C3AED' }}>
+              ${lead.quoted_amount.toLocaleString()}
+            </span>
+          </>
+        )}
+        {lead.scheduled_date && !lead.quoted_amount && (
+          <span className="text-[10.5px] ml-auto font-semibold" style={{ color: '#0F766E' }}>
+            {new Date(lead.scheduled_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+          </span>
+        )}
+        {followUpDue && !lead.quoted_amount && !lead.scheduled_date && (
+          <span className="text-[10px] ml-auto font-bold px-1.5 py-0.5 rounded"
+            style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
+            follow-up
+          </span>
+        )}
         {lead.contact_phone && (
           <a href={`tel:${lead.contact_phone}`} onClick={e => e.stopPropagation()}
-            className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-teal-50 transition-colors"
+            className="ml-auto w-5 h-5 flex items-center justify-center rounded-full hover:bg-teal-50 transition-colors flex-shrink-0"
             style={{ color: '#0F766E' }}>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+            <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
               <path d="M2.5 2.5C2.5 8.5 5.5 11.5 11.5 11.5l.5-2.5-2.5-1L8.5 10C7 9.5 4.5 7 4 5.5l1.5-1L4 2H2.5z"/>
             </svg>
           </a>
-        )}
-        {lead.quoted_amount && (
-          <span className="text-xs font-bold px-2 py-0.5 rounded"
-            style={{ background: '#F5F3FF', color: '#7C3AED' }}>
-            ${lead.quoted_amount.toLocaleString()}
-          </span>
-        )}
-        {lead.scheduled_date && (
-          <span className="text-xs font-semibold px-1.5 py-0.5 rounded"
-            style={{ background: '#F0FDFA', color: '#0F766E' }}>
-            📅 {new Date(lead.scheduled_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-          </span>
-        )}
-        {followUpDue && (
-          <span className="text-xs font-semibold px-1.5 py-0.5 rounded"
-            style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
-            follow-up today
-          </span>
-        )}
-        {lead.lead_source === 'Registry_Card' && (
-          <span className="text-xs px-1.5 py-0.5 rounded ml-auto"
-            style={{ background: '#FEF3C7', color: '#92400E' }}>Registry</span>
         )}
       </div>
     </div>
@@ -509,10 +517,7 @@ function PipelineHeader({ leads }: { leads: Lead[] }) {
           </span>
         )}
       </div>
-      <span className="text-xs font-medium px-2 py-1 rounded-lg"
-        style={{ background: 'rgba(15,118,110,0.06)', color: '#0F766E' }}>
-        Tap card to manage
-      </span>
+
     </div>
   )
 }
@@ -563,10 +568,16 @@ export default function LeadPipeline({ leads, onStatusChange, onUpdate, isPaid }
         )}
 
         {leads.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
-            <div className="text-3xl mb-2 opacity-20">📬</div>
-            <p className="text-sm font-medium text-gray-600 mb-1">No leads yet</p>
-            <p className="text-xs">When someone contacts you, they'll appear here.</p>
+          <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" className="mb-4 opacity-20">
+              <rect x="4" y="4" width="40" height="40" rx="4" stroke="#0F766E" strokeWidth="2"/>
+              <line x1="4" y1="16" x2="44" y2="16" stroke="#0F766E" strokeWidth="1.5" strokeDasharray="3 2"/>
+              <line x1="4" y1="28" x2="44" y2="28" stroke="#0F766E" strokeWidth="1.5" strokeDasharray="3 2"/>
+              <line x1="16" y1="4" x2="16" y2="44" stroke="#0F766E" strokeWidth="1.5" strokeDasharray="3 2"/>
+              <line x1="28" y1="4" x2="28" y2="44" stroke="#0F766E" strokeWidth="1.5" strokeDasharray="3 2"/>
+            </svg>
+            <p className="text-[14px] font-semibold mb-1" style={{ color: "#374151" }}>No leads yet</p>
+            <p className="text-[12px]" style={{ color: "#9CA3AF" }}>Use Quick Add in the sidebar to log your first lead.</p>
           </div>
         ) : (
           <>
@@ -603,31 +614,28 @@ export default function LeadPipeline({ leads, onStatusChange, onUpdate, isPaid }
                 return (
                   <div key={stage.key}>
                     {/* Column header */}
-                    <div
-                      className="flex items-center justify-between mb-2 px-2.5 py-2 rounded-xl"
-                      style={hasLeads ? { background: stage.bg } : {}}
-                    >
+                    <div className="flex items-center justify-between mb-2.5 px-1">
                       <div className="flex items-center gap-1.5">
-                        <div className="w-2.5 h-2.5 rounded-full"
-                          style={{ background: stage.dot, opacity: hasLeads ? 1 : 0.35 }} />
-                        <span className="text-xs font-bold uppercase tracking-wider"
-                          style={{ color: hasLeads ? stage.color : '#C4BCAF' }}>
+                        <div className="w-2 h-2 rounded-full flex-shrink-0"
+                          style={{ background: stage.color, opacity: hasLeads ? 1 : 0.25 }} />
+                        <span className="text-[11px] font-bold uppercase tracking-[0.08em]"
+                          style={{ color: hasLeads ? '#374151' : '#C4BCAF' }}>
                           {stage.label}
                         </span>
                       </div>
-                      {hasLeads && (
-                        <span className="text-xs font-bold px-1.5 py-0.5 rounded-full"
-                          style={{ background: 'white', color: stage.color }}>
-                          {stageLeads.length}
-                        </span>
-                      )}
+                      <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-md"
+                        style={{ backgroundColor: hasLeads ? stage.bg : 'transparent', color: hasLeads ? stage.color : '#D1CAC0' }}>
+                        {stageLeads.length}
+                      </span>
                     </div>
-                    {/* Cards — max 2 visible, collapse rest */}
+                    {/* Cards */}
                     <div className="space-y-2">
                       {!hasLeads ? (
-                        <div className="flex items-center justify-center py-8 rounded-xl text-xs text-gray-300"
+                        <div className="flex items-center justify-center py-6 rounded-xl"
                           style={{ border: '1.5px dashed #E8E2D9' }}>
-                          Empty
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D1CAC0" strokeWidth="1.5" strokeLinecap="round">
+                            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                          </svg>
                         </div>
                       ) : stageLeads.slice(0, 2).map(lead => (
                         <LeadCard key={lead.id} lead={lead} stage={stage} onOpen={() => setSelectedLead(lead)} />

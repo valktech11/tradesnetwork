@@ -76,7 +76,7 @@ function buildNav(nl: number): NavGroup[] {
 // ── NavLink ───────────────────────────────────────────────────────────────────
 function NavLink({ item, active, onNav }: { item: NavItem; active: boolean; onNav?: () => void }) {
   const row = (
-    <div className="relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-100 cursor-pointer"
+    <div className="relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[12.5px] font-medium transition-all duration-150 cursor-pointer"
       style={
         active ? {
           background: 'rgba(20,184,166,0.22)',
@@ -296,10 +296,10 @@ export default function DashboardShell({ children, session, newLeads = 0, onAddL
         <div className="hidden md:flex h-screen overflow-hidden">
 
           <aside className="pg-sb flex-shrink-0 flex flex-col h-full overflow-y-auto"
-            style={{ width: 220, background: 'linear-gradient(175deg,#0C1D38 0%,#07111C 100%)', borderRight: '1px solid rgba(255,255,255,.04)' }}>
+            style={{ width: 200, background: 'linear-gradient(175deg,#0E2040 0%,#091628 100%)', borderRight: '1px solid rgba(255,255,255,.04)' }}>
 
             {/* Logo */}
-            <div className="flex items-center gap-2.5 px-5 pt-5 pb-5 flex-shrink-0">
+            <div className="flex items-center gap-2.5 px-4 pt-4 pb-4 flex-shrink-0">
               <Logo />
               <div className="flex items-baseline gap-[1px]">
                 <span className="font-serif text-[15px] font-bold text-white tracking-tight">ProGuild</span>
@@ -308,9 +308,9 @@ export default function DashboardShell({ children, session, newLeads = 0, onAddL
             </div>
 
             {/* Quick Add */}
-            <div className="px-4 mb-6 flex-shrink-0">
+            <div className="px-4 mb-4 flex-shrink-0">
               <button onClick={onAddLead}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:brightness-110 active:scale-[.98]"
+                className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-[12.5px] font-semibold tracking-wide transition-all hover:brightness-110 active:scale-[.98]"
                 style={{ background: 'linear-gradient(135deg,#14B8A6 0%,#0A6460 100%)', color: '#fff', boxShadow: '0 4px 14px rgba(20,184,166,.3)' }}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.8" strokeLinecap="round">
                   <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
