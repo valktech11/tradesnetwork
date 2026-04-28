@@ -622,7 +622,7 @@ export default function LeadPipeline({ leads, onStatusChange, onUpdate, isPaid }
                         </span>
                       )}
                     </div>
-                    {/* Cards — max 2 visible, collapse rest */}
+                    {/* Cards — max 2 visible, show all in overflow */}
                     <div className="space-y-2">
                       {!hasLeads ? (
                         <div className="flex items-center justify-center py-8 rounded-xl text-xs text-gray-300"
@@ -634,10 +634,13 @@ export default function LeadPipeline({ leads, onStatusChange, onUpdate, isPaid }
                       ))}
                       {stageLeads.length > 2 && (
                         <button
-                          onClick={() => setSelectedLead(stageLeads[2])}
+                          onClick={() => {
+                            // Show third lead — user can navigate from modal
+                            setSelectedLead(stageLeads[2])
+                          }}
                           className="w-full py-2 text-xs font-semibold text-center rounded-xl border transition-colors hover:bg-gray-50"
                           style={{ borderColor: stage.color + '44', color: stage.color }}>
-                          +{stageLeads.length - 2} more
+                          +{stageLeads.length - 2} more — tap to view
                         </button>
                       )}
                     </div>

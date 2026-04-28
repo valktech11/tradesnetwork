@@ -41,6 +41,19 @@ function SourceIcon({ value }: { value: string }) {
   )
 }
 
+// ── Input helpers ─────────────────────────────────────────────────────────────
+function formatPhone(raw: string): string {
+  const digits = raw.replace(/\D/g, '').slice(0, 10)
+  if (digits.length <= 3) return digits
+  if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`
+  return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`
+}
+
+function sanitize(val: string): string {
+  // Strip escape chars and zero-width chars that can appear from mobile keyboards
+  return val.replace(/[\u0000-\u001F\u007F\u200B-\u200D\uFEFF]/g, '').trimStart()
+}
+
 interface AddLeadModalProps {
   proId: string
   onClose: () => void
@@ -123,7 +136,7 @@ export default function AddLeadModal({ proId, onClose, onAdded }: AddLeadModalPr
           {/* Contact name */}
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Contact name *</p>
-            <input value={name} onChange={e => setName(e.target.value)}
+            <input value={name} onChange={e => setName(sanitize(e.target.value))}
               placeholder="John Smith"
               className="w-full px-4 py-3 text-sm border-2 border-[#E8E2D9] rounded-xl outline-none text-[#0A1628]"
               onFocus={e => e.target.style.borderColor = '#0F766E'}
@@ -135,11 +148,11 @@ export default function AddLeadModal({ proId, onClose, onAdded }: AddLeadModalPr
             <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Phone number</p>
             <input
               value={phone}
-              onChange={e => setPhone(e.target.value.replace(/[^\d\s\-\(\)\+]/g, ''))}
-              placeholder="(555) 555-5555"
+              onChange={e => setPhone(formatPhone(e.target.value))}
+              placeholder="904-233-5566"
               type="tel"
               inputMode="numeric"
-              maxLength={15}
+              maxLength={12}
               className="w-full px-4 py-3 text-sm border-2 border-[#E8E2D9] rounded-xl outline-none text-[#0A1628]"
               onFocus={e => e.target.style.borderColor = '#0F766E'}
               onBlur={e => e.target.style.borderColor = '#E8E2D9'} />
@@ -148,18 +161,18 @@ export default function AddLeadModal({ proId, onClose, onAdded }: AddLeadModalPr
           {/* Email */}
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Email (optional)</p>
-            <input value={email} onChange={e => setEmail(e.target.value)}
+            <input value={email} onChange={e => setEmail(sanitize(e.target.value))}
               placeholder="john@example.com"
               type="email"
               className="w-full px-4 py-3 text-sm border-2 border-[#E8E2D9] rounded-xl outline-none text-[#0A1628]"
               onFocus={e => e.target.style.borderColor = '#0F766E'}
-              onBlur={e => e.target.style.borderColor = '#E8E2D9'} />
+              onBlur={e => { setEmail(e.target.value.trim().toLowerCase()); e.target.style.borderColor = '#E8E2D9' }} />
           </div>
 
           {/* What they need */}
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">What do they need? *</p>
-            <textarea value={need} onChange={e => setNeed(e.target.value)}
+            <textarea value={need} onChange={e => setNeed(sanitize(e.target.value))}
               placeholder="Full interior repaint, 3-bed house, wants it done before Christmas..."
               rows={3}
               className="w-full px-4 py-3 text-sm border-2 border-[#E8E2D9] rounded-xl outline-none resize-none text-[#0A1628]"

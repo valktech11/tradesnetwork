@@ -16,12 +16,27 @@ export default function PipelinePage() {
     return stored ? JSON.parse(stored) : null
   })
 
+  // Dark mode — persisted in localStorage, same key as Overview
+  const [dk, setDk] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem('pg_darkmode') === '1'
+  })
+
+  function toggleDark() {
+    setDk(prev => {
+      const next = !prev
+      localStorage.setItem('pg_darkmode', next ? '1' : '0')
+      return next
+    })
+  }
+
   const [leads,       setLeads]       = useState<Lead[]>([])
   const [dataLoading, setDataLoading] = useState(true)
   const [showAddLead, setShowAddLead] = useState(false)
 
   useEffect(() => {
     if (!session) { router.push('/login'); return }
+    // BUG FIX: Always fetch fresh — don't rely on passed state from Overview
     fetch(`/api/leads?pro_id=${session.id}`)
       .then(r => r.json())
       .then(data => { setLeads(data.leads || []); setDataLoading(false) })
@@ -35,6 +50,7 @@ export default function PipelinePage() {
   })
 
   const TEAL = '#0F766E'
+  const textMain = dk ? '#F1F5F9' : '#0A1628'
 
   if (!session || dataLoading) {
     return (
@@ -49,21 +65,20 @@ export default function PipelinePage() {
   }
 
   return (
-    <DashboardShell session={session} newLeads={newLeads.length} onAddLead={() => setShowAddLead(true)}>
-      <div className="px-4 py-6">
+    <DashboardShell session={session} newLeads={newLeads.length} onAddLead={() => setShowAddLead(true)} darkMode={dk} onToggleDark={toggleDark}>
+      <div className="px-4 py-6" style={{ color: textMain }}>
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h1 className="text-xl font-bold" style={{ color: '#0A1628' }}>Pipeline</h1>
+            {/* BUG FIX: removed duplicate "Lead Pipeline" h2 that appeared inside LeadPipeline component */}
+            <h1 className="text-xl font-bold" style={{ color: textMain }}>Pipeline</h1>
             <p className="text-sm mt-0.5" style={{ color: '#9CA3AF' }}>
               {leads.length} lead{leads.length !== 1 ? 's' : ''} total
             </p>
           </div>
           <button onClick={() => setShowAddLead(true)}
-            className="hidden md:flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold
-              transition-all hover:opacity-90 active:scale-95"
+            className="hidden md:flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all hover:opacity-90 active:scale-95"
             style={{ backgroundColor: TEAL, color: 'white' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              strokeWidth="2.5" strokeLinecap="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
             Add Lead

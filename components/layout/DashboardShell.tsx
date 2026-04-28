@@ -279,14 +279,15 @@ function QuickSheet({ open, onClose, onAddLead }: { open: boolean; onClose: () =
 }
 
 // ── Main shell ────────────────────────────────────────────────────────────────
-export default function DashboardShell({ children, session, newLeads = 0, onAddLead }: {
-  children: React.ReactNode; session: Session | null; newLeads?: number; onAddLead?: () => void
+export default function DashboardShell({ children, session, newLeads = 0, onAddLead, darkMode, onToggleDark }: {
+  children: React.ReactNode; session: Session | null; newLeads?: number; onAddLead?: () => void; darkMode?: boolean; onToggleDark?: () => void
 }) {
   const p   = usePathname()
   const nav = buildNav(newLeads)
   const [moreOpen,  setMoreOpen]  = useState(false)
   const [sheetOpen, setSheetOpen] = useState(false)
   const isA = (h: string, ex?: boolean) => ex ? p === h : p === h
+  const dk = darkMode ?? false
 
   return (
     <>
@@ -300,13 +301,13 @@ export default function DashboardShell({ children, session, newLeads = 0, onAddL
             style={{ width: 220, background: 'linear-gradient(175deg,#0C1D38 0%,#07111C 100%)', borderRight: '1px solid rgba(255,255,255,.04)' }}>
 
             {/* Logo */}
-            <div className="flex items-center gap-2.5 px-5 pt-5 pb-5 flex-shrink-0">
+            <Link href="/dashboard" className="flex items-center gap-2.5 px-5 pt-5 pb-5 flex-shrink-0 hover:opacity-80 transition-opacity">
               <Logo />
               <div className="flex items-baseline gap-[1px]">
                 <span className="font-serif text-[15px] font-bold text-white tracking-tight">ProGuild</span>
                 <span className="text-[13px] font-semibold" style={{ color: '#2DD4BF' }}>.ai</span>
               </div>
-            </div>
+            </Link>
 
             {/* Quick Add */}
             <div className="px-4 mb-6 flex-shrink-0">
@@ -362,7 +363,7 @@ export default function DashboardShell({ children, session, newLeads = 0, onAddL
             )}
           </aside>
 
-          <main className="pg-main flex-1 overflow-y-auto" style={{ backgroundColor: '#ECEAE5' }}>
+          <main className="pg-main flex-1 overflow-y-auto" style={{ backgroundColor: dk ? '#0F172A' : '#ECEAE5', color: dk ? '#F1F5F9' : undefined }}>
             {children}
           </main>
         </div>
