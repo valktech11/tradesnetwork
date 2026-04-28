@@ -76,18 +76,17 @@ function buildNav(nl: number): NavGroup[] {
 // ── NavLink ───────────────────────────────────────────────────────────────────
 function NavLink({ item, active, onNav }: { item: NavItem; active: boolean; onNav?: () => void }) {
   const row = (
-    <div className="relative flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all duration-100 cursor-pointer"
+    <div className="relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-100 cursor-pointer"
       style={
         active ? {
-          // Strong teal background — clearly active
-          background: 'rgba(20,184,166,0.18)',
-          boxShadow: 'inset 0 0 0 1px rgba(20,184,166,0.35)',
+          background: 'rgba(20,184,166,0.22)',
+          boxShadow: 'inset 0 0 0 1px rgba(20,184,166,0.4)',
           color: '#FFFFFF',
         } : item.soon ? {
           color: 'rgba(255,255,255,0.22)',
           cursor: 'default',
         } : {
-          color: 'rgba(255,255,255,0.55)',
+          color: 'rgba(255,255,255,0.62)',
         }
       }
     >
@@ -326,7 +325,7 @@ export default function DashboardShell({ children, session, newLeads = 0, onAddL
                 <div key={g.title} className={gi > 0 ? 'mt-5' : ''}>
                   {/* Section header — clear separator */}
                   <div className="flex items-center gap-2 px-2 pb-2">
-                    <span className="text-[9.5px] font-bold tracking-[.16em] uppercase" style={{ color: 'rgba(255,255,255,.22)' }}>{g.title}</span>
+                    <span className="text-[9.5px] font-bold tracking-[.16em] uppercase" style={{ color: 'rgba(255,255,255,.3)' }}>{g.title}</span>
                     <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,.05)' }} />
                   </div>
                   {g.items.map(item => (
