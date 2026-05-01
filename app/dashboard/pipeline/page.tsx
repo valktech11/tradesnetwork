@@ -107,21 +107,46 @@ export default function PipelinePage() {
       <div className="px-4 py-6" style={{ color: textMain }}>
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-start justify-between mb-5">
           <div>
-            <h1 className="text-xl font-bold" style={{ color: textMain }}>Pipeline</h1>
-            <p className="text-sm mt-0.5" style={{ color: '#9CA3AF' }}>
-              {leads.length} lead{leads.length !== 1 ? 's' : ''} total
+            <h1 className="text-2xl font-bold" style={{ color: textMain }}>Pipeline</h1>
+            <p className="text-sm mt-0.5" style={{ color: '#6B7280' }}>
+              Track and manage your leads from first contact to payment.
             </p>
           </div>
-          <button onClick={() => setShowAddLead(true)}
-            className="hidden md:flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all hover:opacity-90 active:scale-95"
-            style={{ backgroundColor: TEAL, color: 'white' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            Add Lead
-          </button>
+        </div>
+
+        {/* Stats bar */}
+        <div className="flex items-center justify-between mb-5 p-4 rounded-2xl bg-white border border-gray-100"
+          style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+          <div className="flex items-center gap-8">
+            <div>
+              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Total Leads</div>
+              <div className="text-2xl font-bold" style={{ color: textMain }}>{leads.length}</div>
+            </div>
+            <div>
+              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Total Pipeline Value</div>
+              <div className="text-2xl font-bold" style={{ color: textMain }}>
+                ${leads.filter(l => l.quoted_amount && !['Lost','Archived'].includes(l.lead_status)).reduce((s, l) => s + (l.quoted_amount || 0), 0).toLocaleString()}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+              </svg>
+              Filter
+            </button>
+            <button onClick={() => setShowAddLead(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
+              style={{ backgroundColor: TEAL, color: 'white' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.8" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Add Lead
+            </button>
+          </div>
         </div>
 
         {/* Save error toast */}
