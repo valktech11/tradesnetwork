@@ -9,8 +9,8 @@ export const PIPELINE_STAGES = [
   { key: 'Contacted', label: 'Contacted', color: '#2563EB', bg: '#EFF6FF', dot: '#3B82F6', subLabel: 'In conversation',    nextLabel: 'Follow Up',     nextColor: '#2563EB', nextBg: '#DBEAFE' },
   { key: 'Quoted',    label: 'Quoted',    color: '#7C3AED', bg: '#F5F3FF', dot: '#8B5CF6', subLabel: 'Proposal sent',      nextLabel: 'Send Estimate', nextColor: '#7C3AED', nextBg: '#EDE9FE' },
   { key: 'Scheduled', label: 'Scheduled', color: '#0F766E', bg: '#F0FDFA', dot: '#14B8A6', subLabel: 'Job confirmed',      nextLabel: 'Job Day',       nextColor: '#0F766E', nextBg: '#CCFBF1' },
-  { key: 'Completed', label: 'Completed', color: '#059669', bg: '#ECFDF5', dot: '#10B981', subLabel: 'Job completed',      nextLabel: 'Generate Invoice', nextColor: '#059669', nextBg: '#D1FAE5' },
-  { key: 'Paid',      label: 'Paid',      color: '#059669', bg: '#D1FAE5', dot: '#059669', subLabel: 'Payment received',   nextLabel: 'Paid ✓',        nextColor: '#059669', nextBg: '#ECFDF5' },
+  { key: 'Completed', label: 'Completed', color: '#374151', bg: '#F9FAFB', dot: '#6B7280', subLabel: 'Job completed',      nextLabel: 'Generate Invoice', nextColor: '#059669', nextBg: '#D1FAE5' },
+  { key: 'Paid',      label: 'Paid',      color: 'white',   bg: '#15803D', dot: 'white',   subLabel: 'Payment received',   nextLabel: 'Paid',          nextColor: '#059669', nextBg: '#DCFCE7' },
 ] as const
 
 type StageKey = typeof PIPELINE_STAGES[number]['key']
@@ -253,12 +253,26 @@ function LeadCard({ lead, stage, onOpen }: {
 
       {/* Row 3: Next action pill */}
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[11px] font-semibold px-2 py-1 rounded-lg flex-shrink-0"
-          style={{ background: stage.nextBg, color: stage.nextColor }}>
-          Next: {stage.nextLabel}
-          {stage.key === 'Scheduled' && lead.scheduled_date &&
-            ` · ${new Date(lead.scheduled_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
-        </span>
+        {stage.key === 'Paid' ? (
+          <span className="text-[11px] font-semibold px-2 py-1 rounded-lg flex items-center gap-1 flex-shrink-0"
+            style={{ background: '#DCFCE7', color: '#15803D', border: '1px solid #86EFAC' }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#15803D" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+            Paid
+          </span>
+        ) : stage.key === 'Completed' ? (
+          <span className="text-[11px] font-semibold px-2 py-1 rounded-lg flex items-center gap-1 flex-shrink-0"
+            style={{ background: 'white', color: '#374151', border: '1px solid #E5E7EB' }}>
+            <Ic d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" s={12} c="#374151" />
+            Generate Invoice
+          </span>
+        ) : (
+          <span className="text-[11px] font-semibold px-2 py-1 rounded-lg flex-shrink-0"
+            style={{ background: stage.nextBg, color: stage.nextColor }}>
+            Next: {stage.nextLabel}
+            {stage.key === 'Scheduled' && lead.scheduled_date &&
+              ` · ${new Date(lead.scheduled_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+          </span>
+        )}
 
         {/* Bottom icons */}
         <div className="flex items-center gap-1">
@@ -272,10 +286,18 @@ function LeadCard({ lead, stage, onOpen }: {
             className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
             <Ic d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" s={14} c="#6B7280" />
           </button>
-          <button onClick={e => { e.stopPropagation(); onOpen() }}
-            className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
-            <Ic d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6" s={14} c="#6B7280" />
-          </button>
+          {/* Stage-aware 3rd icon */}
+          {(stage.key === 'Scheduled' || stage.key === 'Paid') ? (
+            <button onClick={e => { e.stopPropagation(); onOpen() }}
+              className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+              <Ic d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" s={14} c="#6B7280" />
+            </button>
+          ) : (
+            <button onClick={e => { e.stopPropagation(); onOpen() }}
+              className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+              <Ic d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" s={14} c="#6B7280" />
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -303,7 +325,7 @@ function SlidePanel({ stage, leads, onClose, onOpen }: {
         <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100"
           style={{ background: stage.bg }}>
           <div>
-            <div className="text-[13px] font-bold" style={{ color: stage.color }}>
+            <div className="text-[13px] font-bold" style={{ color: stage.key === 'Paid' ? 'white' : stage.color }}>
               More Leads – {stage.label} ({leads.length})
             </div>
             <div className="text-[11px] text-gray-500">Additional leads in this stage</div>
@@ -373,7 +395,7 @@ function PipelineColumn({ stage, leads, onOpen }: {
       {showSlide && leads.length > 3 && (
         <SlidePanel
           stage={stage}
-          leads={leads}
+          leads={leads.slice(3)}
           onClose={() => setShowSlide(false)}
           onOpen={onOpen}
         />
@@ -386,8 +408,8 @@ function PipelineColumn({ stage, leads, onOpen }: {
               <span className="text-[13px] font-bold" style={{ color: stage.color }}>
                 {stage.label}
               </span>
-              <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-full text-white"
-                style={{ background: stage.color }}>
+              <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-full"
+                style={{ background: stage.key === 'Paid' ? 'rgba(255,255,255,0.25)' : stage.color, color: stage.key === 'Paid' ? 'white' : 'white' }}>
                 {leads.length}
               </span>
             </div>
@@ -397,7 +419,7 @@ function PipelineColumn({ stage, leads, onOpen }: {
               </span>
             )}
           </div>
-          <div className="text-[11px]" style={{ color: stage.color, opacity: 0.7 }}>{stage.subLabel}</div>
+          <div className="text-[11px]" style={{ color: stage.key === 'Paid' ? 'rgba(255,255,255,0.8)' : stage.color, opacity: stage.key === 'Paid' ? 1 : 0.8 }}>{stage.subLabel}</div>
         </div>
 
         {/* Cards */}

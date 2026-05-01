@@ -33,6 +33,9 @@ export default function PipelinePage() {
   const [dataLoading, setDataLoading] = useState(true)
   const [showAddLead, setShowAddLead] = useState(false)
   const [saveError,   setSaveError]   = useState<string | null>(null)
+  const [filterToast,  setFilterToast]  = useState(false)
+  // Auto-dismiss filter toast
+  useEffect(() => { if (filterToast) { const t = setTimeout(() => setFilterToast(false), 3000); return () => clearTimeout(t) } }, [filterToast])
 
   // Single fetch function — reused on mount, after add, after save
   const fetchLeads = useCallback(async () => {
@@ -117,37 +120,41 @@ export default function PipelinePage() {
         </div>
 
         {/* Stats bar */}
-        <div className="flex items-center justify-between mb-5 p-4 rounded-2xl bg-white border border-gray-100"
+        <div className="flex items-center justify-between mb-5 px-5 py-4 rounded-2xl bg-white border border-gray-100"
           style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <div className="flex items-center gap-8">
-            <div>
-              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Total Leads</div>
-              <div className="text-2xl font-bold" style={{ color: textMain }}>{leads.length}</div>
+          <div className="flex items-center">
+            <div className="pr-8">
+              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Total Leads</div>
+              <div className="text-[28px] font-bold leading-tight" style={{ color: textMain }}>{leads.length}</div>
             </div>
-            <div>
-              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Total Pipeline Value</div>
-              <div className="text-2xl font-bold" style={{ color: textMain }}>
+            <div className="pl-8 border-l border-gray-200">
+              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Total Pipeline Value</div>
+              <div className="text-[28px] font-bold leading-tight" style={{ color: textMain }}>
                 ${leads.filter(l => l.quoted_amount && !['Lost','Archived'].includes(l.lead_status)).reduce((s, l) => s + (l.quoted_amount || 0), 0).toLocaleString()}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-              </svg>
-              Filter
-            </button>
-            <button onClick={() => setShowAddLead(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
-              style={{ backgroundColor: TEAL, color: 'white' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.8" strokeLinecap="round">
-                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-              Add Lead
-            </button>
-          </div>
+          <button
+            onClick={() => setFilterToast(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+            </svg>
+            Filter
+          </button>
         </div>
+
+        {/* Filter coming soon toast */}
+        {filterToast && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl shadow-xl text-[13px] font-semibold text-white"
+            style={{ background: '#0F766E' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Filter is coming in v75 — stay tuned!
+            <button onClick={() => setFilterToast(false)} className="ml-2 opacity-70 hover:opacity-100 text-lg leading-none">×</button>
+          </div>
+        )}
 
         {/* Save error toast */}
         {saveError && (
