@@ -309,19 +309,16 @@ export default function OverviewPage() {
           {leads.length === 0 ? (
             <p className="text-[13px] py-4 text-center" style={{ color: MUTED }}>No leads yet — add your first lead to get started.</p>
           ) : (
-            <div className="flex items-center gap-4">
-              {/* Stages with arrows interleaved as siblings — arrow centered between stages */}
-              <div className="flex flex-1 items-center gap-3">
-                <PipeStage iconPath={ICONS.users}     iconBg="#EFF6FF" iconColor="#3B82F6" label="New"       count={newLeads.length}       sub="New leads"       dk={dk} />
-                <PipeArrow dk={dk} />
-                <PipeStage iconPath={ICONS.phone}     iconBg="#DCFCE7" iconColor="#16A34A" label="Contacted" count={contactedLeads.length}  sub="You contacted"   dk={dk} />
-                <PipeArrow dk={dk} />
-                <PipeStage iconPath={ICONS.fileText}  iconBg="#EDE9FE" iconColor="#7C3AED" label="Quoted"    count={quotedLeads.length}     sub="Estimate sent"   dk={dk} />
-                <PipeArrow dk={dk} />
-                <PipeStage iconPath={ICONS.calendar}  iconBg="#FFF7ED" iconColor="#F97316" label="Scheduled" count={scheduledLeads.length}  sub="Job scheduled"   dk={dk} />
-                <PipeArrow dk={dk} />
-                <PipeStage iconPath={ICONS.checkCirc} iconBg="#DCFCE7" iconColor="#16A34A" label="Job Won"   count={completedLeads.length + paidLeads.length} sub="Converted" dk={dk} showDash />
-              </div>
+            <div className="flex items-center justify-between w-full">
+              <PipeStage iconPath={ICONS.users}     iconBg="#EFF6FF" iconColor="#3B82F6" label="New"       count={newLeads.length}       sub="New leads"       dk={dk} />
+              <PipeArrow dk={dk} />
+              <PipeStage iconPath={ICONS.phone}     iconBg="#DCFCE7" iconColor="#16A34A" label="Contacted" count={contactedLeads.length}  sub="You contacted"   dk={dk} />
+              <PipeArrow dk={dk} />
+              <PipeStage iconPath={ICONS.fileText}  iconBg="#EDE9FE" iconColor="#7C3AED" label="Quoted"    count={quotedLeads.length}     sub="Estimate sent"   dk={dk} />
+              <PipeArrow dk={dk} />
+              <PipeStage iconPath={ICONS.calendar}  iconBg="#FFF7ED" iconColor="#F97316" label="Scheduled" count={scheduledLeads.length}  sub="Job scheduled"   dk={dk} />
+              <PipeArrow dk={dk} />
+              <PipeStage iconPath={ICONS.checkCirc} iconBg="#DCFCE7" iconColor="#16A34A" label="Job Won"   count={completedLeads.length + paidLeads.length} sub="Converted" dk={dk} showDash />
               {pipeline > 0 && (
                 <div className="text-right border-l pl-5 flex-shrink-0 min-w-[130px]" style={{ borderColor: cardBdr }}>
                   <div className="text-[11px] font-medium mb-0.5" style={{ color: BODY }}>Total Pipeline Value</div>
