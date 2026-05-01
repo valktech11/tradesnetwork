@@ -91,21 +91,33 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
 
-      # Poll until Vercel preview returns 200. Deployments take 30-90s after push.
-      # The bypass header is required — without it the staging URL returns 401.
+      # Vercel password protection returns 401 until unlocked.
+      # Flow: POST to /_vercel/password with the password → get _vercel_password cookie
+      # → use that cookie for subsequent requests. Poll until 200.
       - name: Wait for Vercel deployment to be ready
         env:
           STAGING_URL: ${{ secrets.STAGING_URL }}
-          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          STAGING_PASSWORD: ${{ secrets.STAGING_PASSWORD }}
         run: |
           echo "Waiting for $STAGING_URL..."
+          COOKIE_JAR=$(mktemp)
           for i in $(seq 1 24); do
+            # Authenticate — POST password to Vercel's protection endpoint
+            curl -s -c "$COOKIE_JAR" -b "$COOKIE_JAR" \
+              -X POST "${STAGING_URL}/_vercel/password" \
+              -d "password=${STAGING_PASSWORD}" \
+              -o /dev/null
+
+            # Now hit the site with the cookie
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-              -H "x-vercel-automation-bypass-secret: $VERCEL_AUTOMATION_BYPASS_SECRET" \
+              -c "$COOKIE_JAR" -b "$COOKIE_JAR" \
               "$STAGING_URL")
+
             echo "  attempt $i — HTTP $STATUS"
             if [ "$STATUS" = "200" ] || [ "$STATUS" = "308" ] || [ "$STATUS" = "301" ]; then
               echo "✓ Ready"
+              # Save cookie jar path for Playwright step
+              echo "VERCEL_COOKIE_JAR=$COOKIE_JAR" >> $GITHUB_ENV
               exit 0
             fi
             sleep 10
@@ -117,12 +129,12 @@ jobs:
         run: npm run test:e2e
         env:
           PLAYWRIGHT_BASE_URL: ${{ secrets.STAGING_URL }}
+          STAGING_PASSWORD: ${{ secrets.STAGING_PASSWORD }}
           TEST_PRO_EMAIL: ${{ secrets.TEST_PRO_EMAIL }}
           TEST_PRO_PASSWORD: ${{ secrets.TEST_PRO_PASSWORD }}
           STAGING_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
           STAGING_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
           STAGING_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
-          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
           CI: true
 
       - name: Upload Playwright report
