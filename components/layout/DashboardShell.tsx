@@ -84,7 +84,7 @@ function NavLink({ item, active, onNav }: { item: NavItem; active: boolean; onNa
           boxShadow: 'inset 0 0 0 1px rgba(20,184,166,0.35)',
           color: '#FFFFFF',
         } : item.soon ? {
-          color: 'rgba(255,255,255,0.22)',
+          color: 'rgba(255,255,255,0.45)',
           cursor: 'default',
         } : {
           color: 'rgba(255,255,255,0.55)',
@@ -114,10 +114,10 @@ function NavLink({ item, active, onNav }: { item: NavItem; active: boolean; onNa
         </span>
       )}
 
-      {/* Soon dot */}
+      {/* Soon tag */}
       {item.soon && (
-        <span className="w-1 h-1 rounded-full flex-shrink-0"
-          style={{ background: 'rgba(255,255,255,0.12)' }} />
+        <span className="text-[8.5px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0"
+          style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.30)', letterSpacing: '0.05em' }}>v75</span>
       )}
     </div>
   )
@@ -326,7 +326,7 @@ export default function DashboardShell({ children, session, newLeads = 0, onAddL
                 <div key={g.title} className={gi > 0 ? 'mt-5' : ''}>
                   {/* Section header — clear separator */}
                   <div className="flex items-center gap-2 px-2 pb-2">
-                    <span className="text-[9.5px] font-bold tracking-[.16em] uppercase" style={{ color: 'rgba(255,255,255,.22)' }}>{g.title}</span>
+                    <span className="text-[9.5px] font-bold tracking-[.16em] uppercase" style={{ color: 'rgba(255,255,255,.30)' }}>{g.title}</span>
                     <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,.05)' }} />
                   </div>
                   {g.items.map(item => (
@@ -355,7 +355,7 @@ export default function DashboardShell({ children, session, newLeads = 0, onAddL
                   <Av s={session} px={30} />
                   <div className="min-w-0 flex-1">
                     <div className="text-[12.5px] font-semibold text-white truncate">{session.name}</div>
-                    <div className="text-[11px] mt-px truncate" style={{ color: 'rgba(255,255,255,.32)' }}>{planLabel(session.plan)}</div>
+                    <div className="text-[11px] mt-px truncate" style={{ color: 'rgba(255,255,255,.32)' }}>{session.trade || planLabel(session.plan)}{session.city ? ` · ${session.city}` : ''}</div>
                   </div>
                 </div>
               </div>
