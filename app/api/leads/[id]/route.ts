@@ -3,9 +3,9 @@ import { getSupabaseAdmin } from '@/lib/supabase'
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params
+  const { id } = await params
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
   const { data, error } = await getSupabaseAdmin()
@@ -17,9 +17,9 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params
+  const { id } = await params
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
   const body = await req.json()
@@ -47,9 +47,9 @@ export async function PATCH(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params
+  const { id } = await params
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
   const { error } = await getSupabaseAdmin()
