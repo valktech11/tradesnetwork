@@ -97,15 +97,17 @@ jobs:
       # passing them as runtime env vars alone is not sufficient.
       - name: Write .env.test for local dev server
         run: |
-          cat > .env.test << EOF
-          NEXT_PUBLIC_SUPABASE_URL=${{ secrets.STAGING_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.STAGING_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY=${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
-          NEXT_PUBLIC_ENV=staging
-          MODERATION_MODE=off
-          EOF
-          echo ".env.test written:"
-          cat .env.test
+          printf 'NEXT_PUBLIC_SUPABASE_URL=%s\n' "$STAGING_SUPABASE_URL" > .env.test
+          printf 'NEXT_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$STAGING_SUPABASE_ANON_KEY" >> .env.test
+          printf 'SUPABASE_SERVICE_ROLE_KEY=%s\n' "$STAGING_SUPABASE_SERVICE_ROLE_KEY" >> .env.test
+          printf 'NEXT_PUBLIC_ENV=staging\n' >> .env.test
+          printf 'MODERATION_MODE=off\n' >> .env.test
+          echo ".env.test written (values masked):"
+          sed 's/=.*/=***/' .env.test
+        env:
+          STAGING_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          STAGING_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          STAGING_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
 
       - name: Run E2E tests (localhost dev server + staging Supabase)
         run: npm run test:e2e
