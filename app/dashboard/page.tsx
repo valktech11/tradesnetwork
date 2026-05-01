@@ -70,27 +70,32 @@ function AvatarInitials({ name, size = 32 }: { name: string; size?: number }) {
 }
 
 // ── Action Center Card ─────────────────────────────────────────────────────────
-function ActionCard({ iconPath, count, label, sub, iconBg, iconColor, ctaLabel, ctaHref }: {
+function ActionCard({ iconPath, count, label, sub, iconBg, iconColor, ctaLabel, ctaHref, dk }: {
   iconPath: string; count: number | string; label: string; sub: string
-  iconBg: string; iconColor: string; ctaLabel: string; ctaHref: string
+  iconBg: string; iconColor: string; ctaLabel: string; ctaHref: string; dk: boolean
 }) {
+  const bg  = dk ? '#1E293B' : 'white'
+  const bdr = dk ? '#334155' : '#F1F5F9'
+  const txt = dk ? '#F1F5F9' : NAVY
+  const sub_color = dk ? '#94A3B8' : '#6B7280'
+  const cta_bg = dk ? '#1E293B' : 'white'
   return (
-    <div className="bg-white rounded-2xl p-5 flex flex-col gap-4"
-      style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.07)', border: '1px solid #F1F5F9' }}>
+    <div className="rounded-2xl p-5 flex flex-col gap-4"
+      style={{ backgroundColor: bg, boxShadow: '0 1px 4px rgba(0,0,0,0.07)', border: `1px solid ${bdr}` }}>
       <div className="flex items-start gap-3">
         <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: iconBg }}>
           <SvgIcon d={iconPath} s={24} sw={1.8} color={iconColor} />
         </div>
         <div className="min-w-0">
-          <div className="text-[32px] font-bold leading-none mb-1" style={{ color: NAVY }}>{count}</div>
-          <div className="text-[13px] font-semibold leading-tight" style={{ color: NAVY }}>{label}</div>
-          <div className="text-[12px] mt-0.5" style={{ color: '#6B7280' }}>{sub}</div>
+          <div className="text-[32px] font-bold leading-none mb-1" style={{ color: txt }}>{count}</div>
+          <div className="text-[13px] font-semibold leading-tight" style={{ color: txt }}>{label}</div>
+          <div className="text-[12px] mt-0.5" style={{ color: sub_color }}>{sub}</div>
         </div>
       </div>
       <Link href={ctaHref}
-        className="w-full flex items-center justify-center py-2 rounded-xl text-[12px] font-semibold transition-all hover:bg-teal-50"
-        style={{ border: `1px solid ${TEAL}`, color: TEAL, backgroundColor: 'white' }}>
+        className="w-full flex items-center justify-center py-2 rounded-xl text-[12px] font-semibold transition-all"
+        style={{ border: `1px solid ${TEAL}`, color: TEAL, backgroundColor: cta_bg }}>
         {ctaLabel}
       </Link>
     </div>
@@ -98,27 +103,29 @@ function ActionCard({ iconPath, count, label, sub, iconBg, iconColor, ctaLabel, 
 }
 
 // ── Pipeline Stage ─────────────────────────────────────────────────────────────
-function PipeStage({ iconPath, iconBg, iconColor, label, count, sub, isLast }: {
+function PipeStage({ iconPath, iconBg, iconColor, label, count, sub, isLast, dk, showDash }: {
   iconPath: string; iconBg: string; iconColor: string
-  label: string; count: number; sub: string; isLast?: boolean
+  label: string; count: number; sub: string; isLast?: boolean; dk: boolean; showDash?: boolean
 }) {
+  const txt = dk ? '#F1F5F9' : NAVY
+  const sub_c = dk ? '#94A3B8' : '#6B7280'
+  const arr_c = dk ? '#475569' : '#CBD5E1'
+  const displayCount = showDash && count === 0 ? '—' : count
   return (
-    <div className="flex items-center gap-2 min-w-0">
-      <Link href="/dashboard/pipeline" className="flex items-center gap-3 min-w-0">
-        <div className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0"
+    <div className="flex items-center min-w-0">
+      <Link href="/dashboard/pipeline" className="flex items-center gap-2.5 min-w-0">
+        <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: iconBg }}>
-          <SvgIcon d={iconPath} s={20} sw={1.8} color={iconColor} />
+          <SvgIcon d={iconPath} s={18} sw={1.8} color={iconColor} />
         </div>
         <div className="min-w-0">
-          <div className="text-[13px] font-semibold mb-0" style={{ color: NAVY }}>{label}</div>
-          <div className="text-[24px] font-bold leading-snug" style={{ color: count > 0 ? NAVY : '#D1D5DB' }}>{count}</div>
-          <div className="text-[11px] -mt-0.5" style={{ color: '#6B7280' }}>{sub}</div>
+          <div className="text-[13px] font-semibold" style={{ color: txt }}>{label}</div>
+          <div className="text-[22px] font-bold leading-tight" style={{ color: count > 0 ? txt : (dk ? '#475569' : '#D1D5DB') }}>{displayCount}</div>
+          <div className="text-[11px]" style={{ color: sub_c }}>{sub}</div>
         </div>
       </Link>
       {!isLast && (
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" strokeWidth="2" strokeLinecap="round" className="flex-shrink-0 mx-1">
-          <path d="M9 18l6-6-6-6" />
-        </svg>
+        <span className="flex-shrink-0 mx-3 text-[16px] font-light" style={{ color: arr_c }}>→</span>
       )}
     </div>
   )
@@ -234,28 +241,32 @@ export default function OverviewPage() {
               iconBg="#FEF3C7" iconColor="#F59E0B"
               count={newLeads.length} label="New Leads" sub="Received in last 2 hours"
               ctaLabel="View Leads" ctaHref="/dashboard/pipeline"
+              dk={dk}
             />
             <ActionCard
               iconPath={ICONS.alertTri}
               iconBg="#EDE9FE" iconColor="#7C3AED"
               count={awaitingResp.length} label="Awaiting Your Response" sub="Customers messaged you"
               ctaLabel="View Leads" ctaHref="/dashboard/pipeline"
+              dk={dk}
             />
             <ActionCard
               iconPath={ICONS.hourglass}
               iconBg="#E0F2FE" iconColor="#0EA5E9"
               count={waitingOnCust.length} label="Waiting on Customer" sub="You replied, waiting for them"
               ctaLabel="View Leads" ctaHref="/dashboard/pipeline"
+              dk={dk}
             />
             <ActionCard
               iconPath={ICONS.calCheck}
               iconBg="#DCFCE7" iconColor="#16A34A"
               count={scheduledLeads.length} label="Jobs Scheduled" sub="This week"
               ctaLabel="View Calendar" ctaHref="/dashboard/pipeline"
+              dk={dk}
             />
             {/* Draft Estimates — v75 placeholder */}
-            <div className="flex-shrink-0 bg-white rounded-2xl p-5 flex flex-col gap-4 relative opacity-70"
-              style={{ border: `1px solid ${BORDER}` }}>
+            <div className="flex-shrink-0 rounded-2xl p-5 flex flex-col gap-4 relative opacity-70"
+              style={{ backgroundColor: dk ? '#1E293B' : 'white', border: `1px solid ${cardBdr}` }}>
               <span className="absolute top-3 right-3 text-[9px] font-bold px-1.5 py-0.5 rounded-md"
                 style={{ backgroundColor: '#EDE9FE', color: '#7C3AED' }}>v75</span>
               <div className="flex items-start gap-4">
@@ -264,9 +275,9 @@ export default function OverviewPage() {
                   <SvgIcon d={ICONS.fileText} s={22} sw={1.8} color="#7C3AED" />
                 </div>
                 <div>
-                  <div className="text-[28px] font-bold leading-none mb-1" style={{ color: NAVY }}>0</div>
-                  <div className="text-[13px] font-semibold" style={{ color: NAVY }}>Draft Estimates</div>
-                  <div className="text-[12px] mt-0.5" style={{ color: MUTED }}>Need your review</div>
+                  <div className="text-[28px] font-bold leading-none mb-1" style={{ color: textMain }}>0</div>
+                  <div className="text-[13px] font-semibold" style={{ color: textMain }}>Draft Estimates</div>
+                  <div className="text-[12px] mt-0.5" style={{ color: dk ? '#94A3B8' : MUTED }}>Need your review</div>
                 </div>
               </div>
               <div className="w-full flex items-center justify-center py-2 rounded-xl text-[12px] font-semibold cursor-not-allowed"
@@ -293,11 +304,11 @@ export default function OverviewPage() {
           ) : (
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center flex-wrap gap-2">
-                <PipeStage iconPath={ICONS.users}     iconBg="#EFF6FF" iconColor="#3B82F6" label="New"       count={newLeads.length}       sub="New leads"      />
-                <PipeStage iconPath={ICONS.phone}     iconBg="#DCFCE7" iconColor="#16A34A" label="Contacted" count={contactedLeads.length}  sub="You contacted"  />
-                <PipeStage iconPath={ICONS.fileText}  iconBg="#EDE9FE" iconColor="#7C3AED" label="Quoted"    count={quotedLeads.length}     sub="Estimate sent"  />
-                <PipeStage iconPath={ICONS.calendar}  iconBg="#FFF7ED" iconColor="#F97316" label="Scheduled" count={scheduledLeads.length}  sub="Job scheduled"  />
-                <PipeStage iconPath={ICONS.checkCirc} iconBg="#DCFCE7" iconColor="#16A34A" label="Job Won"   count={completedLeads.length + paidLeads.length} sub="Converted" isLast />
+                <PipeStage iconPath={ICONS.users}     iconBg="#EFF6FF" iconColor="#3B82F6" label="New"       count={newLeads.length}       sub="New leads"       dk={dk} />
+                <PipeStage iconPath={ICONS.phone}     iconBg="#DCFCE7" iconColor="#16A34A" label="Contacted" count={contactedLeads.length}  sub="You contacted"   dk={dk} />
+                <PipeStage iconPath={ICONS.fileText}  iconBg="#EDE9FE" iconColor="#7C3AED" label="Quoted"    count={quotedLeads.length}     sub="Estimate sent"   dk={dk} />
+                <PipeStage iconPath={ICONS.calendar}  iconBg="#FFF7ED" iconColor="#F97316" label="Scheduled" count={scheduledLeads.length}  sub="Job scheduled"   dk={dk} />
+                <PipeStage iconPath={ICONS.checkCirc} iconBg="#DCFCE7" iconColor="#16A34A" label="Job Won"   count={completedLeads.length + paidLeads.length} sub="Converted" isLast dk={dk} showDash />
               </div>
               {pipeline > 0 && (
                 <div className="flex-shrink-0 text-right pl-6 border-l" style={{ borderColor: cardBdr }}>
@@ -331,7 +342,7 @@ export default function OverviewPage() {
                 </div>
 
                 {/* Gamification card */}
-                <div className="flex-1 rounded-xl p-3" style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0' }}>
+                <div className="flex-1 rounded-xl p-3" style={{ backgroundColor: dk ? '#1A2E22' : '#F0FDF4', border: `1px solid ${dk ? '#166534' : '#BBF7D0'}` }}>
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <div className="text-[12px] font-bold mb-1" style={{ color: NAVY }}>
@@ -353,7 +364,7 @@ export default function OverviewPage() {
                 </div>
 
                 {/* AI Insight card */}
-                <div className="flex-1 rounded-xl p-3" style={{ backgroundColor: '#F5F3FF', border: '1px solid #DDD6FE' }}>
+                <div className="flex-1 rounded-xl p-3" style={{ backgroundColor: dk ? '#1E1B3A' : '#F5F3FF', border: `1px solid ${dk ? '#4C1D95' : '#DDD6FE'}` }}>
                   <div className="flex items-center gap-1.5 mb-2">
                     <SvgIcon d={ICONS.sparkle} s={14} sw={1.5} color="#7C3AED" />
                     <span className="text-[12px] font-bold" style={{ color: NAVY }}>AI Insight</span>
@@ -374,7 +385,7 @@ export default function OverviewPage() {
                   {reviews.slice(0, 4).map(review => {
                     const s = sentiment(review.rating)
                     return (
-                      <div key={review.id} className="rounded-xl p-3" style={{ border: `1px solid ${BORDER}`, backgroundColor: 'white' }}>
+                      <div key={review.id} className="rounded-xl p-3" style={{ border: `1px solid ${cardBdr}`, backgroundColor: cardBg }}>
                         <div className="flex items-center gap-2 mb-1.5">
                           <AvatarInitials name={review.reviewer_name || 'A'} size={30} />
                           <div>
@@ -396,9 +407,9 @@ export default function OverviewPage() {
             {/* Col 2: Request reviews + AI assistant */}
             <div className="flex flex-col gap-4">
               {/* Request reviews panel */}
-              <div className="rounded-xl p-4" style={{ border: `1px solid ${BORDER}`, backgroundColor: 'white' }}>
+              <div className="rounded-xl p-4" style={{ border: `1px solid ${cardBdr}`, backgroundColor: cardBg }}>
                 <div className="text-[13px] font-bold mb-0.5" style={{ color: NAVY }}>Request reviews from happy customers</div>
-                <div className="text-[12px] mb-3 flex items-center gap-1" style={{ color: '#6B7280' }}>
+                <div className="text-[12px] mb-3 flex items-center gap-1" style={{ color: dk ? '#94A3B8' : '#6B7280' }}>
                   3 customers are likely to give you a
                   <Star filled size={11} />
                   <span>5★ review</span>
@@ -412,11 +423,11 @@ export default function OverviewPage() {
                     <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0"
                       style={{ backgroundColor: c.color }}>{c.initials}</div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[12px] font-semibold" style={{ color: NAVY }}>{c.name}</div>
-                      <div className="text-[10px]" style={{ color: MUTED }}>{c.sub}</div>
+                      <div className="text-[12px] font-semibold" style={{ color: textMain }}>{c.name}</div>
+                      <div className="text-[10px]" style={{ color: dk ? '#94A3B8' : MUTED }}>{c.sub}</div>
                     </div>
                     <button className="text-[11px] font-semibold px-3 py-1 rounded-lg"
-                      style={{ border: `1px solid ${BORDER}`, color: NAVY, backgroundColor: 'white' }}>Request</button>
+                      style={{ border: `1px solid ${cardBdr}`, color: textMain, backgroundColor: cardBg }}>Request</button>
                   </div>
                 ))}
                 <button className="mt-3 text-[12px] font-semibold flex items-center gap-1" style={{ color: TEAL }}>
@@ -425,7 +436,7 @@ export default function OverviewPage() {
               </div>
 
               {/* AI Review Assistant */}
-              <div className="rounded-xl p-4" style={{ border: `1px solid ${BORDER}`, backgroundColor: 'white' }}>
+              <div className="rounded-xl p-4" style={{ border: `1px solid ${cardBdr}`, backgroundColor: cardBg }}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-1.5">
                     <SvgIcon d={ICONS.sparkle} s={14} sw={1.5} color="#7C3AED" />
@@ -435,7 +446,7 @@ export default function OverviewPage() {
                 </div>
 
                 {/* Negative review reply */}
-                <div className="rounded-xl p-3 mb-3" style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA' }}>
+                <div className="rounded-xl p-3 mb-3" style={{ backgroundColor: dk ? '#2D1515' : '#FEF2F2', border: `1px solid ${dk ? '#991B1B' : '#FECACA'}` }}>
                   <div className="flex items-center gap-2 mb-1.5">
                     <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FEE2E2' }}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
@@ -457,7 +468,7 @@ export default function OverviewPage() {
                 </div>
 
                 {/* Positive review booster */}
-                <div className="rounded-xl p-3" style={{ backgroundColor: '#FFFBEB', border: '1px solid #FDE68A' }}>
+                <div className="rounded-xl p-3" style={{ backgroundColor: dk ? '#2D2408' : '#FFFBEB', border: `1px solid ${dk ? '#92400E' : '#FDE68A'}` }}>
                   <div className="flex items-center gap-2 mb-1.5">
                     <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FEF3C7' }}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" strokeWidth="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -524,13 +535,13 @@ export default function OverviewPage() {
               },
             ].map((item, i) => (
               <Link key={i} href="/community" className="rounded-xl p-4 flex gap-3 transition-all hover:shadow-sm"
-                style={{ border: `1px solid ${BORDER}`, backgroundColor: '#FAFAF9' }}>
+                style={{ border: `1px solid ${cardBdr}`, backgroundColor: cardBg }}>
                 <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
                   style={{ backgroundColor: item.iconBg }}>
                   <SvgIcon d={item.icon} s={18} sw={1.8} color={item.iconColor} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-semibold mb-1 leading-snug" style={{ color: NAVY }}>{item.q}</p>
+                  <p className="text-[13px] font-semibold mb-1 leading-snug" style={{ color: textMain }}>{item.q}</p>
                   {item.price && <p className="text-[13px] font-bold mb-0.5" style={{ color: TEAL }}>{item.price}</p>}
                   {item.sub && <p className="text-[11px]" style={{ color: MUTED }}>{item.sub}</p>}
                   <div className="flex items-center gap-2 mt-2">
