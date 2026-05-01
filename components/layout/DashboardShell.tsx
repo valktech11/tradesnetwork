@@ -287,13 +287,21 @@ const STATUS_OPTIONS = [
   { label: 'Do not disturb',      sub: 'Pause notifications',              dot: '#8B5CF6', value: 'dnd' },
 ]
 
-function TopHeader({ session, dk, onAddLead }: { session: Session | null; dk: boolean; onAddLead?: () => void }) {
+function TopHeader({ session, dk, onAddLead, onToggleDark }: {
+  session: Session | null; dk: boolean; onAddLead?: () => void; onToggleDark?: () => void
+}) {
   const [status,     setStatus]     = React.useState('available')
   const [statusOpen, setStatusOpen] = React.useState(false)
+  const [userOpen,   setUserOpen]   = React.useState(false)
   const current = STATUS_OPTIONS.find(s => s.value === status) || STATUS_OPTIONS[0]
   const bg  = dk ? '#1E293B' : 'white'
   const bdr = dk ? '#334155' : '#E8E2D9'
   const txt = dk ? '#F1F5F9' : '#0A1628'
+
+  function handleLogout() {
+    sessionStorage.removeItem('pg_pro')
+    window.location.href = '/login'
+  }
 
   return (
     <div className="flex items-center justify-end gap-3 px-6 py-3 flex-shrink-0"
@@ -313,8 +321,7 @@ function TopHeader({ session, dk, onAddLead }: { session: Session | null; dk: bo
 
       {/* Available for jobs dropdown */}
       <div className="relative">
-        <button
-          onClick={() => setStatusOpen(o => !o)}
+        <button onClick={() => { setStatusOpen(o => !o); setUserOpen(false) }}
           className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold transition-all hover:opacity-80"
           style={{ border: `1px solid ${bdr}`, color: txt, backgroundColor: bg }}>
           <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: current.dot }} />
@@ -323,7 +330,6 @@ function TopHeader({ session, dk, onAddLead }: { session: Session | null; dk: bo
             <path d={statusOpen ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"} />
           </svg>
         </button>
-
         {statusOpen && (
           <div className="absolute right-0 top-full mt-1 w-64 rounded-2xl shadow-xl z-50 py-1 overflow-hidden"
             style={{ backgroundColor: bg, border: `1px solid ${bdr}` }}>
@@ -370,14 +376,65 @@ function TopHeader({ session, dk, onAddLead }: { session: Session | null; dk: bo
           style={{ backgroundColor: '#EF4444' }}>3</span>
       </div>
 
-      {/* Avatar + name */}
+      {/* Avatar + name — click for user menu */}
       {session && (
-        <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-          <Av s={session} px={28} />
-          <span className="text-[13px] font-semibold" style={{ color: txt }}>{session.name?.split(' ')[0]}</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={txt} strokeWidth="2.5" strokeLinecap="round">
-            <path d="M6 9l6 6 6-6" />
-          </svg>
+        <div className="relative">
+          <button onClick={() => { setUserOpen(o => !o); setStatusOpen(false) }}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <Av s={session} px={28} />
+            <span className="text-[13px] font-semibold" style={{ color: txt }}>{session.name?.split(' ')[0]}</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={txt} strokeWidth="2.5" strokeLinecap="round">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+
+          {userOpen && (
+            <div className="absolute right-0 top-full mt-2 w-52 rounded-2xl shadow-xl z-50 overflow-hidden py-1"
+              style={{ backgroundColor: bg, border: `1px solid ${bdr}` }}>
+
+              {/* User info */}
+              <div className="px-4 py-3 border-b" style={{ borderColor: bdr }}>
+                <div className="text-[13px] font-bold" style={{ color: txt }}>{session.name}</div>
+                <div className="text-[11px] mt-0.5" style={{ color: '#9CA3AF' }}>{session.email}</div>
+              </div>
+
+              {/* Dark mode toggle */}
+              <button onClick={() => { if (onToggleDark) onToggleDark() }}
+                className="w-full flex items-center justify-between px-4 py-3 hover:opacity-70 transition-opacity">
+                <div className="flex items-center gap-2.5">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={txt} strokeWidth="1.8" strokeLinecap="round">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+                  </svg>
+                  <span className="text-[13px] font-medium" style={{ color: txt }}>Dark Mode</span>
+                </div>
+                {/* Toggle switch */}
+                <div className="w-9 h-5 rounded-full relative transition-colors"
+                  style={{ backgroundColor: dk ? '#0F766E' : '#D1D5DB' }}>
+                  <div className="w-4 h-4 bg-white rounded-full absolute top-0.5 transition-all shadow-sm"
+                    style={{ left: dk ? '18px' : '2px' }} />
+                </div>
+              </button>
+
+              {/* Profile link */}
+              <a href="/edit-profile"
+                className="w-full flex items-center gap-2.5 px-4 py-3 hover:opacity-70 transition-opacity">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={txt} strokeWidth="1.8" strokeLinecap="round">
+                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8" />
+                </svg>
+                <span className="text-[13px] font-medium" style={{ color: txt }}>Profile</span>
+              </a>
+
+              {/* Logout */}
+              <button onClick={handleLogout}
+                className="w-full flex items-center gap-2.5 px-4 py-3 hover:opacity-70 transition-opacity border-t"
+                style={{ borderColor: bdr }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="1.8" strokeLinecap="round">
+                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
+                </svg>
+                <span className="text-[13px] font-medium" style={{ color: '#EF4444' }}>Log out</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -471,7 +528,7 @@ export default function DashboardShell({ children, session, newLeads = 0, onAddL
 
           <main className="pg-main flex-1 overflow-y-auto flex flex-col" style={{ backgroundColor: dk ? '#0F172A' : '#ECEAE5', color: dk ? '#F1F5F9' : undefined }}>
             {/* ── Top header bar ─────────────────────────────────────────── */}
-            <TopHeader session={session} dk={dk} onAddLead={onAddLead} />
+            <TopHeader session={session} dk={dk} onAddLead={onAddLead} onToggleDark={onToggleDark} />
             <div className="flex-1">
               {children}
             </div>

@@ -75,22 +75,22 @@ function ActionCard({ iconPath, count, label, sub, iconBg, iconColor, ctaLabel, 
   iconBg: string; iconColor: string; ctaLabel: string; ctaHref: string
 }) {
   return (
-    <div className="bg-white rounded-2xl p-4 flex flex-col gap-3"
-      style={{ border: `1px solid ${BORDER}` }}>
+    <div className="bg-white rounded-2xl p-5 flex flex-col gap-4"
+      style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.07)', border: '1px solid #F1F5F9' }}>
       <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0"
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: iconBg }}>
-          <SvgIcon d={iconPath} s={20} sw={1.8} color={iconColor} />
+          <SvgIcon d={iconPath} s={24} sw={1.8} color={iconColor} />
         </div>
         <div className="min-w-0">
-          <div className="text-[26px] font-bold leading-none mb-0.5" style={{ color: NAVY }}>{count}</div>
-          <div className="text-[12px] font-semibold leading-tight" style={{ color: NAVY }}>{label}</div>
-          <div className="text-[11px] mt-0.5" style={{ color: MUTED }}>{sub}</div>
+          <div className="text-[32px] font-bold leading-none mb-1" style={{ color: NAVY }}>{count}</div>
+          <div className="text-[13px] font-semibold leading-tight" style={{ color: NAVY }}>{label}</div>
+          <div className="text-[12px] mt-0.5" style={{ color: '#6B7280' }}>{sub}</div>
         </div>
       </div>
       <Link href={ctaHref}
-        className="w-full flex items-center justify-center py-1.5 rounded-xl text-[12px] font-semibold transition-all hover:bg-gray-50"
-        style={{ border: `1px solid #E2E8F0`, color: NAVY, backgroundColor: 'white' }}>
+        className="w-full flex items-center justify-center py-2 rounded-xl text-[12px] font-semibold transition-all hover:bg-teal-50"
+        style={{ border: `1px solid ${TEAL}`, color: TEAL, backgroundColor: 'white' }}>
         {ctaLabel}
       </Link>
     </div>
@@ -103,21 +103,21 @@ function PipeStage({ iconPath, iconBg, iconColor, label, count, sub, isLast }: {
   label: string; count: number; sub: string; isLast?: boolean
 }) {
   return (
-    <div className="flex items-center gap-3 min-w-0">
+    <div className="flex items-center gap-2 min-w-0">
       <Link href="/dashboard/pipeline" className="flex items-center gap-3 min-w-0">
         <div className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: iconBg }}>
           <SvgIcon d={iconPath} s={20} sw={1.8} color={iconColor} />
         </div>
         <div className="min-w-0">
-          <div className="text-[13px] font-semibold" style={{ color: NAVY }}>{label}</div>
-          <div className="text-[22px] font-bold leading-tight" style={{ color: count > 0 ? NAVY : '#D1D5DB' }}>{count}</div>
-          <div className="text-[11px]" style={{ color: MUTED }}>{sub}</div>
+          <div className="text-[13px] font-semibold mb-0" style={{ color: NAVY }}>{label}</div>
+          <div className="text-[24px] font-bold leading-snug" style={{ color: count > 0 ? NAVY : '#D1D5DB' }}>{count}</div>
+          <div className="text-[11px] -mt-0.5" style={{ color: '#6B7280' }}>{sub}</div>
         </div>
       </Link>
       {!isLast && (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2" strokeLinecap="round" className="flex-shrink-0 mx-2">
-          <path d="M5 12h14M12 5l7 7-7 7" />
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" strokeWidth="2" strokeLinecap="round" className="flex-shrink-0 mx-1">
+          <path d="M9 18l6-6-6-6" />
         </svg>
       )}
     </div>
@@ -270,7 +270,7 @@ export default function OverviewPage() {
                 </div>
               </div>
               <div className="w-full flex items-center justify-center py-2 rounded-xl text-[12px] font-semibold cursor-not-allowed"
-                style={{ border: `1px solid #7C3AED30`, color: '#7C3AED', backgroundColor: 'white' }}>
+                style={{ border: `1px solid ${TEAL}`, color: TEAL, backgroundColor: 'white' }}>
                 View Estimates
               </div>
             </div>
@@ -331,13 +331,13 @@ export default function OverviewPage() {
                 </div>
 
                 {/* Gamification card */}
-                <div className="flex-1 rounded-xl p-3 border" style={{ borderColor: BORDER, backgroundColor: '#FAFAF9' }}>
+                <div className="flex-1 rounded-xl p-3" style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0' }}>
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <div className="text-[12px] font-bold mb-1" style={{ color: NAVY }}>
                         🏆 Get 2 more 5⭐ reviews
                       </div>
-                      <div className="text-[11px]" style={{ color: BODY }}>to unlock Top Pro badge and win 30% more jobs</div>
+                      <div className="text-[11px]" style={{ color: '#374151' }}>to unlock Top Pro badge and win 30% more jobs</div>
                     </div>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-lg"
                       style={{ backgroundColor: '#FEF3C7' }}>🥇</div>
@@ -353,12 +353,12 @@ export default function OverviewPage() {
                 </div>
 
                 {/* AI Insight card */}
-                <div className="flex-1 rounded-xl p-3 border" style={{ borderColor: BORDER, backgroundColor: '#FAFAF9' }}>
+                <div className="flex-1 rounded-xl p-3" style={{ backgroundColor: '#F5F3FF', border: '1px solid #DDD6FE' }}>
                   <div className="flex items-center gap-1.5 mb-2">
                     <SvgIcon d={ICONS.sparkle} s={14} sw={1.5} color="#7C3AED" />
                     <span className="text-[12px] font-bold" style={{ color: NAVY }}>AI Insight</span>
                   </div>
-                  <p className="text-[11px] mb-2" style={{ color: BODY }}>
+                  <p className="text-[12px] mb-2" style={{ color: '#374151' }}>
                     Customers love your work quality but mention slow response. Respond within 15 mins to increase win rate by 25%.
                   </p>
                   <button className="text-[11px] font-semibold flex items-center gap-1" style={{ color: TEAL }}>
@@ -374,17 +374,17 @@ export default function OverviewPage() {
                   {reviews.slice(0, 4).map(review => {
                     const s = sentiment(review.rating)
                     return (
-                      <div key={review.id} className="rounded-xl p-3" style={{ border: `1px solid ${BORDER}`, backgroundColor: '#FAFAF9' }}>
+                      <div key={review.id} className="rounded-xl p-3" style={{ border: `1px solid ${BORDER}`, backgroundColor: 'white' }}>
                         <div className="flex items-center gap-2 mb-1.5">
                           <AvatarInitials name={review.reviewer_name || 'A'} size={30} />
                           <div>
-                            <div className="text-[12px] font-semibold" style={{ color: NAVY }}>{review.reviewer_name}</div>
-                            <Stars rating={review.rating} size={11} />
+                            <div className="text-[13px] font-semibold" style={{ color: NAVY }}>{review.reviewer_name}</div>
+                            <Stars rating={review.rating} size={13} />
                           </div>
-                          <div className="ml-auto text-[10px]" style={{ color: MUTED }}>{timeAgo(review.reviewed_at)}</div>
+                          <div className="ml-auto text-[11px]" style={{ color: '#9CA3AF' }}>{timeAgo(review.reviewed_at)}</div>
                         </div>
-                        {review.comment && <p className="text-[11px] line-clamp-2 mb-2" style={{ color: BODY }}>{review.comment}</p>}
-                        <span className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                        {review.comment && <p className="text-[13px] line-clamp-2 mb-2 leading-snug" style={{ color: '#374151' }}>{review.comment}</p>}
+                        <span className="inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
                           style={{ backgroundColor: s.bg, color: s.color }}>{s.label}</span>
                       </div>
                     )
@@ -396,9 +396,9 @@ export default function OverviewPage() {
             {/* Col 2: Request reviews + AI assistant */}
             <div className="flex flex-col gap-4">
               {/* Request reviews panel */}
-              <div className="rounded-xl p-4" style={{ border: `1px solid ${BORDER}`, backgroundColor: '#FAFAF9' }}>
+              <div className="rounded-xl p-4" style={{ border: `1px solid ${BORDER}`, backgroundColor: 'white' }}>
                 <div className="text-[13px] font-bold mb-0.5" style={{ color: NAVY }}>Request reviews from happy customers</div>
-                <div className="text-[11px] mb-3 flex items-center gap-1" style={{ color: MUTED }}>
+                <div className="text-[12px] mb-3 flex items-center gap-1" style={{ color: '#6B7280' }}>
                   3 customers are likely to give you a
                   <Star filled size={11} />
                   <span>5★ review</span>
@@ -425,7 +425,7 @@ export default function OverviewPage() {
               </div>
 
               {/* AI Review Assistant */}
-              <div className="rounded-xl p-4" style={{ border: `1px solid ${BORDER}`, backgroundColor: '#FAFAF9' }}>
+              <div className="rounded-xl p-4" style={{ border: `1px solid ${BORDER}`, backgroundColor: 'white' }}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-1.5">
                     <SvgIcon d={ICONS.sparkle} s={14} sw={1.5} color="#7C3AED" />
@@ -435,7 +435,7 @@ export default function OverviewPage() {
                 </div>
 
                 {/* Negative review reply */}
-                <div className="rounded-xl p-3 mb-3" style={{ backgroundColor: 'white', border: `1px solid ${BORDER}` }}>
+                <div className="rounded-xl p-3 mb-3" style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA' }}>
                   <div className="flex items-center gap-2 mb-1.5">
                     <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FEE2E2' }}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
@@ -445,7 +445,7 @@ export default function OverviewPage() {
                       <div className="text-[10px]" style={{ color: MUTED }}>AI-generated reply for Jessica Lee</div>
                     </div>
                   </div>
-                  <p className="text-[11px] italic mb-2" style={{ color: BODY }}>
+                  <p className="text-[12px] italic mb-2" style={{ color: '#374151' }}>
                     &ldquo;Hi Jessica, thank you for your feedback. We&apos;re sorry for the delay in response. We appreciate your patience and are glad you liked our work. We&apos;ll do better next time!&rdquo;
                   </p>
                   <div className="flex gap-2">
@@ -457,7 +457,7 @@ export default function OverviewPage() {
                 </div>
 
                 {/* Positive review booster */}
-                <div className="rounded-xl p-3" style={{ backgroundColor: 'white', border: `1px solid ${BORDER}` }}>
+                <div className="rounded-xl p-3" style={{ backgroundColor: '#FFFBEB', border: '1px solid #FDE68A' }}>
                   <div className="flex items-center gap-2 mb-1.5">
                     <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FEF3C7' }}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" strokeWidth="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -467,7 +467,7 @@ export default function OverviewPage() {
                       <div className="text-[10px]" style={{ color: MUTED }}>AI-generated review request message</div>
                     </div>
                   </div>
-                  <p className="text-[11px] italic mb-2" style={{ color: BODY }}>
+                  <p className="text-[12px] italic mb-2" style={{ color: '#374151' }}>
                     Hi [Name], thanks again for choosing us! If you&apos;re happy with the work, would you mind leaving us a quick 5⭐ review?
                   </p>
                   <div className="flex gap-2">
