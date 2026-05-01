@@ -601,8 +601,8 @@ export default function LeadPipeline({ leads, onStatusChange, onUpdate, isPaid }
                 const stageLeads = leadsForStage(stage.key)
                 const hasLeads   = stageLeads.length > 0
                 return (
-                  <div key={stage.key}>
-                    {/* Column header */}
+                  <div key={stage.key} data-testid={`column-${stage.key}`}>
+                    {/* Column header */
                     <div
                       className="flex items-center justify-between mb-2 px-2.5 py-2 rounded-xl"
                       style={hasLeads ? { background: stage.bg } : {}}
@@ -679,7 +679,7 @@ export default function LeadPipeline({ leads, onStatusChange, onUpdate, isPaid }
                     const stageLeads = leadsForStage(stage.key)
                     const hasLeads   = stageLeads.length > 0
                     return (
-                      <div key={stage.key}>
+                      <div key={stage.key} data-testid={`column-${stage.key}`}>
                         <div className="flex items-center justify-between mb-2 px-2.5 py-2 rounded-xl"
                           style={hasLeads ? { background: stage.bg } : {}}>
                           <div className="flex items-center gap-1.5">

@@ -1,0 +1,75 @@
+/**
+ * global-setup.ts — runs ONCE before all Playwright tests.
+ *
+ * 1. Cleans up any leftover data from a previous crashed run
+ * 2. Inserts an isolated e2e_test_pro row into staging Supabase (Admin API,
+ *    bypasses RLS — no UI auth flow, no coupling to login UI changes)
+ * 3. Verifies the Vercel bypass header is working — fails fast with a clear
+ *    error rather than letting every test fail with a cryptic 401
+ *
+ * The test pro email matches TEST_PRO_EMAIL secret. The auth API only checks
+ * email (no password), so this row is sufficient for /api/auth to return a session.
+ */
+
+import { chromium, FullConfig } from '@playwright/test'
+import { createClient } from '@supabase/supabase-js'
+
+export const E2E_PRO_ID    = 'e2e00000-0000-0000-0000-000000000001'
+export const E2E_PRO_EMAIL = process.env.TEST_PRO_EMAIL!
+
+const SUPABASE_URL      = process.env.STAGING_SUPABASE_URL!
+const SERVICE_ROLE_KEY  = process.env.STAGING_SUPABASE_SERVICE_ROLE_KEY!
+const STAGING_URL       = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000'
+const BYPASS_SECRET     = process.env.VERCEL_AUTOMATION_BYPASS_SECRET || ''
+
+export default async function globalSetup(_config: FullConfig) {
+  if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+    throw new Error('global-setup: STAGING_SUPABASE_URL and STAGING_SUPABASE_SERVICE_ROLE_KEY are required')
+  }
+  if (!E2E_PRO_EMAIL) {
+    throw new Error('global-setup: TEST_PRO_EMAIL is required')
+  }
+
+  const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+    auth: { persistSession: false },
+  })
+
+  // ── 1. Clean up leftover data from any previous crashed run ─────────────────
+  await admin.from('leads').delete().eq('pro_id', E2E_PRO_ID)
+  await admin.from('clients').delete().eq('pro_id', E2E_PRO_ID)
+  await admin.from('pros').delete().eq('id', E2E_PRO_ID)
+
+  // ── 2. Seed the e2e test pro ─────────────────────────────────────────────────
+  const { error } = await admin.from('pros').insert({
+    id:             E2E_PRO_ID,
+    full_name:      'E2E Test Pro',
+    email:          E2E_PRO_EMAIL,
+    plan_tier:      'Free',
+    profile_status: 'Active',
+    city:           'Jacksonville',
+    state:          'FL',
+  })
+
+  if (error) throw new Error(`global-setup: failed to seed test pro — ${error.message}`)
+
+  // ── 3. Smoke test — verify bypass header is working ──────────────────────────
+  if (STAGING_URL.startsWith('http') && !STAGING_URL.includes('localhost')) {
+    const browser = await chromium.launch()
+    const ctx = await browser.newContext({
+      extraHTTPHeaders: { 'x-vercel-automation-bypass-secret': BYPASS_SECRET },
+    })
+    const page = await ctx.newPage()
+    const res  = await page.goto(STAGING_URL, { waitUntil: 'domcontentloaded', timeout: 30_000 })
+    await browser.close()
+
+    if (!res || res.status() === 401) {
+      throw new Error(
+        `global-setup: staging returned HTTP ${res?.status()} — ` +
+        `VERCEL_AUTOMATION_BYPASS_SECRET is wrong or not set.\n` +
+        `URL: ${STAGING_URL}`
+      )
+    }
+  }
+
+  console.log(`✓ global-setup: e2e test pro seeded (${E2E_PRO_EMAIL})`)
+}
