@@ -80,15 +80,15 @@ function ActionCard({ iconPath, count, label, sub, iconBg, iconColor, ctaLabel, 
   const sub_color = dk ? '#94A3B8' : '#6B7280'
   const cta_bg = dk ? '#1E293B' : 'white'
   return (
-    <div className="rounded-2xl p-5 flex flex-col gap-4"
+    <div className="rounded-2xl p-4 flex flex-col gap-3"
       style={{ backgroundColor: bg, boxShadow: '0 1px 4px rgba(0,0,0,0.07)', border: `1px solid ${bdr}` }}>
-      <div className="flex items-start gap-3">
-        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+      <div className="flex items-center gap-3 sm:items-start">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: iconBg }}>
-          <SvgIcon d={iconPath} s={24} sw={1.8} color={iconColor} />
+          <SvgIcon d={iconPath} s={20} sw={1.8} color={iconColor} />
         </div>
-        <div className="min-w-0">
-          <div className="text-[32px] font-bold leading-none mb-1" style={{ color: txt }}>{count}</div>
+        <div className="min-w-0 flex-1">
+          <div className="text-[26px] sm:text-[32px] font-bold leading-none mb-0.5" style={{ color: txt }}>{count}</div>
           <div className="text-[13px] font-semibold leading-tight" style={{ color: txt }}>{label}</div>
           <div className="text-[12px] mt-0.5" style={{ color: sub_color }}>{sub}</div>
         </div>
@@ -243,7 +243,7 @@ export default function OverviewPage() {
               View all leads <SvgIcon d={ICONS.chevRight} s={14} sw={2.5} color={TEAL} />
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
             <ActionCard
               iconPath={ICONS.flame}
               iconBg="#FEF3C7" iconColor="#F59E0B"
@@ -298,7 +298,7 @@ export default function OverviewPage() {
 
         {/* ── Pipeline ─────────────────────────────────────────────────────── */}
         <div className="rounded-2xl p-5 mb-5" style={{ backgroundColor: cardBg, border: `1px solid ${cardBdr}` }}>
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
             <div>
               <h2 className="text-[16px] font-bold inline mr-2" style={{ color: textMain }}>Pipeline</h2>
               <span className="text-[12px]" style={{ color: BODY }}>Track your leads at every stage</span>
@@ -310,7 +310,7 @@ export default function OverviewPage() {
           {leads.length === 0 ? (
             <p className="text-[13px] py-4 text-center" style={{ color: MUTED }}>No leads yet — add your first lead to get started.</p>
           ) : (
-            <div className="flex items-center justify-between w-full overflow-hidden">
+            <div className="flex items-center justify-between w-full overflow-x-auto md:overflow-hidden" style={{ scrollbarWidth: 'none' }}>
               <PipeStage iconPath={ICONS.users}     iconBg="#EFF6FF" iconColor="#3B82F6" label="New"       count={newLeads.length}       sub="New leads"       dk={dk} />
               <PipeArrow dk={dk} />
               <PipeStage iconPath={ICONS.phone}     iconBg="#DCFCE7" iconColor="#16A34A" label="Contacted" count={contactedLeads.length}  sub="You contacted"   dk={dk} />
@@ -341,7 +341,7 @@ export default function OverviewPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             {/* Col 1: Rating + gamification + AI insight + recent reviews */}
             <div className="lg:col-span-2">
-              <div className="flex items-start gap-6 mb-5">
+              <div className="flex flex-col lg:flex-row items-start gap-4 mb-5">
                 {/* Big rating */}
                 <div>
                   <div className="text-[52px] font-bold leading-none" style={{ color: textMain }}>
@@ -352,7 +352,7 @@ export default function OverviewPage() {
                 </div>
 
                 {/* Gamification card */}
-                <div className="flex-1 rounded-xl p-3" style={{ backgroundColor: dk ? '#1E293B' : '#F0FDF4', borderTop: `1px solid ${dk ? '#334155' : '#BBF7D0'}`, borderRight: `1px solid ${dk ? '#334155' : '#BBF7D0'}`, borderBottom: `1px solid ${dk ? '#334155' : '#BBF7D0'}`, borderLeft: `3px solid ${dk ? '#22C55E' : '#16A34A'}` }}>
+                <div className="w-full lg:flex-1 rounded-xl p-3" style={{ backgroundColor: dk ? '#1E293B' : '#F0FDF4', borderTop: `1px solid ${dk ? '#334155' : '#BBF7D0'}`, borderRight: `1px solid ${dk ? '#334155' : '#BBF7D0'}`, borderBottom: `1px solid ${dk ? '#334155' : '#BBF7D0'}`, borderLeft: `3px solid ${dk ? '#22C55E' : '#16A34A'}` }}>
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <div className="text-[12px] font-bold mb-1" style={{ color: textMain }}>
@@ -374,7 +374,7 @@ export default function OverviewPage() {
                 </div>
 
                 {/* AI Insight card */}
-                <div className="flex-1 rounded-xl p-3" style={{ backgroundColor: dk ? '#1E293B' : '#F5F3FF', borderTop: `1px solid ${dk ? '#334155' : '#DDD6FE'}`, borderRight: `1px solid ${dk ? '#334155' : '#DDD6FE'}`, borderBottom: `1px solid ${dk ? '#334155' : '#DDD6FE'}`, borderLeft: `3px solid ${dk ? '#8B5CF6' : '#7C3AED'}` }}>
+                <div className="w-full lg:flex-1 rounded-xl p-3" style={{ backgroundColor: dk ? '#1E293B' : '#F5F3FF', borderTop: `1px solid ${dk ? '#334155' : '#DDD6FE'}`, borderRight: `1px solid ${dk ? '#334155' : '#DDD6FE'}`, borderBottom: `1px solid ${dk ? '#334155' : '#DDD6FE'}`, borderLeft: `3px solid ${dk ? '#8B5CF6' : '#7C3AED'}` }}>
                   <div className="flex items-center gap-1.5 mb-2">
                     <SvgIcon d={ICONS.sparkle} s={14} sw={1.5} color="#7C3AED" />
                     <span className="text-[12px] font-bold" style={{ color: textMain }}>AI Insight</span>
@@ -505,7 +505,7 @@ export default function OverviewPage() {
 
         {/* ── Community Insights ───────────────────────────────────────────── */}
         <div className="rounded-2xl p-5 mb-5" style={{ backgroundColor: cardBg, border: `1px solid ${cardBdr}` }}>
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
             <div className="flex items-center gap-3">
               <h2 className="text-[16px] font-bold" style={{ color: textMain }}>Community Insights</h2>
               <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
@@ -513,7 +513,7 @@ export default function OverviewPage() {
                 Trending in {session?.city || 'your area'}
               </span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <Link href="/community" className="text-[12px] font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1"
                 style={{ border: `1px solid ${cardBdr}`, color: textMain, backgroundColor: cardBg }}>
                 View Community <SvgIcon d={ICONS.arrowRight} s={13} sw={2} color={textMain} />
