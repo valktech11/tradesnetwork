@@ -15,9 +15,9 @@ const BODY   = '#6B7280'
 
 // ── Lucide-style SVG icons (exact paths matching reference) ────────────────────
 const ICONS = {
-  flame:       'M12 2c0 0-5 5-5 10a5 5 0 0010 0c0-3-2-6-2-6s-1 3-3 3-1-3-1-3C9 4 12 2 12 2z',
+  flame:       'M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z',
   alertTri:    'M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01',
-  hourglass:   'M5 2h14M5 22h14M5 2a7 7 0 007 7 7 7 0 007-7M5 22a7 7 0 007-7 7 7 0 007 7',
+  hourglass:   'M5 22h14M5 2h14M17 22v-4.172a2 2 0 00-.586-1.414L12 12l-4.414 4.414A2 2 0 007 17.828V22M7 2v4.172a2 2 0 00.586 1.414L12 12l4.414-4.414A2 2 0 0017 6.172V2',
   calendar:    'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z',
   fileText:    'M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8',
   users:       'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75',
@@ -206,7 +206,7 @@ export default function OverviewPage() {
 
   return (
     <DashboardShell session={session} newLeads={newLeads.length} onAddLead={() => setShowAddLead(true)} darkMode={dk} onToggleDark={toggleDark}>
-      <div className="px-6 py-6 max-w-[1200px] mx-auto">
+      <div className="px-6 py-6">
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between mb-6">
@@ -220,7 +220,7 @@ export default function OverviewPage() {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.8" strokeLinecap="round">
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
-            + Add New Lead
+            Add New Lead
           </button>
         </div>
 
@@ -260,6 +260,27 @@ export default function OverviewPage() {
               count={scheduledLeads.length} label="Jobs Scheduled" sub="This week"
               ctaLabel="View Calendar" ctaHref="/dashboard/pipeline" ctaColor="#16A34A"
             />
+            {/* Draft Estimates — v75 placeholder */}
+            <div className="flex-shrink-0 bg-white rounded-2xl p-5 flex flex-col gap-4 relative opacity-70"
+              style={{ border: `1px solid ${BORDER}`, minWidth: 200, flex: 1 }}>
+              <span className="absolute top-3 right-3 text-[9px] font-bold px-1.5 py-0.5 rounded-md"
+                style={{ backgroundColor: '#EDE9FE', color: '#7C3AED' }}>v75</span>
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: '#EDE9FE' }}>
+                  <SvgIcon d={ICONS.fileText} s={22} sw={1.8} color="#7C3AED" />
+                </div>
+                <div>
+                  <div className="text-[28px] font-bold leading-none mb-1" style={{ color: NAVY }}>0</div>
+                  <div className="text-[13px] font-semibold" style={{ color: NAVY }}>Draft Estimates</div>
+                  <div className="text-[12px] mt-0.5" style={{ color: MUTED }}>Need your review</div>
+                </div>
+              </div>
+              <div className="w-full flex items-center justify-center py-2 rounded-xl text-[12px] font-semibold cursor-not-allowed"
+                style={{ border: `1px solid #7C3AED30`, color: '#7C3AED', backgroundColor: 'white' }}>
+                View Estimates
+              </div>
+            </div>
           </div>
         </div>
 

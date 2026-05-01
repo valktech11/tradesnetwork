@@ -277,6 +277,101 @@ function QuickSheet({ open, onClose, onAddLead }: { open: boolean; onClose: () =
   )
 }
 
+
+// ── Status options ─────────────────────────────────────────────────────────────
+const STATUS_OPTIONS = [
+  { label: 'Available for jobs',  sub: "I'm ready to receive new leads",  dot: '#22C55E', value: 'available' },
+  { label: 'Busy (limited jobs)', sub: "I'm taking limited new jobs",      dot: '#F59E0B', value: 'busy' },
+  { label: 'On a job',            sub: "I'm currently working on a job",   dot: '#3B82F6', value: 'on_job' },
+  { label: 'Not taking jobs',     sub: "I'm not accepting new leads",      dot: '#EF4444', value: 'not_taking' },
+  { label: 'Do not disturb',      sub: 'Pause notifications',              dot: '#8B5CF6', value: 'dnd' },
+]
+
+function TopHeader({ session, dk }: { session: Session | null; dk: boolean }) {
+  const [status,     setStatus]     = React.useState('available')
+  const [statusOpen, setStatusOpen] = React.useState(false)
+  const current = STATUS_OPTIONS.find(s => s.value === status) || STATUS_OPTIONS[0]
+  const bg  = dk ? '#1E293B' : 'white'
+  const bdr = dk ? '#334155' : '#E8E2D9'
+  const txt = dk ? '#F1F5F9' : '#0A1628'
+
+  return (
+    <div className="flex items-center justify-end gap-3 px-6 py-3 flex-shrink-0"
+      style={{ backgroundColor: bg, borderBottom: `1px solid ${bdr}` }}>
+
+      {/* Available for jobs dropdown */}
+      <div className="relative">
+        <button
+          onClick={() => setStatusOpen(o => !o)}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold transition-all hover:opacity-80"
+          style={{ border: `1px solid ${bdr}`, color: txt, backgroundColor: bg }}>
+          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: current.dot }} />
+          {current.label}
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <path d={statusOpen ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"} />
+          </svg>
+        </button>
+
+        {statusOpen && (
+          <div className="absolute right-0 top-full mt-1 w-64 rounded-2xl shadow-xl z-50 py-1 overflow-hidden"
+            style={{ backgroundColor: bg, border: `1px solid ${bdr}` }}>
+            {STATUS_OPTIONS.map(opt => (
+              <button key={opt.value}
+                onClick={() => { setStatus(opt.value); setStatusOpen(false) }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:opacity-70 transition-opacity">
+                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: opt.dot }} />
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13px] font-semibold" style={{ color: txt }}>{opt.label}</div>
+                  <div className="text-[11px]" style={{ color: '#9CA3AF' }}>{opt.sub}</div>
+                </div>
+                {opt.value === status && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round">
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Location */}
+      {session?.city && (
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium"
+          style={{ border: `1px solid ${bdr}`, color: txt }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0zM12 10a1 1 0 100-2 1 1 0 000 2" />
+          </svg>
+          {session.city}{session.state ? `, ${session.state}` : ''}
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </div>
+      )}
+
+      {/* Bell */}
+      <div className="relative cursor-pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={txt} strokeWidth="1.8" strokeLinecap="round">
+          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
+        </svg>
+        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+          style={{ backgroundColor: '#EF4444' }}>3</span>
+      </div>
+
+      {/* Avatar + name */}
+      {session && (
+        <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+          <Av s={session} px={28} />
+          <span className="text-[13px] font-semibold" style={{ color: txt }}>{session.name?.split(' ')[0]}</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={txt} strokeWidth="2.5" strokeLinecap="round">
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Main shell ────────────────────────────────────────────────────────────────
 export default function DashboardShell({ children, session, newLeads = 0, onAddLead, darkMode, onToggleDark }: {
   children: React.ReactNode; session: Session | null; newLeads?: number; onAddLead?: () => void; darkMode?: boolean; onToggleDark?: () => void
@@ -362,8 +457,12 @@ export default function DashboardShell({ children, session, newLeads = 0, onAddL
             )}
           </aside>
 
-          <main className="pg-main flex-1 overflow-y-auto" style={{ backgroundColor: dk ? '#0F172A' : '#ECEAE5', color: dk ? '#F1F5F9' : undefined }}>
-            {children}
+          <main className="pg-main flex-1 overflow-y-auto flex flex-col" style={{ backgroundColor: dk ? '#0F172A' : '#ECEAE5', color: dk ? '#F1F5F9' : undefined }}>
+            {/* ── Top header bar ─────────────────────────────────────────── */}
+            <TopHeader session={session} dk={dk} />
+            <div className="flex-1">
+              {children}
+            </div>
           </main>
         </div>
 
