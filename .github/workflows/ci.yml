@@ -92,31 +92,25 @@ jobs:
         run: npx playwright install chromium --with-deps
 
       # Vercel password protection returns 401 until unlocked.
-      # Write .env.test so Next.js/Turbopack picks up staging Supabase at compile time.
-      # NEXT_PUBLIC_* vars are baked into the JS bundle during dev server startup —
-      # passing them as runtime env vars alone is not sufficient.
-      - name: Write .env.test for local dev server
-        run: |
-          printf 'NEXT_PUBLIC_SUPABASE_URL=%s\n' "$STAGING_SUPABASE_URL" > .env.test
-          printf 'NEXT_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$STAGING_SUPABASE_ANON_KEY" >> .env.test
-          printf 'SUPABASE_SERVICE_ROLE_KEY=%s\n' "$STAGING_SUPABASE_SERVICE_ROLE_KEY" >> .env.test
-          printf 'NEXT_PUBLIC_ENV=staging\n' >> .env.test
-          printf 'MODERATION_MODE=off\n' >> .env.test
-          echo ".env.test written (values masked):"
-          sed 's/=.*/=***/' .env.test
-        env:
-          STAGING_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
-          STAGING_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
-          STAGING_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
-
+      # SUPABASE_URL is a server-side-only env var read at request time (not compiled).
+      # The webServer (npm run dev) inherits this from the CI job env, so every
+      # API route call during tests hits staging Supabase — no .env file needed.
       - name: Run E2E tests (localhost dev server + staging Supabase)
         run: npm run test:e2e
         env:
-          TEST_PRO_EMAIL: ${{ secrets.TEST_PRO_EMAIL }}
-          TEST_PRO_PASSWORD: ${{ secrets.TEST_PRO_PASSWORD }}
+          # Server-side var — read at request time, not baked into bundle
+          SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
+          # Anon key is public so NEXT_PUBLIC_ is fine here
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_ENV: staging
+          MODERATION_MODE: "off"
+          # Supabase vars also needed by global-setup/teardown (run in same process)
           STAGING_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
           STAGING_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
           STAGING_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          TEST_PRO_EMAIL: ${{ secrets.TEST_PRO_EMAIL }}
+          TEST_PRO_PASSWORD: ${{ secrets.TEST_PRO_PASSWORD }}
           CI: true
 
       - name: Upload Playwright report
