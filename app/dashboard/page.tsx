@@ -125,7 +125,7 @@ function PipeStage({ iconPath, iconBg, iconColor, label, count, sub, isLast, dk,
         </div>
       </Link>
       {!isLast && (
-        <span className="flex-shrink-0 mx-3 text-[16px] font-light" style={{ color: arr_c }}>→</span>
+        <span className="flex-shrink-0 mx-5 text-[16px]" style={{ color: arr_c }}>→</span>
       )}
     </div>
   )
@@ -219,7 +219,7 @@ export default function OverviewPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold" style={{ color: textMain }}>{greeting}, {firstName}! 👋</h1>
-            <p className="text-[13px] mt-0.5" style={{ color: MUTED }}>Here&apos;s what&apos;s happening with your business today.</p>
+            <p className="text-[13px] mt-0.5" style={{ color: BODY }}>Here&apos;s what&apos;s happening with your business today.</p>
           </div>
 
         </div>
@@ -229,7 +229,7 @@ export default function OverviewPage() {
           <div className="flex items-center justify-between mb-3">
             <div>
               <h2 className="text-[16px] font-bold" style={{ color: textMain }}>Action Center</h2>
-              <p className="text-[12px]" style={{ color: MUTED }}>Top items that need your attention</p>
+              <p className="text-[12px]" style={{ color: BODY }}>Top items that need your attention</p>
             </div>
             <Link href="/dashboard/pipeline" className="text-[13px] font-semibold flex items-center gap-1" style={{ color: TEAL }}>
               View all leads <SvgIcon d={ICONS.chevRight} s={14} sw={2.5} color={TEAL} />
@@ -293,7 +293,7 @@ export default function OverviewPage() {
           <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-[16px] font-bold inline mr-2" style={{ color: textMain }}>Pipeline</h2>
-              <span className="text-[12px]" style={{ color: MUTED }}>Track your leads at every stage</span>
+              <span className="text-[12px]" style={{ color: BODY }}>Track your leads at every stage</span>
             </div>
             <Link href="/dashboard/pipeline" className="text-[13px] font-semibold flex items-center gap-1" style={{ color: TEAL }}>
               Open Full Pipeline <SvgIcon d={ICONS.chevRight} s={14} sw={2.5} color={TEAL} />
@@ -302,8 +302,8 @@ export default function OverviewPage() {
           {leads.length === 0 ? (
             <p className="text-[13px] py-4 text-center" style={{ color: MUTED }}>No leads yet — add your first lead to get started.</p>
           ) : (
-            <div className="flex items-center gap-8">
-              <div className="flex items-center flex-wrap gap-2 flex-shrink-0">
+            <div className="flex items-center gap-6">
+              <div className="flex flex-1 items-center justify-between">
                 <PipeStage iconPath={ICONS.users}     iconBg="#EFF6FF" iconColor="#3B82F6" label="New"       count={newLeads.length}       sub="New leads"       dk={dk} />
                 <PipeStage iconPath={ICONS.phone}     iconBg="#DCFCE7" iconColor="#16A34A" label="Contacted" count={contactedLeads.length}  sub="You contacted"   dk={dk} />
                 <PipeStage iconPath={ICONS.fileText}  iconBg="#EDE9FE" iconColor="#7C3AED" label="Quoted"    count={quotedLeads.length}     sub="Estimate sent"   dk={dk} />
@@ -312,9 +312,9 @@ export default function OverviewPage() {
               </div>
               {pipeline > 0 && (
                 <div className="text-right border-l pl-6 flex-shrink-0" style={{ borderColor: cardBdr }}>
-                  <div className="text-[11px] font-medium mb-0.5" style={{ color: MUTED }}>Total Pipeline Value</div>
+                  <div className="text-[11px] font-medium mb-0.5" style={{ color: BODY }}>Total Pipeline Value</div>
                   <div className="text-[28px] font-bold" style={{ color: textMain }}>${pipeline.toLocaleString()}</div>
-                  <div className="text-[11px]" style={{ color: MUTED }}>Potential Revenue</div>
+                  <div className="text-[11px]" style={{ color: BODY }}>Potential Revenue</div>
                 </div>
               )}
             </div>
