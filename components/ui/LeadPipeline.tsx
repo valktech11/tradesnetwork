@@ -10,7 +10,7 @@ export const PIPELINE_STAGES = [
   { key: 'Quoted',    label: 'Quoted',    color: '#7C3AED', bg: '#F5F3FF', dot: '#8B5CF6', subLabel: 'Proposal sent',      nextLabel: 'Send Estimate', nextColor: '#7C3AED', nextBg: '#EDE9FE' },
   { key: 'Scheduled', label: 'Scheduled', color: '#0F766E', bg: '#F0FDFA', dot: '#14B8A6', subLabel: 'Job confirmed',      nextLabel: 'Job Day',       nextColor: '#0F766E', nextBg: '#CCFBF1' },
   { key: 'Completed', label: 'Completed', color: '#374151', bg: '#F9FAFB', dot: '#6B7280', subLabel: 'Job completed',      nextLabel: 'Generate Invoice', nextColor: '#059669', nextBg: '#D1FAE5' },
-  { key: 'Paid',      label: 'Paid',      color: 'white',   bg: '#15803D', dot: 'white',   subLabel: 'Payment received',   nextLabel: 'Paid',          nextColor: '#059669', nextBg: '#DCFCE7' },
+  { key: 'Paid',      label: 'Paid',      color: 'white',   bg: '#4A7B4A', dot: 'white',   subLabel: 'Payment received',   nextLabel: 'Paid',          nextColor: '#059669', nextBg: '#DCFCE7' },
 ] as const
 
 type StageKey = typeof PIPELINE_STAGES[number]['key']
@@ -402,7 +402,7 @@ function PipelineColumn({ stage, leads, onOpen }: {
       )}
       <div className="flex flex-col min-w-0" style={{ minWidth: 220 }}>
         {/* Column header */}
-        <div className="rounded-xl px-3 py-2.5 mb-2" style={{ background: stage.bg }}>
+        <div className="rounded-xl px-3 py-2.5 mb-2" style={{ background: stage.bg, borderTop: `3px solid ${stage.key === 'Paid' ? 'rgba(255,255,255,0.35)' : stage.key === 'Completed' ? '#9CA3AF' : stage.color}` }}>
           <div className="flex items-center justify-between mb-0.5">
             <div className="flex items-center gap-1.5">
               <span className="text-[13px] font-bold" style={{ color: stage.color }}>
