@@ -92,9 +92,21 @@ jobs:
         run: npx playwright install chromium --with-deps
 
       # Vercel password protection returns 401 until unlocked.
-      # E2E runs against a local Next.js dev server started by Playwright's webServer block.
-      # Supabase calls still hit staging DB — real data layer, no mocking.
-      # Avoids Vercel deployment protection (host_not_allowed) entirely.
+      # Write .env.test so Next.js/Turbopack picks up staging Supabase at compile time.
+      # NEXT_PUBLIC_* vars are baked into the JS bundle during dev server startup —
+      # passing them as runtime env vars alone is not sufficient.
+      - name: Write .env.test for local dev server
+        run: |
+          cat > .env.test << EOF
+          NEXT_PUBLIC_SUPABASE_URL=${{ secrets.STAGING_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY=${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
+          NEXT_PUBLIC_ENV=staging
+          MODERATION_MODE=off
+          EOF
+          echo ".env.test written:"
+          cat .env.test
+
       - name: Run E2E tests (localhost dev server + staging Supabase)
         run: npm run test:e2e
         env:
@@ -103,11 +115,6 @@ jobs:
           STAGING_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
           STAGING_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
           STAGING_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
-          NEXT_PUBLIC_ENV: staging
-          MODERATION_MODE: "off"
           CI: true
 
       - name: Upload Playwright report
