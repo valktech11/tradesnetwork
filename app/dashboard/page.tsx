@@ -70,27 +70,27 @@ function AvatarInitials({ name, size = 32 }: { name: string; size?: number }) {
 }
 
 // ── Action Center Card ─────────────────────────────────────────────────────────
-function ActionCard({ iconPath, count, label, sub, iconBg, iconColor, ctaLabel, ctaHref, ctaColor }: {
+function ActionCard({ iconPath, count, label, sub, iconBg, iconColor, ctaLabel, ctaHref }: {
   iconPath: string; count: number | string; label: string; sub: string
-  iconBg: string; iconColor: string; ctaLabel: string; ctaHref: string; ctaColor: string
+  iconBg: string; iconColor: string; ctaLabel: string; ctaHref: string
 }) {
   return (
-    <div className="flex-shrink-0 bg-white rounded-2xl p-5 flex flex-col gap-4"
-      style={{ border: `1px solid ${BORDER}`, minWidth: 200, flex: 1 }}>
-      <div className="flex items-start gap-4">
-        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+    <div className="bg-white rounded-2xl p-4 flex flex-col gap-3"
+      style={{ border: `1px solid ${BORDER}` }}>
+      <div className="flex items-start gap-3">
+        <div className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: iconBg }}>
-          <SvgIcon d={iconPath} s={22} sw={1.8} color={iconColor} />
+          <SvgIcon d={iconPath} s={20} sw={1.8} color={iconColor} />
         </div>
-        <div>
-          <div className="text-[28px] font-bold leading-none mb-1" style={{ color: NAVY }}>{count}</div>
-          <div className="text-[13px] font-semibold" style={{ color: NAVY }}>{label}</div>
-          <div className="text-[12px] mt-0.5" style={{ color: MUTED }}>{sub}</div>
+        <div className="min-w-0">
+          <div className="text-[26px] font-bold leading-none mb-0.5" style={{ color: NAVY }}>{count}</div>
+          <div className="text-[12px] font-semibold leading-tight" style={{ color: NAVY }}>{label}</div>
+          <div className="text-[11px] mt-0.5" style={{ color: MUTED }}>{sub}</div>
         </div>
       </div>
       <Link href={ctaHref}
-        className="w-full flex items-center justify-center py-2 rounded-xl text-[12px] font-semibold transition-all hover:opacity-80"
-        style={{ border: `1px solid ${ctaColor}30`, color: ctaColor, backgroundColor: 'white' }}>
+        className="w-full flex items-center justify-center py-1.5 rounded-xl text-[12px] font-semibold transition-all hover:bg-gray-50"
+        style={{ border: `1px solid #E2E8F0`, color: NAVY, backgroundColor: 'white' }}>
         {ctaLabel}
       </Link>
     </div>
@@ -214,14 +214,7 @@ export default function OverviewPage() {
             <h1 className="text-2xl font-bold" style={{ color: textMain }}>{greeting}, {firstName}! 👋</h1>
             <p className="text-[13px] mt-0.5" style={{ color: MUTED }}>Here&apos;s what&apos;s happening with your business today.</p>
           </div>
-          <button onClick={() => setShowAddLead(true)}
-            className="hidden md:flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:opacity-90 active:scale-95"
-            style={{ backgroundColor: TEAL, color: 'white' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.8" strokeLinecap="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            Add New Lead
-          </button>
+
         </div>
 
         {/* ── Action Center ────────────────────────────────────────────────── */}
@@ -235,34 +228,34 @@ export default function OverviewPage() {
               View all leads <SvgIcon d={ICONS.chevRight} s={14} sw={2.5} color={TEAL} />
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             <ActionCard
               iconPath={ICONS.flame}
               iconBg="#FEF3C7" iconColor="#F59E0B"
               count={newLeads.length} label="New Leads" sub="Received in last 2 hours"
-              ctaLabel="View Leads" ctaHref="/dashboard/pipeline" ctaColor="#F59E0B"
+              ctaLabel="View Leads" ctaHref="/dashboard/pipeline"
             />
             <ActionCard
               iconPath={ICONS.alertTri}
               iconBg="#EDE9FE" iconColor="#7C3AED"
               count={awaitingResp.length} label="Awaiting Your Response" sub="Customers messaged you"
-              ctaLabel="View Leads" ctaHref="/dashboard/pipeline" ctaColor="#7C3AED"
+              ctaLabel="View Leads" ctaHref="/dashboard/pipeline"
             />
             <ActionCard
               iconPath={ICONS.hourglass}
               iconBg="#E0F2FE" iconColor="#0EA5E9"
               count={waitingOnCust.length} label="Waiting on Customer" sub="You replied, waiting for them"
-              ctaLabel="View Leads" ctaHref="/dashboard/pipeline" ctaColor="#0EA5E9"
+              ctaLabel="View Leads" ctaHref="/dashboard/pipeline"
             />
             <ActionCard
               iconPath={ICONS.calCheck}
               iconBg="#DCFCE7" iconColor="#16A34A"
               count={scheduledLeads.length} label="Jobs Scheduled" sub="This week"
-              ctaLabel="View Calendar" ctaHref="/dashboard/pipeline" ctaColor="#16A34A"
+              ctaLabel="View Calendar" ctaHref="/dashboard/pipeline"
             />
             {/* Draft Estimates — v75 placeholder */}
             <div className="flex-shrink-0 bg-white rounded-2xl p-5 flex flex-col gap-4 relative opacity-70"
-              style={{ border: `1px solid ${BORDER}`, minWidth: 200, flex: 1 }}>
+              style={{ border: `1px solid ${BORDER}` }}>
               <span className="absolute top-3 right-3 text-[9px] font-bold px-1.5 py-0.5 rounded-md"
                 style={{ backgroundColor: '#EDE9FE', color: '#7C3AED' }}>v75</span>
               <div className="flex items-start gap-4">

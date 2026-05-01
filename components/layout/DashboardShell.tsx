@@ -287,7 +287,7 @@ const STATUS_OPTIONS = [
   { label: 'Do not disturb',      sub: 'Pause notifications',              dot: '#8B5CF6', value: 'dnd' },
 ]
 
-function TopHeader({ session, dk }: { session: Session | null; dk: boolean }) {
+function TopHeader({ session, dk, onAddLead }: { session: Session | null; dk: boolean; onAddLead?: () => void }) {
   const [status,     setStatus]     = React.useState('available')
   const [statusOpen, setStatusOpen] = React.useState(false)
   const current = STATUS_OPTIONS.find(s => s.value === status) || STATUS_OPTIONS[0]
@@ -298,6 +298,18 @@ function TopHeader({ session, dk }: { session: Session | null; dk: boolean }) {
   return (
     <div className="flex items-center justify-end gap-3 px-6 py-3 flex-shrink-0"
       style={{ backgroundColor: bg, borderBottom: `1px solid ${bdr}` }}>
+
+      {/* Add New Lead button */}
+      {onAddLead && (
+        <button onClick={onAddLead}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-semibold transition-all hover:opacity-90 active:scale-95"
+          style={{ backgroundColor: '#0F766E', color: 'white' }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.8" strokeLinecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add New Lead
+        </button>
+      )}
 
       {/* Available for jobs dropdown */}
       <div className="relative">
@@ -459,7 +471,7 @@ export default function DashboardShell({ children, session, newLeads = 0, onAddL
 
           <main className="pg-main flex-1 overflow-y-auto flex flex-col" style={{ backgroundColor: dk ? '#0F172A' : '#ECEAE5', color: dk ? '#F1F5F9' : undefined }}>
             {/* ── Top header bar ─────────────────────────────────────────── */}
-            <TopHeader session={session} dk={dk} />
+            <TopHeader session={session} dk={dk} onAddLead={onAddLead} />
             <div className="flex-1">
               {children}
             </div>
