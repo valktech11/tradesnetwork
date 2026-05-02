@@ -49,6 +49,23 @@ input:focus, textarea:focus, select:focus {
   box-shadow: 0 0 0 1px #0F766E;
 }
 
+/* No default border on inputs — components add borders explicitly when needed */
+input, textarea, select {
+  border: none;
+  outline: none;
+}
+
+/* Prevent faded/muted table headers and labels globally */
+th, thead td {
+  color: #374151;
+  font-weight: 600;
+}
+
+/* Column header labels inside divs (e.g. estimate table headers) */
+[class*="uppercase"][class*="tracking"] {
+  color: #6B7280;
+}
+
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }

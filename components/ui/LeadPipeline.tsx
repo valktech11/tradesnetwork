@@ -215,6 +215,7 @@ function LeadCard({ lead, stage, onOpen }: {
   const [bg, fg] = avatarColor(lead.contact_name)
   const days     = daysSince(lead.created_at)
   const [creatingEst, setCreatingEst] = useState(false)
+  const [existingEst, setExistingEst] = useState<{ id: string; estimate_number: string; total: number; created_at: string } | null>(null)
 
   async function openEstimate(e: React.MouseEvent) {
     e.stopPropagation()
@@ -231,6 +232,38 @@ function LeadCard({ lead, stage, onOpen }: {
           lead_name:   lead.contact_name,
           lead_source: lead.lead_source || '',
           trade:       session.trade    || '',
+        }),
+      })
+      const d = await r.json()
+      if (d.existed) {
+        // Show choice modal — don't navigate yet
+        setExistingEst(d.estimate)
+        setCreatingEst(false)
+      } else if (d.estimate?.id) {
+        router.push(`/dashboard/estimates/${d.estimate.id}`)
+      }
+    } catch {
+      setCreatingEst(false)
+    }
+  }
+
+  async function createFresh(e: React.MouseEvent) {
+    e.stopPropagation()
+    setExistingEst(null)
+    setCreatingEst(true)
+    try {
+      const session = JSON.parse(sessionStorage.getItem('pg_pro') || '{}')
+      // Pass force_new flag — bypass existing draft check
+      const r = await fetch('/api/estimates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pro_id:      session.id,
+          lead_id:     lead.id,
+          lead_name:   lead.contact_name,
+          lead_source: lead.lead_source || '',
+          trade:       session.trade    || '',
+          force_new:   true,
         }),
       })
       const d = await r.json()
@@ -341,6 +374,61 @@ function LeadCard({ lead, stage, onOpen }: {
           )}
         </div>
       </div>
+
+      {/* ── Existing estimate modal ── */}
+      {existingEst && (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.55)' }}
+          onClick={e => { e.stopPropagation(); setExistingEst(null) }}
+        >
+          <div
+            className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 className="font-bold text-gray-900 text-base mb-1">Estimate already exists</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              A draft estimate was found for <span className="font-semibold text-gray-700">{lead.contact_name}</span>.
+            </p>
+
+            {/* Existing estimate preview */}
+            <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 mb-5 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-gray-900">#{existingEst.estimate_number}</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Draft · {new Date(existingEst.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </p>
+              </div>
+              <span className="text-sm font-bold text-[#0F766E]">
+                ${existingEst.total.toLocaleString()}
+              </span>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={e => { e.stopPropagation(); router.push(`/dashboard/estimates/${existingEst.id}`) }}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-[#0F766E] to-[#0D9488] text-white hover:opacity-90 transition-opacity"
+              >
+                Open Existing
+              </button>
+              <button
+                onClick={createFresh}
+                disabled={creatingEst}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold border-2 border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+              >
+                {creatingEst ? 'Creating...' : 'New Version'}
+              </button>
+            </div>
+
+            <button
+              onClick={e => { e.stopPropagation(); setExistingEst(null) }}
+              className="w-full mt-3 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

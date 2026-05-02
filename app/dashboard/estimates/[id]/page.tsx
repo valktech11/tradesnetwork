@@ -153,10 +153,22 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
               <button
                 onClick={handleSave}
                 disabled={saving}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-semibold transition-colors disabled:opacity-60 ${
+                  dk ? 'border-[#334155] text-slate-300 hover:border-[#0F766E] hover:text-[#0F766E]' : 'border-[#E8E2D9] text-gray-700 hover:border-[#0F766E] hover:text-[#0F766E]'
+                }`}
+              >
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+              <button
+                onClick={async () => {
+                  await handleSave()
+                  // TODO: trigger send flow in v76
+                }}
+                disabled={saving}
                 className="flex items-center gap-2 bg-gradient-to-r from-[#0F766E] to-[#0D9488] text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity disabled:opacity-60"
               >
                 <Send size={15} />
-                {saving ? 'Sending...' : 'Send & Get Paid Faster'}
+                Send & Get Paid Faster
               </button>
             </div>
           </div>

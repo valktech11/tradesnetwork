@@ -21,13 +21,30 @@ export async function GET(req: NextRequest) {
 // Creates a blank draft estimate and returns it so the UI can redirect to /[id]
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const { pro_id, lead_id, lead_name, lead_source, trade } = body
+  const { pro_id, lead_id, lead_name, lead_source, trade, force_new } = body
 
   if (!pro_id) return NextResponse.json({ error: 'pro_id required' }, { status: 400 })
 
   const sb = getSupabaseAdmin()
 
-  // Generate estimate number: EST-XXXX
+  // If lead_id provided and not forcing new, check for existing draft first
+  if (lead_id && !force_new) {
+    const { data: existing } = await sb
+      .from('estimates')
+      .select('id, estimate_number, status, total, created_at')
+      .eq('pro_id', pro_id)
+      .eq('lead_id', lead_id)
+      .eq('status', 'draft')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (existing) {
+      return NextResponse.json({ estimate: existing, existed: true })
+    }
+  }
+
+  // No existing draft — create new
   const { data: numData } = await sb.rpc('next_estimate_number')
   const estimateNumber: string = numData || `EST-${Date.now().toString().slice(-4)}`
 
@@ -58,5 +75,5 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ estimate })
+  return NextResponse.json({ estimate, existed: false })
 }
