@@ -71,6 +71,14 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'items' | 'notes'>('items')
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false)
+  const [showSaveTemplate,   setShowSaveTemplate]   = useState(false)
+  const [templateName,       setTemplateName]       = useState('')
+  const [savingTemplate,     setSavingTemplate]     = useState(false)
+  const [templates,          setTemplates]          = useState<{ id: string; name: string; items: any[] }[]>([])
+  const [loadingTemplates,   setLoadingTemplates]   = useState(false)
+  const [editingTerms,       setEditingTerms]       = useState(false)
+  const [termsValue,         setTermsValue]         = useState('')
 
   useEffect(() => {
     if (!session) { router.push('/login'); return }
@@ -109,6 +117,45 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
     const next = !dk
     localStorage.setItem('pg_darkmode', next ? '1' : '0')
     setDk(next)
+  }
+
+  // ── Template handlers ──────────────────────────────────────────────────────
+  const openTemplatePicker = async () => {
+    setShowTemplatePicker(true)
+    setLoadingTemplates(true)
+    try {
+      const r = await fetch(`/api/estimate-templates?pro_id=${session!.id}`)
+      const d = await r.json()
+      setTemplates(d.templates || [])
+    } catch { setTemplates([]) }
+    finally { setLoadingTemplates(false) }
+  }
+
+  const applyTemplate = (tpl: { id: string; name: string; items: any[] }) => {
+    if (!estimate) return
+    const newItems = tpl.items.map((i: any) => ({
+      ...i, id: Math.random().toString(36).slice(2, 10)
+    }))
+    const merged   = [...estimate.items, ...newItems]
+    const subtotal = merged.reduce((s: number, i: any) => s + i.qty * i.unit_price, 0)
+    const tax_amount = subtotal * (estimate.tax_rate / 100)
+    setEstimate(prev => prev ? { ...prev, items: merged, subtotal, tax_amount, total: subtotal + tax_amount } : prev)
+    setShowTemplatePicker(false)
+  }
+
+  const saveTemplate = async () => {
+    if (!estimate || !templateName.trim()) return
+    setSavingTemplate(true)
+    try {
+      await fetch('/api/estimate-templates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pro_id: session!.id, name: templateName.trim(), items: estimate.items }),
+      })
+      setShowSaveTemplate(false)
+      setTemplateName('')
+    } catch { /* silent */ }
+    finally { setSavingTemplate(false) }
   }
 
   if (!session) return null
@@ -234,33 +281,41 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                 {/* Left — items + tabs */}
                 <div className="flex-1 min-w-0 space-y-5">
 
-                  {/* Tab strip */}
+                  {/* ── Tab strip — matches reference: tabs left, buttons right ── */}
                   <div className={`rounded-xl border ${card} overflow-hidden`}>
-                    <div className={`flex border-b ${dk ? 'border-[#334155]' : 'border-[#E8E2D9]'}`}>
-                      {(['items', 'notes'] as const).map(tab => (
-                        <button
-                          key={tab}
-                          onClick={() => setActiveTab(tab)}
-                          className={`px-6 py-3.5 text-sm font-medium transition-colors relative ${
-                            activeTab === tab
-                              ? 'text-[#0F766E]'
-                              : `${muted} hover:text-[#0F766E]`
-                          }`}
-                        >
-                          {tab === 'items' ? 'Estimate Items' : 'Notes & Attachments'}
-                          {activeTab === tab && (
-                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0F766E]" />
-                          )}
-                        </button>
-                      ))}
+                    <div className={`flex items-center justify-between border-b ${dk ? 'border-[#334155]' : 'border-[#E8E2D9]'}`}>
+                      {/* Tabs */}
+                      <div className="flex">
+                        {(['items', 'notes'] as const).map(tab => (
+                          <button key={tab} onClick={() => setActiveTab(tab)}
+                            className={`px-6 py-3.5 text-sm font-medium transition-colors relative ${
+                              activeTab === tab ? 'text-[#0F766E]' : `${muted} hover:text-[#0F766E]`}`}>
+                            {tab === 'items' ? 'Estimate Items' : 'Notes & Attachments'}
+                            {activeTab === tab && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0F766E]" />}
+                          </button>
+                        ))}
+                      </div>
+                      {/* Action buttons — right side of tab bar (reference style) */}
+                      {activeTab === 'items' && (
+                        <div className="flex items-center gap-2 pr-4">
+                          <button onClick={openTemplatePicker}
+                            className={`flex items-center gap-1.5 text-sm font-medium px-3.5 py-1.5 rounded-lg border transition-colors ${
+                              dk ? 'border-[#334155] text-slate-400 hover:border-[#0F766E] hover:text-[#0F766E]'
+                                 : 'border-[#E8E2D9] text-[#6B7280] hover:border-[#0F766E] hover:text-[#0F766E]'}`}>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                            Add from Template
+                          </button>
+                        </div>
+                      )}
                     </div>
-
                     <div className="p-6">
                       {activeTab === 'items' ? (
                         <EstimateItems
                           estimate={estimate}
                           setEstimate={setEstimate}
                           darkMode={dk}
+                          onOpenTemplatePicker={openTemplatePicker}
+                          onSaveTemplate={() => setShowSaveTemplate(true)}
                         />
                       ) : (
                         <div className={`text-center py-12 ${muted}`}>
@@ -270,31 +325,67 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                     </div>
                   </div>
 
-                  {/* Terms & Conditions */}
+                  {/* ── Terms & Conditions — editable ── */}
                   <div className={`rounded-xl border p-6 ${card}`}>
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-semibold text-sm">Terms & Conditions</h3>
-                      <button className={`text-xs text-[#0F766E] border border-[#0F766E] px-3 py-1 rounded-lg hover:bg-teal-50 transition-colors`}>
-                        Edit
-                      </button>
+                      <h3 className={`font-semibold text-sm ${dk ? 'text-white' : 'text-gray-900'}`}>Terms & Conditions</h3>
+                      {!editingTerms && (
+                        <button
+                          onClick={() => { setTermsValue(estimate.terms); setEditingTerms(true) }}
+                          className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+                            dk ? 'border-[#334155] text-slate-400 hover:border-[#0F766E] hover:text-[#0F766E]'
+                               : 'border-[#E8E2D9] text-[#6B7280] hover:border-[#0F766E] hover:text-[#0F766E]'}`}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                          Edit
+                        </button>
+                      )}
                     </div>
-                    <p className={`text-sm leading-relaxed ${muted}`}>{estimate.terms}</p>
+                    {editingTerms ? (
+                      <div className="space-y-3">
+                        <textarea
+                          value={termsValue}
+                          onChange={e => setTermsValue(e.target.value)}
+                          rows={4}
+                          className={`w-full text-sm rounded-lg px-3 py-2.5 leading-relaxed resize-none ${
+                            dk ? 'bg-[#0F172A] text-white' : 'bg-[#F9FAFB] text-gray-900'}`}
+                          style={{ boxShadow: '0 0 0 1.5px #0F766E' }}
+                        />
+                        <div className="flex gap-2 justify-end">
+                          <button onClick={() => setEditingTerms(false)}
+                            className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                              dk ? 'border-[#334155] text-slate-400' : 'border-[#E8E2D9] text-[#6B7280]'}`}>
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => { setEstimate(prev => prev ? { ...prev, terms: termsValue } : prev); setEditingTerms(false) }}
+                            className="px-3 py-1.5 text-sm font-medium rounded-lg bg-[#0F766E] text-white hover:bg-[#0D6A62] transition-colors">
+                            Save Terms
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className={`text-sm leading-relaxed ${muted}`}>{estimate.terms}</p>
+                    )}
                   </div>
 
-                  {/* Client Actions footer */}
+                  {/* ── Client Actions footer ── */}
                   <div className={`rounded-xl border p-4 ${card}`}>
                     <div className="flex items-center gap-3 flex-wrap">
-                      <button className={`flex items-center gap-2 text-sm px-4 py-2 rounded-lg border ${dk ? 'border-[#334155] hover:border-[#0F766E]' : 'border-[#E8E2D9] hover:border-[#0F766E]'} hover:text-[#0F766E] transition-colors`}>
-                        <Eye size={15} />
-                        View Estimate
+                      <button className={`flex items-center gap-2 text-sm px-4 py-2 rounded-lg border transition-colors ${dk ? 'border-[#334155] text-slate-300 hover:border-[#0F766E] hover:text-[#0F766E]' : 'border-[#E8E2D9] text-[#374151] hover:border-[#0F766E] hover:text-[#0F766E]'}`}>
+                        <Eye size={14} /> View Estimate
                       </button>
-                      <button className={`flex items-center gap-2 text-sm px-4 py-2 rounded-lg border ${dk ? 'border-[#334155] hover:border-[#0F766E]' : 'border-[#E8E2D9] hover:border-[#0F766E]'} hover:text-[#0F766E] transition-colors`}>
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      <button className={`flex items-center gap-2 text-sm px-4 py-2 rounded-lg border transition-colors ${dk ? 'border-[#334155] text-slate-300 hover:border-[#0F766E] hover:text-[#0F766E]' : 'border-[#E8E2D9] text-[#374151] hover:border-[#0F766E] hover:text-[#0F766E]'}`}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         Download PDF
                       </button>
-                      <button className={`flex items-center gap-2 text-sm px-4 py-2 rounded-lg border ${dk ? 'border-[#334155] hover:border-[#0F766E]' : 'border-[#E8E2D9] hover:border-[#0F766E]'} hover:text-[#0F766E] transition-colors`}>
-                        <Send size={15} />
-                        Mark as Sent
+                      <button
+                        onClick={async () => {
+                          if (!estimate) return
+                          await fetch(`/api/estimates/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...estimate, status: 'sent', sent_at: new Date().toISOString() }) })
+                          setEstimate(prev => prev ? { ...prev, status: 'sent' } : prev)
+                        }}
+                        className={`flex items-center gap-2 text-sm px-4 py-2 rounded-lg border transition-colors ${dk ? 'border-[#334155] text-slate-300 hover:border-[#0F766E] hover:text-[#0F766E]' : 'border-[#E8E2D9] text-[#374151] hover:border-[#0F766E] hover:text-[#0F766E]'}`}>
+                        <Send size={14} /> Mark as Sent
                       </button>
                     </div>
                   </div>
@@ -315,6 +406,61 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
           )}
         </div>
       </div>
+    {/* ── Template picker modal ── */}
+      {showTemplatePicker && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.5)' }}
+          onClick={() => setShowTemplatePicker(false)}>
+          <div className={`w-full max-w-md rounded-2xl shadow-2xl overflow-hidden ${dk ? 'bg-[#1E293B]' : 'bg-white'}`}
+            onClick={e => e.stopPropagation()}>
+            <div className={`flex items-center justify-between px-5 py-4 border-b ${dk ? 'border-[#334155]' : 'border-[#E8E2D9]'}`}>
+              <h3 className={`font-semibold ${dk ? 'text-white' : 'text-gray-900'}`}>Add from Template</h3>
+              <button onClick={() => setShowTemplatePicker(false)} className={muted}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div className="max-h-80 overflow-y-auto">
+              {loadingTemplates ? (
+                <div className={`p-8 text-center text-sm ${muted}`}>Loading templates...</div>
+              ) : templates.length === 0 ? (
+                <div className="p-8 text-center">
+                  <p className={`text-sm font-semibold ${dk ? 'text-white' : 'text-gray-900'}`}>No templates yet</p>
+                  <p className={`text-xs mt-1 ${muted}`}>Build an estimate and click "Save as Template" to reuse it.</p>
+                </div>
+              ) : templates.map(tpl => (
+                <button key={tpl.id} onClick={() => applyTemplate(tpl)}
+                  className={`w-full text-left px-5 py-3.5 border-b last:border-b-0 transition-colors ${dk ? 'border-[#334155] hover:bg-[#0F172A]' : 'border-[#E8E2D9] hover:bg-[#F9FAFB]'}`}>
+                  <p className={`text-sm font-semibold ${dk ? 'text-white' : 'text-gray-900'}`}>{tpl.name}</p>
+                  <p className={`text-xs mt-0.5 ${muted}`}>{tpl.items.length} item{tpl.items.length !== 1 ? 's' : ''}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Save template modal ── */}
+      {showSaveTemplate && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.5)' }}
+          onClick={() => setShowSaveTemplate(false)}>
+          <div className={`w-full max-w-sm rounded-2xl shadow-2xl p-6 ${dk ? 'bg-[#1E293B]' : 'bg-white'}`}
+            onClick={e => e.stopPropagation()}>
+            <h3 className={`font-semibold mb-1 ${dk ? 'text-white' : 'text-gray-900'}`}>Save as Template</h3>
+            <p className={`text-sm mb-4 ${muted}`}>Name this template so you can reuse it on future estimates.</p>
+            <input autoFocus value={templateName} onChange={e => setTemplateName(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') saveTemplate(); if (e.key === 'Escape') setShowSaveTemplate(false) }}
+              placeholder="e.g. Interior Paint 2BHK"
+              className={`w-full text-sm px-3 py-2.5 rounded-lg mb-4 ${dk ? 'bg-[#0F172A] text-white' : 'bg-[#F5F4F0] text-gray-900'}`}
+              style={{ boxShadow: '0 0 0 1.5px #0F766E' }}
+            />
+            <div className="flex gap-2">
+              <button onClick={() => setShowSaveTemplate(false)}
+                className={`flex-1 py-2.5 rounded-xl text-sm border ${dk ? 'border-[#334155] text-slate-400' : 'border-[#E8E2D9] text-gray-600'}`}>Cancel</button>
+              <button onClick={saveTemplate} disabled={savingTemplate || !templateName.trim()}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#0F766E] to-[#0D9488] text-white hover:opacity-90 disabled:opacity-50">
+                {savingTemplate ? 'Saving...' : 'Save Template'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardShell>
   )
 }
