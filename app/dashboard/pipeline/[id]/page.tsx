@@ -613,9 +613,9 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                   })
                 }
 
-                {/* Composer — footer bar matching reference */}
-                <div style={{ marginTop: 16, borderTop: `1px solid ${border}`, paddingTop: 14, display: 'flex', gap: 0, alignItems: 'stretch' }}>
-                  <div style={{ flex: '0 0 58%', border: `1px solid ${border}`, borderRadius: 10, padding: '12px 16px', background: inputBg }}>
+                {/* Composer */}
+                <div style={{ marginTop: 16, borderTop: `1px solid ${border}`, paddingTop: 14, display: 'flex', gap: 8, alignItems: 'stretch' }}>
+                  <div style={{ flex: '0 0 58%', padding: '10px 14px', background: inputBg, borderRadius: 10 }}>
                     <input
                       value={composerText}
                       onChange={e => setComposerText(e.target.value)}
@@ -624,11 +624,11 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                       style={{ width: '100%', fontSize: 14, background: 'transparent', color: tp, border: 'none', outline: 'none', fontFamily: 'inherit' }}
                     />
                   </div>
-                  <div style={{ flex: 1, display: 'flex', marginLeft: 10, gap: 8 }}>
+                  <div style={{ flex: 1, display: 'flex', gap: 8 }}>
                     {[
-                      { label: 'Add Note', icon: 'note', color: '#16A34A', border: '#BBF7D0' },
-                      { label: 'Send SMS', icon: 'sms',  color: '#2563EB', border: '#BFDBFE' },
-                      { label: 'Log Call', icon: 'call', color: '#7C3AED', border: '#DDD6FE' },
+                      { label: 'Add Note', icon: 'note', color: '#16A34A' },
+                      { label: 'Send SMS', icon: 'sms',  color: '#2563EB' },
+                      { label: 'Log Call', icon: 'call', color: '#7C3AED' },
                     ].map((btn) => {
                       const isNote = btn.icon === 'note'
                       const action = isNote ? handleAddNote : () => addToast(`${btn.label} coming in v76`, 'error')
@@ -641,15 +641,15 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                             padding: '0 12px', minHeight: 44, borderRadius: 10, fontSize: 14, fontWeight: 500,
                             cursor: isNote && !composerText.trim() ? 'default' : 'pointer',
-                            border: `1.5px solid ${btn.border}`,
+                            border: `1px solid ${border}`,
                             background: dk ? '#1E293B' : '#FFFFFF',
-                            color: btn.color,
-                            opacity: isNote && !composerText.trim() ? 0.5 : 1,
+                            color: tp,
+                            opacity: isNote && !composerText.trim() ? 0.45 : 1,
                             transition: 'opacity 0.15s',
                             whiteSpace: 'nowrap',
                           }}
                         >
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill={btn.color} stroke="none">
+                          <svg width="17" height="17" viewBox="0 0 24 24" fill={btn.color} stroke="none">
                             {btn.icon === 'note' && <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM8 13h8v1.5H8V13zm0 3h5v1.5H8V16z"/>}
                             {btn.icon === 'sms'  && <path d="M20 2H4a2 2 0 00-2 2v18l4-4h14a2 2 0 002-2V4a2 2 0 00-2-2z"/>}
                             {btn.icon === 'call' && <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/>}
