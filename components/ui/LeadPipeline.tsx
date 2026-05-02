@@ -211,8 +211,34 @@ function LeadCard({ lead, stage, onOpen }: {
   stage: typeof PIPELINE_STAGES[number]
   onOpen: () => void
 }) {
+  const router = useRouter()
   const [bg, fg] = avatarColor(lead.contact_name)
   const days     = daysSince(lead.created_at)
+  const [creatingEst, setCreatingEst] = useState(false)
+
+  async function openEstimate(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (creatingEst) return
+    setCreatingEst(true)
+    try {
+      const session = JSON.parse(sessionStorage.getItem('pg_pro') || '{}')
+      const r = await fetch('/api/estimates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pro_id:      session.id,
+          lead_id:     lead.id,
+          lead_name:   lead.contact_name,
+          lead_source: lead.lead_source || '',
+          trade:       session.trade    || '',
+        }),
+      })
+      const d = await r.json()
+      if (d.estimate?.id) router.push(`/dashboard/estimates/${d.estimate.id}`)
+    } catch {
+      setCreatingEst(false)
+    }
+  }
 
   return (
     <div onClick={onOpen}
@@ -266,6 +292,14 @@ function LeadCard({ lead, stage, onOpen }: {
             <Ic d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" s={12} c="#374151" />
             Generate Invoice
           </span>
+        ) : stage.key === 'Quoted' ? (
+          <button
+            onClick={openEstimate}
+            disabled={creatingEst}
+            className="text-[11px] font-semibold px-2 py-1 rounded-lg flex-shrink-0 transition-opacity hover:opacity-80 disabled:opacity-50"
+            style={{ background: stage.nextBg, color: stage.nextColor }}>
+            {creatingEst ? 'Opening...' : 'Next: Send Estimate'}
+          </button>
         ) : (
           <span className="text-[11px] font-semibold px-2 py-1 rounded-lg flex-shrink-0"
             style={{ background: stage.nextBg, color: stage.nextColor }}>
@@ -292,6 +326,12 @@ function LeadCard({ lead, stage, onOpen }: {
             <button onClick={e => { e.stopPropagation(); onOpen() }}
               className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
               <Ic d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" s={14} c="#6B7280" />
+            </button>
+          ) : stage.key === 'Quoted' ? (
+            <button onClick={openEstimate} disabled={creatingEst}
+              className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-purple-100 transition-colors disabled:opacity-40"
+              title="Open Estimate">
+              <Ic d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" s={14} c="#7C3AED" />
             </button>
           ) : (
             <button onClick={e => { e.stopPropagation(); onOpen() }}
