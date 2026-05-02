@@ -217,12 +217,12 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
       <div style={{ background: bg, minHeight: '100vh', padding: '20px 24px', paddingBottom: 40 }}>
 
         {/* Toasts */}
-        <div style={{ position: 'fixed', top: 20, right: 24, zIndex: 200, display: 'flex', flexDirection: 'column', gap: 8, pointerEvents: 'none' }}>
+        <div style={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', zIndex: 200, display: 'flex', flexDirection: 'column', gap: 10, pointerEvents: 'none', alignItems: 'center' }}>
           {toasts.map(t => (
-            <div key={t.id} style={{ pointerEvents: 'all', background: t.type === 'error' ? '#FEF2F2' : '#F0FDF4', border: `1px solid ${t.type === 'error' ? '#FECACA' : '#BBF7D0'}`, borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: t.type === 'error' ? '#991B1B' : '#166534', minWidth: 220, maxWidth: 320 }}>
+            <div key={t.id} style={{ pointerEvents: 'all', background: t.type === 'error' ? '#FEF2F2' : '#F0FDF4', border: `1.5px solid ${t.type === 'error' ? '#FECACA' : '#BBF7D0'}`, borderRadius: 12, padding: '13px 20px', display: 'flex', alignItems: 'center', gap: 12, fontSize: 15, fontWeight: 500, color: t.type === 'error' ? '#991B1B' : '#166534', minWidth: 280, maxWidth: 420, boxShadow: '0 4px 16px rgba(0,0,0,0.10)' }}>
               <span style={{ flex: 1 }}>{t.message}</span>
-              {t.prevStage && t.type === 'success' && <button onClick={() => handleUndo(t.id, t.prevStage!)} style={{ fontSize: 12, color: '#0F766E', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>Undo</button>}
-              <button onClick={() => dismissToast(t.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: ts, fontSize: 18, lineHeight: 1, padding: 0 }}>×</button>
+              {t.prevStage && t.type === 'success' && <button onClick={() => handleUndo(t.id, t.prevStage!)} style={{ fontSize: 14, color: '#0F766E', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0, whiteSpace: 'nowrap' }}>Undo</button>}
+              <button onClick={() => dismissToast(t.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: ts, fontSize: 20, lineHeight: 1, padding: 0 }}>×</button>
             </div>
           ))}
         </div>
@@ -271,12 +271,12 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
-                    <span style={{ fontSize: 22, fontWeight: 500, color: tp }}>{lead.contact_name}</span>
-                    <span style={{ fontSize: 11, padding: '3px 9px', borderRadius: 20, background: '#EEEDFE', color: '#3C3489', fontWeight: 500 }}>{currentStage}</span>
-                    <span style={{ fontSize: 13, color: ts }}>· {timeAgo(lead.created_at)}</span>
-                    {overdueFU && <span style={{ fontSize: 11, padding: '3px 9px', borderRadius: 20, background: '#FCEBEB', color: '#A32D2D', fontWeight: 500 }}>Overdue</span>}
+                    <span style={{ fontSize: 26, fontWeight: 500, color: tp }}>{lead.contact_name}</span>
+                    <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: '#EEEDFE', color: '#3C3489', fontWeight: 500 }}>{currentStage}</span>
+                    <span style={{ fontSize: 14, color: ts }}>· {timeAgo(lead.created_at)}</span>
+                    {overdueFU && <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: '#FCEBEB', color: '#A32D2D', fontWeight: 500 }}>Overdue</span>}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: ts, flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: ts, flexWrap: 'wrap' }}>
                     {lead.quoted_amount != null && <><span>${Number(lead.quoted_amount).toLocaleString()} est. value</span><span style={{ opacity: 0.5 }}>·</span></>}
                     {lead.lead_source && <span>{lead.lead_source.replace(/_/g, ' ')}</span>}
                   </div>
@@ -294,7 +294,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                       onClick={() => handleStageClick(stage)}
                       disabled={stageSaving}
                       style={{
-                        padding: '6px 14px', borderRadius: 20, fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap',
+                        padding: '7px 16px', borderRadius: 20, fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap',
                         background: done ? '#DCFCE7' : 'transparent',
                         border: `1.5px solid ${done ? '#22C55E' : active ? '#7C3AED' : (dk ? '#4B5563' : '#D1D5DB')}`,
                         color: done ? '#166534' : active ? '#7C3AED' : ts,
@@ -314,12 +314,12 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
             {/* Lead information */}
             <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, padding: '20px 24px', marginBottom: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <span style={{ fontSize: 15, fontWeight: 500, color: tp }}>Lead information</span>
+                <span style={{ fontSize: 17, fontWeight: 500, color: tp }}>Lead information</span>
                 {!editingInfo
-                  ? <button onClick={() => setEditingInfo(true)} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: ts, background: 'none', border: 'none', cursor: 'pointer' }}><Ic color={ts}><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></Ic>Edit</button>
+                  ? <button onClick={() => setEditingInfo(true)} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 14, color: ts, background: 'none', border: 'none', cursor: 'pointer' }}><Ic color={ts}><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></Ic>Edit</button>
                   : <div style={{ display: 'flex', gap: 8 }}>
-                      <button onClick={() => { setEditingInfo(false); setEditPhone(lead.contact_phone || ''); setEditEmail(lead.contact_email || '') }} style={{ padding: '6px 14px', borderRadius: 7, border: `1px solid ${border}`, background: 'none', color: ts, cursor: 'pointer', fontSize: 13 }}>Cancel</button>
-                      <button onClick={handleSaveInfo} disabled={savingInfo} style={{ padding: '6px 14px', borderRadius: 7, border: 'none', background: '#0F766E', color: 'white', cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>{savingInfo ? 'Saving…' : 'Save'}</button>
+                      <button onClick={() => { setEditingInfo(false); setEditPhone(lead.contact_phone || ''); setEditEmail(lead.contact_email || '') }} style={{ padding: '6px 14px', borderRadius: 7, border: `1px solid ${border}`, background: 'none', color: ts, cursor: 'pointer', fontSize: 14 }}>Cancel</button>
+                      <button onClick={handleSaveInfo} disabled={savingInfo} style={{ padding: '6px 14px', borderRadius: 7, border: 'none', background: '#0F766E', color: 'white', cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>{savingInfo ? 'Saving…' : 'Save'}</button>
                     </div>
                 }
               </div>
@@ -339,8 +339,8 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                         </Ic>
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12, color: ts, marginBottom: 3 }}>{row.label}</div>
-                        <div style={{ fontSize: 13, color: tp, fontWeight: 500 }}>{editingInfo && row.edit ? row.edit : row.view}</div>
+                        <div style={{ fontSize: 13, color: ts, marginBottom: 4 }}>{row.label}</div>
+                        <div style={{ fontSize: 15, color: tp, fontWeight: 500 }}>{editingInfo && row.edit ? row.edit : row.view}</div>
                       </div>
                     </div>
                   )
@@ -351,17 +351,17 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
             {/* Current status & next action */}
             {nba && (
               <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, padding: '20px 24px', marginBottom: 10 }}>
-                <div style={{ fontSize: 15, fontWeight: 500, color: tp, marginBottom: 12 }}>Current status &amp; next action</div>
+                <div style={{ fontSize: 17, fontWeight: 500, color: tp, marginBottom: 12 }}>Current status &amp; next action</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', border: `1px solid ${border}`, borderRadius: 10, overflow: 'hidden' }}>
                   <div style={{ padding: 16, background: subBg, borderRight: `1px solid ${border}` }}>
-                    <div style={{ fontSize: 11, color: ts, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Status</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, fontWeight: 500, color: '#3C3489', marginBottom: 6 }}>
+                    <div style={{ fontSize: 12, color: ts, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Status</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 16, fontWeight: 500, color: '#3C3489', marginBottom: 6 }}>
                       <div style={{ width: 28, height: 28, borderRadius: 8, background: '#EEEDFE', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Ic color="#3C3489"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></Ic>
                       </div>
                       {currentStage}
                     </div>
-                    <div style={{ fontSize: 12, color: ts }}>Updated {timeAgo((lead as any).updated_at || lead.created_at)}</div>
+                    <div style={{ fontSize: 13, color: ts }}>Updated {timeAgo((lead as any).updated_at || lead.created_at)}</div>
                   </div>
                   <div style={{ padding: 16, background: nba.urgent ? (dk ? '#2D1B00' : '#FFFBF0') : subBg }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
@@ -370,16 +370,16 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                           {nba.urgent ? <><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></> : <polyline points="20 6 9 17 4 12"/>}
                         </Ic>
                       </div>
-                      <span style={{ fontSize: 11, color: nba.urgent ? '#854F0B' : '#0F6E56', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Next step</span>
+                      <span style={{ fontSize: 12, color: nba.urgent ? '#854F0B' : '#0F6E56', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Next step</span>
                     </div>
-                    <div style={{ fontSize: 14, fontWeight: 500, color: tp, marginBottom: 4 }}>{nba.label}</div>
-                    <div style={{ fontSize: 12, color: ts, marginBottom: 12 }}>{nba.sub}</div>
+                    <div style={{ fontSize: 16, fontWeight: 500, color: tp, marginBottom: 4 }}>{nba.label}</div>
+                    <div style={{ fontSize: 14, color: ts, marginBottom: 12 }}>{nba.sub}</div>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', background: '#0F766E', color: 'white', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
+                      <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', background: '#0F766E', color: 'white', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>
                         <Ic color="white" size={13}><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></Ic>
                         Call now
                       </button>
-                      <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', background: 'transparent', color: tp, border: `1px solid ${border}`, borderRadius: 8, fontSize: 13, cursor: 'pointer' }}>
+                      <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', background: 'transparent', color: tp, border: `1px solid ${border}`, borderRadius: 8, fontSize: 14, cursor: 'pointer' }}>
                         <Ic color={tp} size={13}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></Ic>
                         Send SMS
                       </button>
@@ -391,29 +391,29 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
 
             {/* Conversation */}
             <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, padding: '20px 24px' }}>
-              <div style={{ fontSize: 15, fontWeight: 500, color: tp, marginBottom: 16 }}>Conversation</div>
+              <div style={{ fontSize: 17, fontWeight: 500, color: tp, marginBottom: 16 }}>Conversation</div>
               <div style={{ border: `1px solid ${border}`, borderRadius: 10, marginBottom: 20, overflow: 'hidden' }}>
-                <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Add a note or send a message..." rows={3} style={{ width: '100%', padding: '12px 14px', fontSize: 13, background: inputBg, color: tp, border: 'none', resize: 'none', fontFamily: 'inherit', outline: 'none', display: 'block' }} />
+                <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Add a note or send a message..." rows={3} style={{ width: '100%', padding: '12px 14px', fontSize: 14, background: inputBg, color: tp, border: 'none', resize: 'none', fontFamily: 'inherit', outline: 'none', display: 'block' }} />
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderTop: `1px solid ${border}`, background: subBg }}>
                   <div style={{ display: 'flex', gap: 6 }}>
                     {(['Note', 'SMS', 'Email'] as const).map((t, ti) => (
-                      <button key={t} style={{ padding: '4px 10px', fontSize: 12, borderRadius: 6, border: `1px solid ${border}`, background: ti === 0 ? card : 'transparent', color: ti === 0 ? tp : ts, cursor: 'pointer' }}>{t}</button>
+                      <button key={t} style={{ padding: '5px 12px', fontSize: 13, borderRadius: 6, border: `1px solid ${border}`, background: ti === 0 ? card : 'transparent', color: ti === 0 ? tp : ts, cursor: 'pointer' }}>{t}</button>
                     ))}
                   </div>
-                  <button onClick={handleSaveNotes} disabled={savingNotes || !notes.trim()} style={{ padding: '6px 14px', fontSize: 13, background: notes.trim() ? '#0F766E' : (dk ? '#1E293B' : '#E5E7EB'), color: notes.trim() ? 'white' : ts, border: 'none', borderRadius: 6, cursor: notes.trim() ? 'pointer' : 'default', fontWeight: 500 }}>
+                  <button onClick={handleSaveNotes} disabled={savingNotes || !notes.trim()} style={{ padding: '7px 16px', fontSize: 14, background: notes.trim() ? '#0F766E' : (dk ? '#1E293B' : '#E5E7EB'), color: notes.trim() ? 'white' : ts, border: 'none', borderRadius: 6, cursor: notes.trim() ? 'pointer' : 'default', fontWeight: 500 }}>
                     {savingNotes ? 'Saving…' : 'Save note'}
                   </button>
                 </div>
               </div>
               {activity.length === 0
-                ? <div style={{ textAlign: 'center', padding: '32px 0', color: ts, fontSize: 13 }}>No activity yet.</div>
+                ? <div style={{ textAlign: 'center', padding: '32px 0', color: ts, fontSize: 14 }}>No activity yet.</div>
                 : activity.map((item, i) => {
                   const iconColor = item.type === 'note' ? '#854F0B' : item.type === 'quote' ? '#3C3489' : '#0F766E'
                   const iconBg = item.type === 'note' ? '#FAEEDA' : item.type === 'quote' ? '#EEEDFE' : '#E1F5EE'
                   return (
                     <div key={i}>
                       <div style={{ textAlign: 'center', margin: '8px 0 12px' }}>
-                        <span style={{ fontSize: 11, color: ts, background: dk ? '#1E293B' : '#F3F4F6', padding: '3px 10px', borderRadius: 20, border: `1px solid ${border}` }}>
+                        <span style={{ fontSize: 12, color: ts, background: dk ? '#1E293B' : '#F3F4F6', padding: '3px 10px', borderRadius: 20, border: `1px solid ${border}` }}>
                           {new Date(item.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                         </span>
                       </div>
@@ -427,10 +427,10 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                           </Ic>
                         </div>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 13, fontWeight: 500, color: tp }}>{item.title}</div>
-                          <div style={{ fontSize: 13, color: ts, marginTop: 2 }}>{item.sub}</div>
+                          <div style={{ fontSize: 14, fontWeight: 500, color: tp }}>{item.title}</div>
+                          <div style={{ fontSize: 14, color: ts, marginTop: 2 }}>{item.sub}</div>
                         </div>
-                        <div style={{ fontSize: 12, color: ts, flexShrink: 0 }}>{new Date(item.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</div>
+                        <div style={{ fontSize: 13, color: ts, flexShrink: 0 }}>{new Date(item.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</div>
                       </div>
                     </div>
                   )
