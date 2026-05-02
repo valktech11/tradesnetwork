@@ -546,15 +546,17 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                   },
                 ].map((cell, ci, arr) => (
                   <div key={cell.label} style={{ flex: '1 1 0', minWidth: 110, padding: '14px 16px', borderRight: ci < arr.length - 1 ? `1px solid ${border}` : 'none', display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <Ic color="#0F766E" size={13}>
-                        {cell.icon === 'phone'    && <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/>}
-                        {cell.icon === 'email'    && <><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></>}
-                        {cell.icon === 'pin'      && <><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></>}
-                        {cell.icon === 'source'   && <><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75"/><path d="M21 21v-2a4 4 0 00-3-3.87"/></>}
-                        {cell.icon === 'calendar' && <><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>}
-                        {cell.icon === 'followup' && <><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></>}
-                      </Ic>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#F0FDFA', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Ic color="#0F766E" size={14}>
+                          {cell.icon === 'phone'    && <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/>}
+                          {cell.icon === 'email'    && <><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></>}
+                          {cell.icon === 'pin'      && <><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></>}
+                          {cell.icon === 'source'   && <><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75"/><path d="M21 21v-2a4 4 0 00-3-3.87"/></>}
+                          {cell.icon === 'calendar' && <><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>}
+                          {cell.icon === 'followup' && <><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></>}
+                        </Ic>
+                      </div>
                       <span style={{ fontSize: 12, color: ts }}>{cell.label}</span>
                     </div>
                     <div style={{ fontSize: 14, fontWeight: 500, color: tp, display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -611,49 +613,45 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                   })
                 }
 
-                {/* Composer — persistent footer bar */}
-                <div style={{ marginTop: 16, borderTop: `1px solid ${border}`, paddingTop: 14 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: inputBg, border: `1px solid ${border}`, borderRadius: 10, padding: '4px 4px 4px 14px' }}>
+                {/* Composer — footer bar matching reference */}
+                <div style={{ marginTop: 16, borderTop: `1px solid ${border}`, paddingTop: 14, display: 'flex', gap: 0, alignItems: 'stretch' }}>
+                  <div style={{ flex: '0 0 58%', border: `1px solid ${border}`, borderRadius: 10, padding: '12px 16px', background: inputBg }}>
                     <input
                       value={composerText}
                       onChange={e => setComposerText(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && composerText.trim()) { e.preventDefault(); handleAddNote() } }}
                       placeholder="Add a note or send a message..."
-                      style={{ flex: 1, fontSize: 14, background: 'transparent', color: tp, border: 'none', outline: 'none', fontFamily: 'inherit', padding: '8px 0' }}
+                      style={{ width: '100%', fontSize: 14, background: 'transparent', color: tp, border: 'none', outline: 'none', fontFamily: 'inherit' }}
                     />
-                    <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                      {[
-                        { label: 'Add Note', icon: 'note', action: handleAddNote, primary: true },
-                        { label: 'Send SMS', icon: 'sms', action: () => addToast('SMS coming in v76', 'error'), primary: false },
-                        { label: 'Log Call', icon: 'call', action: () => addToast('Call log coming in v76', 'error'), primary: false },
-                      ].map((btn) => (
-                        <button
-                          key={btn.label}
-                          onClick={btn.action}
-                          disabled={btn.primary && (savingNote || !composerText.trim())}
-                          style={{
-                            display: 'flex', alignItems: 'center', gap: 6,
-                            padding: '9px 14px', borderRadius: 7, fontSize: 13, fontWeight: 500, cursor: 'pointer',
-                            background: btn.primary
-                              ? (composerText.trim() ? '#0F766E' : (dk ? '#1E293B' : '#E5E7EB'))
-                              : (dk ? '#1E293B' : '#F3F4F6'),
-                            color: btn.primary
-                              ? (composerText.trim() ? 'white' : ts)
-                              : ts,
-                            border: 'none',
-                            transition: 'background 0.15s',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          <Ic color={btn.primary && composerText.trim() ? 'white' : ts} size={13}>
-                            {btn.icon === 'note' && <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></>}
-                            {btn.icon === 'sms'  && <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>}
-                            {btn.icon === 'call' && <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/>}
-                          </Ic>
-                          {savingNote && btn.primary ? 'Saving…' : btn.label}
-                        </button>
-                      ))}
-                    </div>
+                  </div>
+                  <div style={{ flex: 1, display: 'flex', marginLeft: 10, gap: 8 }}>
+                    {[
+                      { label: 'Add Note', icon: 'note', color: '#16A34A', bg: '#F0FDF4', action: handleAddNote, primary: true },
+                      { label: 'Send SMS', icon: 'sms',  color: '#2563EB', bg: '#EFF6FF', action: () => addToast('SMS coming in v76', 'error'), primary: false },
+                      { label: 'Log Call', icon: 'call', color: '#7C3AED', bg: '#F5F3FF', action: () => addToast('Call log coming in v76', 'error'), primary: false },
+                    ].map((btn) => (
+                      <button
+                        key={btn.label}
+                        onClick={btn.action}
+                        disabled={btn.primary && (savingNote || !composerText.trim())}
+                        style={{
+                          flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                          padding: '0 12px', borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: 'pointer',
+                          border: `1px solid ${border}`,
+                          background: btn.primary && composerText.trim() ? btn.bg : (dk ? '#1E293B' : '#FFFFFF'),
+                          color: btn.primary && composerText.trim() ? btn.color : ts,
+                          transition: 'all 0.15s',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        <Ic color={btn.primary && composerText.trim() ? btn.color : ts} size={17}>
+                          {btn.icon === 'note' && <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></>}
+                          {btn.icon === 'sms'  && <><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></>}
+                          {btn.icon === 'call' && <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/>}
+                        </Ic>
+                        {savingNote && btn.primary ? 'Saving…' : btn.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
