@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Lead } from '@/types'
 import { initials, avatarColor, timeAgo } from '@/lib/utils'
 
@@ -467,8 +468,9 @@ function PipelineColumn({ stage, leads, onOpen }: {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function LeadPipeline({ leads, onStatusChange, onUpdate }: Props) {
-  const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
-  const [mobileStage, setMobileStage]   = useState<StageKey>('New')
+  const router = useRouter()
+  const [mobileStage, setMobileStage] = useState<StageKey>('New')
+  function openLead(lead: Lead) { router.push('/dashboard/pipeline/' + lead.id) }
 
   function leadsForStage(key: string) {
     return leads.filter(l => l.lead_status === key)
@@ -478,20 +480,7 @@ export default function LeadPipeline({ leads, onStatusChange, onUpdate }: Props)
 
   return (
     <>
-      {selectedLead && (
-        <LeadModal
-          lead={selectedLead}
-          onClose={() => setSelectedLead(null)}
-          onStatusChange={async (id, status) => {
-            await onStatusChange(id, status)
-            setSelectedLead(prev => prev ? { ...prev, lead_status: status as StageKey } : null)
-          }}
-          onUpdate={async (id, fields) => {
-            await onUpdate(id, fields)
-            setSelectedLead(null)
-          }}
-        />
-      )}
+
 
       {/* ── Mobile tab strip ── */}
       <div className="md:hidden flex gap-1 mb-3 overflow-x-auto pb-1 px-4" style={{ scrollbarWidth: 'none' }}>
@@ -513,7 +502,7 @@ export default function LeadPipeline({ leads, onStatusChange, onUpdate }: Props)
           ? <p className="text-center py-8 text-sm text-gray-400">No leads in {mobileStage}</p>
           : leadsForStage(mobileStage).map(lead => {
               const stage = PIPELINE_STAGES.find(s => s.key === lead.lead_status) || PIPELINE_STAGES[0]
-              return <div key={lead.id}><LeadCard lead={lead} stage={stage} onOpen={() => setSelectedLead(lead)} /></div>
+              return <div key={lead.id}><LeadCard lead={lead} stage={stage} onOpen={() => openLead(lead)} /></div>
             })
         }
       </div>
@@ -522,7 +511,7 @@ export default function LeadPipeline({ leads, onStatusChange, onUpdate }: Props)
       <div className="hidden md:block overflow-x-auto pb-4" style={{ scrollbarWidth: 'thin' }}>
         <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(6, minmax(220px, 1fr))', minWidth: 1320 }}>
           {PIPELINE_STAGES.map(stage => (
-            <div key={stage.key}><PipelineColumn stage={stage} leads={leadsForStage(stage.key)} onOpen={lead => setSelectedLead(lead)} /></div>
+            <div key={stage.key}><PipelineColumn stage={stage} leads={leadsForStage(stage.key)} onOpen={lead => openLead(lead)} /></div>
           ))}
         </div>
       </div>
