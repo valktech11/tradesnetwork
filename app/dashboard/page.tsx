@@ -391,7 +391,7 @@ export default function OverviewPage() {
               {/* Recent reviews */}
               <div>
                 <h3 className="text-[13px] font-bold mb-3" style={{ color: textMain }}>Recent Reviews</h3>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {reviews.slice(0, 4).map(review => {
                     const s = sentiment(review.rating)
                     return (
