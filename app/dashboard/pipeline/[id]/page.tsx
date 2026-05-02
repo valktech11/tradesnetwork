@@ -626,32 +626,38 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                   </div>
                   <div style={{ flex: 1, display: 'flex', marginLeft: 10, gap: 8 }}>
                     {[
-                      { label: 'Add Note', icon: 'note', color: '#16A34A', bg: '#F0FDF4', action: handleAddNote, primary: true },
-                      { label: 'Send SMS', icon: 'sms',  color: '#2563EB', bg: '#EFF6FF', action: () => addToast('SMS coming in v76', 'error'), primary: false },
-                      { label: 'Log Call', icon: 'call', color: '#7C3AED', bg: '#F5F3FF', action: () => addToast('Call log coming in v76', 'error'), primary: false },
-                    ].map((btn) => (
-                      <button
-                        key={btn.label}
-                        onClick={btn.action}
-                        disabled={btn.primary && (savingNote || !composerText.trim())}
-                        style={{
-                          flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-                          padding: '0 12px', borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: 'pointer',
-                          border: `1px solid ${border}`,
-                          background: btn.primary && composerText.trim() ? btn.bg : (dk ? '#1E293B' : '#FFFFFF'),
-                          color: btn.primary && composerText.trim() ? btn.color : ts,
-                          transition: 'all 0.15s',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        <Ic color={btn.primary && composerText.trim() ? btn.color : ts} size={17}>
-                          {btn.icon === 'note' && <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></>}
-                          {btn.icon === 'sms'  && <><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></>}
-                          {btn.icon === 'call' && <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/>}
-                        </Ic>
-                        {savingNote && btn.primary ? 'Saving…' : btn.label}
-                      </button>
-                    ))}
+                      { label: 'Add Note', icon: 'note', color: '#16A34A', border: '#BBF7D0' },
+                      { label: 'Send SMS', icon: 'sms',  color: '#2563EB', border: '#BFDBFE' },
+                      { label: 'Log Call', icon: 'call', color: '#7C3AED', border: '#DDD6FE' },
+                    ].map((btn) => {
+                      const isNote = btn.icon === 'note'
+                      const action = isNote ? handleAddNote : () => addToast(`${btn.label} coming in v76`, 'error')
+                      return (
+                        <button
+                          key={btn.label}
+                          onClick={action}
+                          disabled={isNote && (savingNote || !composerText.trim())}
+                          style={{
+                            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                            padding: '0 12px', minHeight: 44, borderRadius: 10, fontSize: 14, fontWeight: 500,
+                            cursor: isNote && !composerText.trim() ? 'default' : 'pointer',
+                            border: `1.5px solid ${btn.border}`,
+                            background: dk ? '#1E293B' : '#FFFFFF',
+                            color: btn.color,
+                            opacity: isNote && !composerText.trim() ? 0.5 : 1,
+                            transition: 'opacity 0.15s',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill={btn.color} stroke="none">
+                            {btn.icon === 'note' && <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM8 13h8v1.5H8V13zm0 3h5v1.5H8V16z"/>}
+                            {btn.icon === 'sms'  && <path d="M20 2H4a2 2 0 00-2 2v18l4-4h14a2 2 0 002-2V4a2 2 0 00-2-2z"/>}
+                            {btn.icon === 'call' && <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/>}
+                          </svg>
+                          {isNote && savingNote ? 'Saving…' : btn.label}
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
               </div>
