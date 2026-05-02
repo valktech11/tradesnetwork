@@ -146,7 +146,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
   const applyTemplate = (tpl: { id: string; name: string; items: any[] }) => {
     if (!estimate) return
     const newItems = tpl.items.map((i: any) => ({
-      ...i, id: Math.random().toString(36).slice(2, 10)
+      ...i, id: crypto.randomUUID()
     }))
     const merged   = [...estimate.items, ...newItems]
     const subtotal = merged.reduce((s: number, i: any) => s + i.qty * i.unit_price, 0)
@@ -197,25 +197,10 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
             </button>
 
             <div className="flex items-center gap-3">
-              {saveMsg && (
-                <span className={`text-sm font-medium ${saveMsg === 'Saved' ? 'text-teal-600' : 'text-red-500'}`}>
-                  {saveMsg}
-                </span>
-              )}
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-semibold transition-colors disabled:opacity-60 ${
-                  dk ? 'border-[#334155] text-slate-300 hover:border-[#0F766E] hover:text-[#0F766E]' : 'border-[#E8E2D9] text-gray-700 hover:border-[#0F766E] hover:text-[#0F766E]'
-                }`}
-              >
-                {saving ? 'Saving...' : 'Save Changes'}
-              </button>
               <button
                 onClick={async () => {
                   await handleSave()
                   setEstimate(prev => prev ? { ...prev, status: 'sent' } : prev)
-                  setSaveMsg('Sent!')
                 }}
                 disabled={saving}
                 className="flex items-center gap-2 bg-gradient-to-r from-[#0F766E] to-[#0D9488] text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity disabled:opacity-60"
@@ -337,6 +322,32 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                       )}
                     </div>
                   </div>
+
+                  {/* ── Save Changes bar ── */}
+                  {activeTab === 'items' && (
+                    <div className={`flex items-center justify-between px-5 py-3.5 rounded-xl border ${card}`}>
+                      <div>
+                        {saveMsg ? (
+                          <span className={`text-sm font-medium ${saveMsg.includes('✓') || saveMsg === 'Saved ✓' ? 'text-teal-600' : 'text-red-500'}`}>
+                            {saveMsg}
+                          </span>
+                        ) : (
+                          <span className={`text-sm ${muted}`}>Changes are saved to draft — send when ready</span>
+                        )}
+                      </div>
+                      <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-60 ${
+                          dk ? 'bg-[#1E293B] border border-[#334155] text-white hover:border-[#0F766E]'
+                             : 'bg-white border border-[#E8E2D9] text-gray-800 hover:border-[#0F766E] hover:text-[#0F766E]'
+                        }`}
+                      >
+                        <Save size={14} />
+                        {saving ? 'Saving...' : 'Save Changes'}
+                      </button>
+                    </div>
+                  )}
 
                   {/* ── Terms & Conditions — editable ── */}
                   <div className={`rounded-xl border p-6 ${card}`}>

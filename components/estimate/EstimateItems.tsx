@@ -4,7 +4,7 @@ import { Dispatch, SetStateAction, useState, useRef, useEffect } from 'react'
 import { Plus, Pencil, Copy, Trash2, GripVertical, BookOpen, Save } from 'lucide-react'
 import { Estimate, EstimateItem } from '@/app/dashboard/estimates/[id]/page'
 
-function uid() { return Math.random().toString(36).slice(2, 9) }
+function uid() { return typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2) }
 
 function recalc(items: EstimateItem[], tax: number, discount: number) {
   const subtotal   = items.reduce((s, i) => s + i.qty * i.unit_price, 0)
