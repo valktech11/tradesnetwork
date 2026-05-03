@@ -321,7 +321,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
 
   return (
     <DashboardShell session={session} newLeads={0} onAddLead={() => {}} darkMode={dk} onToggleDark={() => { const n = !dk; setDk(n); localStorage.setItem('pg_darkmode', n ? '1' : '0') }}>
-      <div style={{ background: bg, minHeight: '100vh', padding: '20px 24px', paddingBottom: 60 }}>
+      <div style={{ background: bg, minHeight: '100vh', padding: '12px 16px', paddingBottom: 60 }}>
 
         {/* Toasts */}
         <div style={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', zIndex: 400, display: 'flex', flexDirection: 'column', gap: 10, pointerEvents: 'none', alignItems: 'center' }}>
@@ -459,37 +459,35 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
           return (
             <>
               {/* Top nav */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                <button onClick={() => router.push('/dashboard/pipeline')} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: ts, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+                <button onClick={() => router.push('/dashboard/pipeline')} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: ts, background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginRight: 'auto' }}>
                   <Ic color={ts}><polyline points="15 18 9 12 15 6"/></Ic>
                   Back to Pipeline
                 </button>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 8, border: `1px solid ${border}`, background: card, color: tp, fontSize: 14, cursor: 'pointer' }}>
-                    <Ic color={tp}><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></Ic>
-                    Call
-                  </button>
-                  <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 8, border: `1px solid ${border}`, background: card, color: tp, fontSize: 14, cursor: 'pointer' }}>
-                    <Ic color={tp}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></Ic>
-                    Send SMS
-                  </button>
-                  <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 8, border: 'none', background: '#0F766E', color: 'white', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>
-                    <Ic color="white"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></Ic>
-                    Follow Up
-                  </button>
-                  <button style={{ padding: '8px 11px', borderRadius: 8, border: `1px solid ${border}`, background: card, color: ts, fontSize: 18, lineHeight: 1, cursor: 'pointer' }}>···</button>
-                </div>
+                <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, border: `1px solid ${border}`, background: card, color: tp, fontSize: 14, cursor: 'pointer' }}>
+                  <Ic color={tp}><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></Ic>
+                  Call
+                </button>
+                <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, border: `1px solid ${border}`, background: card, color: tp, fontSize: 14, cursor: 'pointer' }}>
+                  <Ic color={tp}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></Ic>
+                  Send SMS
+                </button>
+                <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, border: 'none', background: '#0F766E', color: 'white', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>
+                  <Ic color="white"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></Ic>
+                  Follow Up
+                </button>
+                <button style={{ padding: '8px 11px', borderRadius: 8, border: `1px solid ${border}`, background: card, color: ts, fontSize: 18, lineHeight: 1, cursor: 'pointer' }}>···</button>
               </div>
 
               {/* Hero */}
-              <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, padding: '20px 24px', marginBottom: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <div style={{ width: 60, height: 60, borderRadius: '50%', background: avBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 500, color: avFg, flexShrink: 0 }}>
+              <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, padding: '16px 20px', marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, flexWrap: 'wrap' }}>
+                  <div style={{ width: 52, height: 52, borderRadius: '50%', background: avBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 500, color: avFg, flexShrink: 0 }}>
                     {initials(lead.contact_name)}
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 5 }}>
-                      <span style={{ fontSize: 26, fontWeight: 500, color: tp }}>{lead.contact_name}</span>
+                      <span style={{ fontSize: 20, fontWeight: 600, color: tp, wordBreak: 'break-word' }}>{lead.contact_name}</span>
                       <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: '#EEEDFE', color: '#3C3489', fontWeight: 500 }}>{currentStage}</span>
                       <span style={{ fontSize: 14, color: ts }}>· {timeAgo(lead.created_at)}</span>
                       {overdueFU && <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: '#FCEBEB', color: '#A32D2D', fontWeight: 500 }}>Overdue</span>}
@@ -501,7 +499,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                     </div>
                   </div>
                   {/* Last activity + Status */}
-                  <div style={{ display: 'flex', gap: 0, flexShrink: 0, border: `1px solid ${border}`, borderRadius: 10, overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', gap: 0, flexShrink: 0, border: `1px solid ${border}`, borderRadius: 10, overflow: 'hidden', width: '100%', marginTop: 2 }}>
                     <div style={{ padding: '12px 18px', borderRight: `1px solid ${border}` }}>
                       <div style={{ fontSize: 11, color: ts, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Last activity</div>
                       <div style={{ fontSize: 13, fontWeight: 500, color: tp }}>
@@ -547,8 +545,8 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
               </div>
 
               {/* Next Action card */}
-              <div style={{ background: dk ? '#1A1A3E' : '#F0EFFF', border: `1px solid ${dk ? '#2D2D5E' : '#D4D0F7'}`, borderRadius: 14, padding: '20px 24px', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 20 }}>
-                <div style={{ width: 52, height: 52, borderRadius: '50%', background: dk ? '#2D2D5E' : '#DDD9FC', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div style={{ background: dk ? '#1A1A3E' : '#F0EFFF', border: `1px solid ${dk ? '#2D2D5E' : '#D4D0F7'}`, borderRadius: 14, padding: '16px 20px', marginBottom: 10, display: 'flex', alignItems: 'flex-start', gap: 14, flexWrap: 'wrap' }}>
+                <div style={{ width: 44, height: 44, borderRadius: '50%', background: dk ? '#2D2D5E' : '#DDD9FC', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <Ic color="#7C3AED" size={22}>
                     {nbaData.icon === 'bell'  && <><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></>}
                     {nbaData.icon === 'alert' && <><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></>}
@@ -559,10 +557,10 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 11, color: '#7C3AED', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>Next action</div>
-                  <div style={{ fontSize: 18, fontWeight: 500, color: dk ? '#E0DEFF' : '#1E1B4B', marginBottom: 4 }}>{nbaData.label}</div>
-                  <div style={{ fontSize: 14, color: dk ? '#A5B4FC' : '#6D6494' }}>{nbaData.sub}</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: dk ? '#E0DEFF' : '#1E1B4B', marginBottom: 4 }}>{nbaData.label}</div>
+                  <div style={{ fontSize: 13, color: dk ? '#A5B4FC' : '#6D6494' }}>{nbaData.sub}</div>
                 </div>
-                <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', width: '100%' }}>
                   {(currentStage === 'Contacted' || currentStage === 'Quoted') ? (
                     leadEstimate ? (
                       <button onClick={() => router.push(`/dashboard/estimates/${leadEstimate.id}`)}
@@ -591,7 +589,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
               </div>
 
               {/* Contact info strip */}
-              <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, marginBottom: 10, display: 'flex', alignItems: 'stretch', overflowX: 'auto' }}>
+              <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, marginBottom: 10, display: 'flex', alignItems: 'stretch', overflowX: 'auto', WebkitOverflowScrolling: 'touch' as any }}>
                 {[
                   { icon: 'phone', label: 'Phone', value: fmtPhone(lead.contact_phone), copy: lead.contact_phone },
                   { icon: 'email', label: 'Email', value: lead.contact_email || '—', copy: lead.contact_email },

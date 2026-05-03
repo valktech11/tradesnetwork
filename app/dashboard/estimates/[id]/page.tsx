@@ -188,7 +188,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
       onToggleDark={toggleDark}
     >
       <div className={`min-h-screen pb-12 ${dk ? 'bg-[#0A1628]' : 'bg-[#F5F4F0]'}`}>
-        <div className="max-w-[1400px] mx-auto px-4 py-6 space-y-5">
+        <div className="max-w-[1400px] mx-auto px-3 py-4 lg:px-4 lg:py-6 space-y-5">
 
           {/* ── Top action bar ── */}
           <div className="flex items-center justify-between">
@@ -216,7 +216,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
               {/* ── Estimate header — matches reference exactly ── */}
               <div className={`rounded-xl border px-6 py-5 ${card}`}>
                 {/* Single row: [name+meta left] [source columns center-right] [send button right] */}
-                <div className="flex items-start gap-6">
+                <div className="flex flex-col lg:flex-row items-start gap-4">
 
                   {/* Col 1: name / trade / estimate# — grows */}
                   <div className="flex-1 min-w-0">
@@ -250,7 +250,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                   </div>
 
                   {/* Col 2: Lead Source | Created | Valid Until — pipe separated, fixed width */}
-                  <div className="flex items-start shrink-0 gap-0 pt-0.5">
+                  <div className="hidden lg:flex items-start shrink-0 gap-0 pt-0.5">
                     {[
                       { label: 'Lead Source', value: estimate.lead_source || '—', amber: false },
                       { label: 'Created',     value: new Date(estimate.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), amber: false },
@@ -267,7 +267,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                   </div>
 
                   {/* Col 3: Send button */}
-                  <div className="shrink-0 flex flex-col items-end gap-1 pt-0.5">
+                  <div className="flex flex-col items-start lg:items-end gap-1 lg:pt-0.5 lg:shrink-0">
                     <button
                       onClick={async () => { await handleSave(); setEstimate(prev => prev ? { ...prev, status: 'sent' } : prev) }}
                       disabled={saving}
@@ -284,7 +284,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
               <SmartNudges darkMode={dk} />
 
               {/* ── Main 2-col layout ── */}
-              <div className="flex gap-5 items-start">
+              <div className="flex flex-col lg:flex-row gap-5 items-start">
 
                 {/* Left — items + tabs */}
                 <div className="flex-1 min-w-0 space-y-5">
@@ -426,7 +426,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                   {/* ── Client Actions footer ── */}
                   <div className={`rounded-xl border p-5 ${card}`}>
                     <p className={`text-[11px] font-bold uppercase tracking-widest mb-4 ${muted}`}>Client Actions</p>
-                    <div className="flex items-center gap-2.5 flex-wrap">
+                    <div className="flex items-center gap-2 flex-wrap">
 
                       {/* Primary: View Estimate — teal filled */}
                       <button
@@ -504,7 +504,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                 </div>
 
                 {/* Right sidebar */}
-                <div className="w-[340px] shrink-0 space-y-5">
+                <div className="w-full lg:w-[340px] lg:shrink-0 space-y-5">
                   <EstimateSummary estimate={estimate} darkMode={dk} />
                   <PaymentPanel
                     estimate={estimate}
