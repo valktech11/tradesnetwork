@@ -130,24 +130,29 @@ interface Props {
 
 export default function FilterPanel({ open, filters, onChange, onClose, onClear, dk }: Props) {
   const panelRef = useRef<HTMLDivElement>(null)
+  const onCloseRef = useRef(onClose)
+  useEffect(() => { onCloseRef.current = onClose }, [onClose])
 
-  // Close on outside click
+  // Close on outside click — uses ref so effect never re-runs on re-render
   useEffect(() => {
     if (!open) return
     function handleClick(e: MouseEvent) {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) onClose()
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        onCloseRef.current()
+      }
     }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [open, onClose])
+    // Use capture phase so it fires before any child onClick
+    document.addEventListener('mousedown', handleClick, true)
+    return () => document.removeEventListener('mousedown', handleClick, true)
+  }, [open])
 
-  // Close on Escape
+  // Close on Escape — stable, no onClose dep
   useEffect(() => {
     if (!open) return
-    function handleKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose() }
+    function handleKey(e: KeyboardEvent) { if (e.key === 'Escape') onCloseRef.current() }
     document.addEventListener('keydown', handleKey)
     return () => document.removeEventListener('keydown', handleKey)
-  }, [open, onClose])
+  }, [open])
 
   function toggleArr(arr: string[], val: string): string[] {
     return arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val]

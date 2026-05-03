@@ -2,66 +2,53 @@
 
 import { CalendarDays } from 'lucide-react'
 import { Estimate } from '@/app/dashboard/estimates/[id]/page'
+import { theme } from '@/lib/theme'
 
-export default function EstimateSummary({
-  estimate,
-  darkMode,
-}: {
-  estimate: Estimate
-  darkMode: boolean
-}) {
-  const dk = darkMode
-  const card = dk ? 'bg-[#1E293B] text-white border-[#334155]' : 'bg-white text-gray-900 border-[#E8E2D9]'
-  const muted = dk ? 'text-slate-400' : 'text-[#6B7280]'
-  const divider = dk ? 'border-[#334155]' : 'border-[#E8E2D9]'
+export default function EstimateSummary({ estimate, darkMode }: { estimate: Estimate; darkMode: boolean }) {
+  const t = theme(darkMode)
 
   const fmt = (n: number) =>
     n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 })
 
   return (
-    <div className={`rounded-xl border p-5 ${card}`}>
-      <h3 className="font-semibold mb-4">Estimate Summary</h3>
+    <div style={{ borderRadius: 12, border: `1px solid ${t.cardBorder}`, background: t.cardBg, padding: 20 }}>
+      <h3 style={{ fontSize: 14, fontWeight: 600, color: t.textPri, marginBottom: 16 }}>Estimate Summary</h3>
 
-      <div className="space-y-3 text-sm">
-        <div className="flex justify-between">
-          <span className={muted}>Subtotal</span>
-          <span className="font-medium">{fmt(estimate.subtotal)}</span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span style={{ color: t.textMuted }}>Subtotal</span>
+          <span style={{ fontWeight: 500, color: t.textBody }}>{fmt(estimate.subtotal)}</span>
         </div>
 
         {estimate.discount > 0 && (
-          <div className="flex justify-between">
-            <span className={muted}>Discount</span>
-            <span className="font-medium text-green-600">− {fmt(estimate.discount)}</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: t.textMuted }}>Discount</span>
+            <span style={{ fontWeight: 500, color: '#16a34a' }}>− {fmt(estimate.discount)}</span>
           </div>
         )}
 
-        <div className="flex justify-between items-start">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <span className={muted}>Tax ({estimate.tax_rate}%)</span>
+            <span style={{ color: t.textMuted }}>Tax ({estimate.tax_rate}%)</span>
             {estimate.tax_rate > 0 && (
-              <p className="text-[10px] mt-0.5 text-amber-500">Base state rate — adjust for your county</p>
+              <p style={{ fontSize: 10, marginTop: 2, color: '#F59E0B' }}>Base state rate — adjust for your county</p>
             )}
           </div>
-          <span className="font-medium">{fmt(estimate.tax_amount)}</span>
+          <span style={{ fontWeight: 500, color: t.textBody }}>{fmt(estimate.tax_amount)}</span>
         </div>
       </div>
 
-      <div className={`border-t mt-4 pt-4 flex justify-between items-center ${divider}`}>
-        <span className="font-semibold">Total You'll Earn</span>
-        <span className="text-2xl font-bold text-[#0F766E]">{fmt(estimate.total)}</span>
+      <div style={{ borderTop: `1px solid ${t.cardBorder}`, marginTop: 16, paddingTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: 13, fontWeight: 600, color: t.textPri }}>Total You&apos;ll Earn</span>
+        <span style={{ fontSize: 22, fontWeight: 700, color: '#0F766E' }}>{fmt(estimate.total)}</span>
       </div>
 
-      {/* Validity notice */}
-      <div className={`mt-4 flex items-start gap-2.5 rounded-lg p-3 ${dk ? 'bg-[#0F172A]' : 'bg-teal-50'}`}>
-        <CalendarDays size={15} className="text-[#0F766E] mt-0.5 shrink-0" />
-        <p className="text-xs leading-relaxed">
-          <span className={muted}>This estimate is valid until </span>
-          <span className="font-semibold text-[#0F766E]">
-            {new Date(estimate.valid_until).toLocaleDateString('en-US', {
-              month: 'long',
-              day: 'numeric',
-              year: 'numeric',
-            })}
+      <div style={{ marginTop: 14, display: 'flex', alignItems: 'flex-start', gap: 10, borderRadius: 8, padding: 12, background: darkMode ? '#0F172A' : '#F0FDFA' }}>
+        <CalendarDays size={15} color="#0F766E" style={{ marginTop: 1, flexShrink: 0 } as React.CSSProperties} />
+        <p style={{ fontSize: 12, lineHeight: 1.5, margin: 0 }}>
+          <span style={{ color: t.textMuted }}>This estimate is valid until </span>
+          <span style={{ fontWeight: 600, color: '#0F766E' }}>
+            {new Date(estimate.valid_until).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
           </span>
         </p>
       </div>

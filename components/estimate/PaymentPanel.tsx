@@ -3,41 +3,25 @@
 import { Dispatch, SetStateAction } from 'react'
 import { CreditCard, Link2 } from 'lucide-react'
 import { Estimate } from '@/app/dashboard/estimates/[id]/page'
+import { theme } from '@/lib/theme'
 
-export default function PaymentPanel({
-  estimate, setEstimate, darkMode, onAction,
-}: {
+export default function PaymentPanel({ estimate, setEstimate, darkMode, onAction }: {
   estimate:    Estimate
   setEstimate: Dispatch<SetStateAction<Estimate | null>>
   darkMode:    boolean
   onAction?:   (msg: string) => void
 }) {
-  const dk      = darkMode
-  const card    = dk ? 'bg-[#1E293B] text-white border-[#334155]' : 'bg-white text-gray-900 border-[#E8E2D9]'
-  const muted   = dk ? 'text-slate-400' : 'text-[#6B7280]'
-  const divider = dk ? 'border-[#334155]' : 'border-[#E8E2D9]'
-  const pillBg  = dk ? '#1e3a5f' : '#F0F0EC'
-
+  const t = theme(darkMode)
   const depositAmount = estimate.total * (estimate.deposit_percent / 100)
   const fmt = (n: number) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 })
 
   const requestDeposit = async () => {
-    if (!estimate.contact_email) {
-      onAction?.('No email on file — add email to this lead first')
-      return
-    }
+    if (!estimate.contact_email) { onAction?.('No email on file — add email to this lead first'); return }
     try {
       const r = await fetch('/api/estimates/request-deposit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          estimateId:    estimate.id,
-          estimateNumber: estimate.estimate_number,
-          contactEmail:  estimate.contact_email,
-          leadName:      estimate.lead_name,
-          depositAmount,
-          total:         estimate.total,
-        }),
+        body: JSON.stringify({ estimateId: estimate.id, estimateNumber: estimate.estimate_number, contactEmail: estimate.contact_email, leadName: estimate.lead_name, depositAmount, total: estimate.total }),
       })
       if (r.ok) onAction?.('Deposit request sent ✓')
       else onAction?.('Failed to send — check Resend config')
@@ -51,66 +35,72 @@ export default function PaymentPanel({
   }
 
   return (
-    <div className={`rounded-xl border p-5 space-y-4 ${card}`}>
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-sm">Get Paid Faster</h3>
-        <span className="text-xs font-semibold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Recommended</span>
+    <div style={{ borderRadius: 12, border: `1px solid ${t.cardBorder}`, background: t.cardBg, padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h3 style={{ fontSize: 13, fontWeight: 600, color: t.textPri }}>Get Paid Faster</h3>
+        <span style={{ fontSize: 11, fontWeight: 600, background: '#F3E8FF', color: '#7C3AED', padding: '2px 8px', borderRadius: 20 }}>Recommended</span>
       </div>
 
-      {/* Deposit % — editable */}
-      <div className={`space-y-2 pb-3 border-b ${divider}`}>
-        <div className="flex items-center justify-between text-sm">
-          <span className={muted}>Deposit percentage</span>
-          <div className="flex items-center gap-1.5">
+      {/* Deposit % */}
+      <div style={{ borderBottom: `1px solid ${t.cardBorder}`, paddingBottom: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13 }}>
+          <span style={{ color: t.textMuted }}>Deposit percentage</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <input
               type="number" min={0} max={100}
               value={estimate.deposit_percent}
               onChange={e => setEstimate(prev => prev ? { ...prev, deposit_percent: Number(e.target.value) } : prev)}
-              className="est-pill w-14 text-right text-sm"
-              style={{ background: pillBg, color: dk ? '#e2e8f0' : '#111827' }}
+              style={{ width: 52, textAlign: 'right', fontSize: 13, padding: '4px 8px', borderRadius: 6, border: `1.5px solid ${t.inputBorder}`, background: t.inputBg, color: t.textPri, outline: 'none' }}
             />
-            <span className={`text-sm ${muted}`}>%</span>
+            <span style={{ fontSize: 13, color: t.textMuted }}>%</span>
           </div>
         </div>
-        <div className="flex items-center justify-between text-sm">
-          <span className={muted}>Deposit amount</span>
-          <span className="font-semibold">{fmt(depositAmount)}</span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13 }}>
+          <span style={{ color: t.textMuted }}>Deposit amount</span>
+          <span style={{ fontWeight: 600, color: t.textBody }}>{fmt(depositAmount)}</span>
         </div>
       </div>
 
       {/* Require deposit toggle */}
-      <div className="flex items-center justify-between text-sm">
-        <span className={muted}>Require deposit before job starts</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13 }}>
+        <span style={{ color: t.textMuted }}>Require deposit before job starts</span>
         <button
           onClick={() => setEstimate(prev => prev ? { ...prev, require_deposit: !prev.require_deposit } : prev)}
-          className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ${
-            estimate.require_deposit ? 'bg-[#0F766E]' : dk ? 'bg-slate-600' : 'bg-gray-200'}`}
-          role="switch" aria-checked={estimate.require_deposit}>
-          <span className={`inline-block h-5 w-5 rounded-full bg-white shadow-sm transform transition-transform duration-200 ${
-            estimate.require_deposit ? 'translate-x-5' : 'translate-x-0'}`} />
+          style={{
+            position: 'relative', width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', flexShrink: 0,
+            background: estimate.require_deposit ? '#0F766E' : (darkMode ? '#475569' : '#D1D5DB'),
+            transition: 'background 0.2s',
+          }}
+          role="switch" aria-checked={estimate.require_deposit}
+        >
+          <span style={{
+            position: 'absolute', top: 2, left: estimate.require_deposit ? 22 : 2,
+            width: 20, height: 20, borderRadius: '50%', background: '#fff',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.3)', transition: 'left 0.2s',
+          }} />
         </button>
       </div>
 
-      {/* Request Deposit — sends real email */}
+      {/* Request Deposit */}
       <button onClick={requestDeposit}
-        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#0F766E] to-[#0D9488] text-white py-2.5 rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm">
+        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'linear-gradient(135deg, #0F766E, #0D9488)', color: '#fff', padding: '10px', borderRadius: 8, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
         <CreditCard size={14} />
         Request Deposit
       </button>
 
-      {/* Send with Payment Link — copies to clipboard */}
+      {/* Send with Payment Link */}
       <button onClick={copyPaymentLink}
-        className={`w-full flex items-center justify-center gap-2 border py-2.5 rounded-lg text-sm font-medium transition-colors ${
-          dk ? 'border-[#334155] text-slate-300 hover:border-[#0F766E] hover:text-[#0F766E]'
-             : 'border-[#E8E2D9] text-[#6B7280] hover:border-[#0F766E] hover:text-[#0F766E]'}`}>
+        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '10px', borderRadius: 8, fontSize: 13, fontWeight: 500, border: `1.5px solid ${t.inputBorder}`, background: 'transparent', color: t.textMuted, cursor: 'pointer' }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = '#0F766E'; e.currentTarget.style.color = '#0F766E' }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = t.inputBorder; e.currentTarget.style.color = t.textMuted }}
+      >
         <Link2 size={14} />
         Send with Payment Link
       </button>
 
       {!estimate.contact_email && (
-        <p className={`text-xs text-center ${muted}`}>
-          Add email to this lead to enable deposit requests
-        </p>
+        <p style={{ fontSize: 11, textAlign: 'center', color: t.textSubtle }}>Add email to this lead to enable deposit requests</p>
       )}
     </div>
   )

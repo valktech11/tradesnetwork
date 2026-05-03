@@ -10,6 +10,7 @@ import PaymentPanel from '@/components/estimate/PaymentPanel'
 import ApprovalTimeline from '@/components/estimate/ApprovalTimeline'
 import SmartNudges from '@/components/estimate/SmartNudges'
 import { Session } from '@/types'
+import { theme } from '@/lib/theme'
 
 export type EstimateItem = {
   id: string
@@ -178,6 +179,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
 
   const card = dk ? 'bg-[#1E293B] text-white border-[#334155]' : 'bg-white text-gray-900 border-[#E8E2D9]'
   const muted = dk ? 'text-slate-400' : 'text-[#6B7280]'
+  const t = theme(dk)
 
   return (
     <DashboardShell
@@ -249,16 +251,19 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                     </div>
                   </div>
 
-                  {/* Col 2: Lead Source · Created · Valid Until — inline on mobile */}
-                  <div className="flex flex-wrap gap-x-5 gap-y-2">
+                  {/* Col 2: Lead Source | Created | Valid Until — pipes on desktop, stacked on mobile */}
+                  <div className="flex flex-col gap-2 xl:flex-row xl:items-center xl:gap-0">
                     {[
                       { label: 'Lead Source', value: estimate.lead_source || '—', amber: false },
                       { label: 'Created',     value: new Date(estimate.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), amber: false },
                       { label: 'Valid Until', value: new Date(estimate.valid_until).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), amber: true },
-                    ].map(({ label, value, amber }) => (
-                      <div key={label}>
-                        <p className={`text-[10px] font-semibold uppercase tracking-wider leading-none ${muted}`}>{label}</p>
-                        <p className={`text-sm font-bold mt-1 ${amber ? 'text-amber-500' : (dk ? 'text-white' : 'text-gray-900')}`}>{value}</p>
+                    ].map(({ label, value, amber }, i) => (
+                      <div key={label} className="flex items-center gap-0">
+                        {i > 0 && <span className="hidden xl:block mx-5 text-gray-300 select-none" style={{ color: dk ? '#334155' : '#D1D5DB' }}>|</span>}
+                        <div>
+                          <p className={`text-[10px] font-semibold uppercase tracking-wider leading-none ${muted}`}>{label}</p>
+                          <p className={`text-sm font-bold mt-1 ${amber ? 'text-amber-500' : (dk ? 'text-white' : 'text-gray-900')}`}>{value}</p>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -287,33 +292,35 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                 <div className="flex-1 min-w-0 space-y-5 min-w-0">
 
                   {/* ── Tab strip — matches reference: tabs left, buttons right ── */}
-                  <div className={`rounded-xl border ${card}`}>
-                    <div className={`flex items-center justify-between border-b ${dk ? 'border-[#334155]' : 'border-[#E8E2D9]'}`}>
+                  <div style={{ borderRadius: 12, border: `1px solid ${t.cardBorder}`, background: t.cardBg }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${t.cardBorder}` }}>
                       {/* Tabs */}
-                      <div className="flex">
+                      <div style={{ display: 'flex' }}>
                         {(['items', 'notes'] as const).map(tab => (
                           <button key={tab} onClick={() => setActiveTab(tab)}
-                            className={`px-6 py-3.5 text-sm font-medium transition-colors relative ${
-                              activeTab === tab ? 'text-[#0F766E]' : `${muted} hover:text-[#0F766E]`}`}>
+                            style={{ padding: '12px 24px', fontSize: 13, fontWeight: 500, position: 'relative', border: 'none', background: 'transparent', cursor: 'pointer',
+                              color: activeTab === tab ? '#0F766E' : t.textMuted,
+                              borderBottom: activeTab === tab ? '2px solid #0F766E' : '2px solid transparent',
+                            }}>
                             {tab === 'items' ? 'Estimate Items' : 'Notes & Attachments'}
-                            {activeTab === tab && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0F766E]" />}
                           </button>
                         ))}
                       </div>
-                      {/* Action buttons — right side of tab bar */}
+                      {/* Use Previous Job button */}
                       {activeTab === 'items' && (
-                        <div className="flex items-center gap-2 pr-4">
+                        <div style={{ paddingRight: 16 }}>
                           <button onClick={openTemplatePicker}
-                            className={`flex items-center gap-1.5 text-sm font-medium px-3.5 py-1.5 rounded-lg border transition-colors ${
-                              dk ? 'border-[#334155] text-slate-400 hover:border-[#0F766E] hover:text-[#0F766E]'
-                                 : 'border-[#E8E2D9] text-[#6B7280] hover:border-[#0F766E] hover:text-[#0F766E]'}`}>
+                            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, padding: '7px 14px', borderRadius: 8, border: `1.5px solid ${t.btnBorder}`, background: 'transparent', color: t.textMuted, cursor: 'pointer' }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#0F766E'; e.currentTarget.style.color = '#0F766E' }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = t.btnBorder; e.currentTarget.style.color = t.textMuted }}
+                          >
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
                             Use Previous Job
                           </button>
                         </div>
                       )}
                     </div>
-                    <div className="p-6">
+                    <div style={{ padding: 24 }}>
                       {activeTab === 'items' ? (
                         <EstimateItems
                           estimate={estimate}
@@ -330,23 +337,22 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
 
                   {/* ── Save Changes bar ── */}
                   {activeTab === 'items' && (
-                    <div className={`flex items-center justify-between flex-wrap gap-2 px-4 py-3 rounded-xl border ${card}`}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, padding: '12px 16px', borderRadius: 12, border: `1px solid ${t.cardBorder}`, background: t.cardBg }}>
                       <div>
                         {saveMsg ? (
-                          <span className={`text-sm font-medium ${saveMsg.includes('✓') || saveMsg === 'Saved ✓' ? 'text-teal-600' : 'text-red-500'}`}>
+                          <span style={{ fontSize: 13, fontWeight: 500, color: saveMsg.includes('✓') ? '#0F766E' : '#EF4444' }}>
                             {saveMsg}
                           </span>
                         ) : (
-                          <span className={`text-sm ${muted}`}>Changes are saved to draft — send when ready</span>
+                          <span style={{ fontSize: 13, color: t.textMuted }}>Changes are saved to draft — send when ready</span>
                         )}
                       </div>
                       <button
                         onClick={handleSave}
                         disabled={saving}
-                        className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-60 ${
-                          dk ? 'bg-[#1E293B] border border-[#334155] text-white hover:border-[#0F766E]'
-                             : 'bg-white border border-[#E8E2D9] text-gray-800 hover:border-[#0F766E] hover:text-[#0F766E]'
-                        }`}
+                        style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600, border: `1.5px solid ${t.inputBorder}`, background: t.cardBg, color: t.textBody, cursor: 'pointer', opacity: saving ? 0.6 : 1 }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = '#0F766E'; e.currentTarget.style.color = '#0F766E' }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = t.inputBorder; e.currentTarget.style.color = t.textBody }}
                       >
                         <Save size={14} />
                         {saving ? 'Saving...' : 'Save Changes'}
@@ -357,82 +363,81 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                   {/* ── Save as reusable job nudge ── */}
                   {activeTab === 'items' && (
                     <button onClick={() => setShowSaveTemplate(true)}
-                      className={`w-full flex items-center justify-between px-4 py-4 rounded-xl border transition-colors text-left overflow-hidden max-w-full ${
-                        dk ? 'border-[#334155] bg-[#1E293B] hover:border-[#0F766E]' : 'border-[#E8E2D9] bg-white hover:border-[#0F766E]'
-                      }`}>
-                      <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${dk ? 'bg-[#0F172A]' : 'bg-[#f0f9ff]'}`}>
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: 12, border: `1px solid ${t.cardBorder}`, background: t.cardBg, cursor: 'pointer', textAlign: 'left', maxWidth: '100%' }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#0F766E' }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = t.cardBorder }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: 8, background: t.cardBgAlt, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2">
                             <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
                           </svg>
                         </div>
                         <div>
-                          <p className={`text-sm font-semibold ${dk ? 'text-white' : 'text-gray-900'}`}>Save this estimate as reusable job</p>
-                          <p className={`text-xs mt-0.5 ${dk ? 'text-slate-400' : 'text-[#6B7280]'}`}>Use it again for similar jobs and save time.</p>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: t.textPri }}>Save this estimate as reusable job</p>
+                          <p style={{ fontSize: 12, marginTop: 2, color: t.textMuted }}>Use it again for similar jobs and save time.</p>
                         </div>
                       </div>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${dk ? '#64748b' : '#9CA3AF'}" strokeWidth="2" className="shrink-0 ml-3">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={t.textMuted} strokeWidth="2" style={{ flexShrink: 0, marginLeft: 12 }}>
                         <polyline points="9 18 15 12 9 6"/>
                       </svg>
                     </button>
                   )}
 
                   {/* ── Terms & Conditions — editable ── */}
-                  <div className={`rounded-xl border p-6 ${card}`}>
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className={`font-semibold text-sm ${dk ? 'text-white' : 'text-gray-900'}`}>Terms & Conditions</h3>
+                  <div style={{ borderRadius: 12, border: `1px solid ${t.cardBorder}`, background: t.cardBg, padding: '20px 24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                      <h3 style={{ fontSize: 14, fontWeight: 600, color: t.textPri }}>Terms & Conditions</h3>
                       {!editingTerms && (
                         <button
                           onClick={() => { setTermsValue(estimate.terms); setEditingTerms(true) }}
-                          className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-colors ${
-                            dk ? 'border-[#334155] text-slate-400 hover:border-[#0F766E] hover:text-[#0F766E]'
-                               : 'border-[#D1D5DB] text-[#374151] hover:border-[#0F766E] hover:text-[#0F766E]'}`}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                          style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, padding: '6px 12px', borderRadius: 8, border: `1.5px solid ${t.btnBorder}`, background: 'transparent', color: t.btnText, cursor: 'pointer' }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = '#0F766E'; e.currentTarget.style.color = '#0F766E' }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = t.btnBorder; e.currentTarget.style.color = t.btnText }}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                           Edit
                         </button>
                       )}
                     </div>
                     {editingTerms ? (
-                      <div className="space-y-3">
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                         <textarea
                           value={termsValue}
                           onChange={e => setTermsValue(e.target.value)}
                           rows={4}
-                          className={`w-full text-sm rounded-lg px-3 py-2.5 leading-relaxed resize-none ${
-                            dk ? 'bg-[#0F172A] text-white' : 'bg-[#F9FAFB] text-gray-900'}`}
-                          style={{ boxShadow: '0 0 0 1.5px #0F766E' }}
+                          style={{ width: '100%', fontSize: 13, borderRadius: 8, padding: '10px 12px', lineHeight: 1.6, resize: 'vertical', background: t.inputBg, color: t.textPri, boxSizing: 'border-box', boxShadow: '0 0 0 1.5px #0F766E', border: 'none', outline: 'none' }}
                         />
-                        <div className="flex gap-2 justify-end">
+                        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                           <button onClick={() => setEditingTerms(false)}
-                            className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
-                              dk ? 'border-[#334155] text-slate-400' : 'border-[#E8E2D9] text-[#6B7280]'}`}>
+                            style={{ padding: '6px 14px', fontSize: 13, borderRadius: 8, border: `1.5px solid ${t.cardBorder}`, background: 'transparent', color: t.textMuted, cursor: 'pointer' }}>
                             Cancel
                           </button>
                           <button
                             onClick={() => { setEstimate(prev => prev ? { ...prev, terms: termsValue } : prev); setEditingTerms(false) }}
-                            className="px-3 py-1.5 text-sm font-medium rounded-lg bg-[#0F766E] text-white hover:bg-[#0D6A62] transition-colors">
+                            style={{ padding: '6px 14px', fontSize: 13, fontWeight: 500, borderRadius: 8, border: 'none', background: '#0F766E', color: '#fff', cursor: 'pointer' }}>
                             Save Terms
                           </button>
                         </div>
                       </div>
                     ) : (
-                      <p className={`text-sm leading-relaxed break-words ${muted}`} style={{ wordBreak: "break-word", overflowWrap: "break-word" }}>{estimate.terms}</p>
+                      <p style={{ fontSize: 13, lineHeight: 1.6, color: t.textMuted, wordBreak: 'break-word', overflowWrap: 'break-word' }}>{estimate.terms}</p>
                     )}
                   </div>
 
                   {/* ── Client Actions footer ── */}
-                  <div className={`rounded-xl border p-5 overflow-hidden ${card}`}>
-                    <p className={`text-[11px] font-bold uppercase tracking-widest mb-4 ${muted}`}>Client Actions</p>
-                    <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2">
+                  <div style={{ borderRadius: 12, border: `1px solid ${t.cardBorder}`, background: t.cardBg, padding: '16px 20px' }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: t.textMuted, marginBottom: 14 }}>Client Actions</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
 
-                      {/* Primary: View Estimate — teal filled */}
+                      {/* Primary: View Estimate */}
                       <button
                         onClick={() => window.open(`${window.location.origin}/estimate/${id}`, '_blank')}
-                        className="flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-lg bg-gradient-to-r from-[#0F766E] to-[#0D9488] text-white shadow-sm hover:opacity-90 transition-opacity w-full sm:w-auto">
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13, fontWeight: 600, padding: '9px 16px', borderRadius: 8, background: 'linear-gradient(135deg, #0F766E, #0D9488)', color: '#fff', border: 'none', cursor: 'pointer', flex: '1 1 auto' }}>
                         <Link2 size={14} /> View Estimate
                       </button>
 
-                      {/* Secondary: Download PDF — teal outline */}
+                      {/* Secondary: Download PDF */}
                       <button
                         onClick={async () => {
                           if (!estimate || estimate.id === 'mock-1') {
@@ -457,14 +462,17 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                           }
                           setTimeout(() => setSaveMsg(null), 4000)
                         }}
-                        className="flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-lg border-2 border-[#0F766E] text-[#0F766E] hover:bg-teal-50 transition-colors w-full sm:w-auto">
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13, fontWeight: 600, padding: '9px 16px', borderRadius: 8, border: `2px solid #0F766E`, background: 'transparent', color: '#0F766E', cursor: 'pointer', flex: '1 1 auto' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = dk ? 'rgba(15,118,110,0.1)' : '#F0FDFA' }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                      >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         Download PDF
                       </button>
 
-                      {/* Tertiary: Mark as Sent — ghost with checkmark on already-sent */}
+                      {/* Tertiary: Mark as Sent */}
                       {estimate.status === 'sent' || estimate.status === 'viewed' || estimate.status === 'approved' || estimate.status === 'paid' ? (
-                        <div className="flex items-center justify-center gap-1.5 text-sm font-medium text-teal-600 px-4 py-2.5 rounded-lg bg-teal-50 border border-teal-100 w-full sm:w-auto">
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13, fontWeight: 500, color: '#0F766E', padding: '9px 16px', borderRadius: 8, background: '#F0FDFA', border: '1px solid #99F6E4', flex: '1 1 auto' }}>
                           <Check size={14} /> Marked as Sent
                         </div>
                       ) : (
@@ -487,11 +495,10 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                             setSaveMsg('Marked as sent ✓')
                             setTimeout(() => setSaveMsg(null), 3000)
                           }}
-                          className={`flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-lg border transition-colors ${
-                            dk
-                              ? 'border-[#334155] text-slate-300 hover:border-[#0F766E] hover:text-[#0F766E] hover:bg-teal-900/20'
-                              : 'border-[#D1D5DB] text-[#374151] hover:border-[#0F766E] hover:text-[#0F766E] hover:bg-teal-50'
-                          }`}>
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13, fontWeight: 500, padding: '9px 16px', borderRadius: 8, border: `1.5px solid ${t.btnBorder}`, background: 'transparent', color: t.btnText, cursor: 'pointer', flex: '1 1 auto' }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = '#0F766E'; e.currentTarget.style.color = '#0F766E' }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = t.btnBorder; e.currentTarget.style.color = t.btnText }}
+                        >
                           <Send size={14} /> Mark as Sent
                         </button>
                       )}
