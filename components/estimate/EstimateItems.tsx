@@ -115,6 +115,143 @@ export default function EstimateItems({
   const GRID = '22px 26px 1fr 80px 110px 110px 100px'
 
   return (
+    <div>
+      {/* ── MOBILE card list (hidden on xl+) ── */}
+      <div className="xl:hidden">
+        {estimate.items.length === 0 && (
+          <div style={{ padding: '24px', textAlign: 'center', color: colMuted, fontSize: 14, border: `1.5px solid ${border}`, borderRadius: 12, background: bgCard }}>
+            No items yet — tap <strong style={{ color: '#0F766E' }}>+ Add Item</strong> to get started
+          </div>
+        )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {estimate.items.map((item, idx) => {
+            const isEditing = editingId === item.id
+            const rowAmount = item.qty * item.unit_price
+            return (
+              <div key={item.id} style={{ border: `1.5px solid ${isEditing ? '#0F766E' : border}`, borderRadius: 10, background: isEditing ? bgEdit : bgCard, overflow: 'hidden' }}>
+                {/* Card header row */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px 8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
+                    <span style={{ fontSize: 12, color: colMuted, fontWeight: 600, flexShrink: 0 }}>{idx + 1}</span>
+                    <span style={{ fontSize: 15, fontWeight: 700, color: col, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {item.name || <span style={{ color: colMuted, fontStyle: 'italic', fontWeight: 400 }}>Unnamed item</span>}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                    <button onClick={() => isEditing ? cancelEdit() : startEdit(item)} title="Edit"
+                      style={{ width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1.5px solid ${isEditing ? '#0F766E' : border}`, borderRadius: 7, background: isEditing ? '#0F766E' : bgInput, color: isEditing ? '#fff' : colBody, cursor: 'pointer' }}>
+                      <Pencil size={13} />
+                    </button>
+                    <button onClick={() => remove(item.id)} title="Delete"
+                      style={{ width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1.5px solid ${border}`, borderRadius: 7, background: bgInput, color: colBody, cursor: 'pointer' }}>
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                </div>
+                {/* Card detail row */}
+                {!isEditing && (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 14px 12px' }}>
+                    <span style={{ fontSize: 13, color: colMuted }}>
+                      {item.qty} job × {money(item.unit_price)}
+                    </span>
+                    <span style={{ fontSize: 15, fontWeight: 700, color: col }}>{rowAmount > 0 ? money(rowAmount) : '—'}</span>
+                  </div>
+                )}
+                {/* Edit panel — same as desktop */}
+                {isEditing && (
+                  <div style={{ padding: '12px 14px 16px', borderTop: `1px solid ${dk ? '#1e3a5f' : '#ccfbf1'}` }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+                      <div>
+                        <label style={labelStyle}>Item Name</label>
+                        <input autoFocus value={draft.name ?? ''} onChange={e => setDraft(d => ({ ...d, name: e.target.value }))}
+                          placeholder="e.g. Interior Wall Painting" style={inputStyle()} onKeyDown={e => e.key === 'Enter' && commitEdit(item.id)} />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Description <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
+                        <input value={draft.description ?? ''} onChange={e => setDraft(d => ({ ...d, description: e.target.value }))}
+                          placeholder="e.g. Premium quality paint" style={inputStyle()} onKeyDown={e => e.key === 'Enter' && commitEdit(item.id)} />
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+                      <div>
+                        <label style={labelStyle}>Quantity</label>
+                        <input type="number" min={1} value={draft.qty ?? 1}
+                          onChange={e => setDraft(d => ({ ...d, qty: Math.max(1, Number(e.target.value)) }))}
+                          style={inputStyle()} onKeyDown={e => e.key === 'Enter' && commitEdit(item.id)} />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Unit Price ($)</label>
+                        <div style={{ position: 'relative' }}>
+                          <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: colMuted, fontSize: 14 }}>$</span>
+                          <input type="number" min={0} step={0.01} value={draft.unit_price ?? ''} placeholder="0.00"
+                            onChange={e => setDraft(d => ({ ...d, unit_price: Number(e.target.value) }))}
+                            style={inputStyle({ paddingLeft: 24 })} onKeyDown={e => e.key === 'Enter' && commitEdit(item.id)} />
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: 13, color: colMuted }}>
+                        Total: <strong style={{ color: '#0F766E' }}>{money((draft.qty ?? item.qty) * (draft.unit_price ?? item.unit_price))}</strong>
+                      </span>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button onClick={cancelEdit} style={{ padding: '7px 14px', fontSize: 13, borderRadius: 8, border: `1.5px solid ${border}`, background: 'transparent', color: colMuted, cursor: 'pointer' }}>Cancel</button>
+                        <button onClick={() => commitEdit(item.id)} style={{ padding: '7px 18px', fontSize: 13, fontWeight: 600, borderRadius: 8, border: 'none', background: '#0F766E', color: '#fff', cursor: 'pointer' }}>✓ Done</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Discount row — mobile */}
+        {showDiscount && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '10px 14px', border: `1.5px solid ${border}`, borderRadius: 10, background: bgCard, marginTop: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 14, color: colMuted }}>Discount</span>
+              <div style={{ display: 'flex', border: `1.5px solid ${border}`, borderRadius: 6, overflow: 'hidden' }}>
+                {(['$', '%'] as const).map(t => (
+                  <button key={t} onClick={() => { setDiscountType(t); const flat = t === '%' ? estimate.subtotal * (discountInput / 100) : discountInput; updateDiscount(flat) }}
+                    style={{ padding: '2px 7px', fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none', background: discountType === t ? '#0F766E' : 'transparent', color: discountType === t ? '#fff' : colMuted }}>{t}</button>
+                ))}
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input type="number" min={0} value={discountInput || ''} onChange={e => { const v = Number(e.target.value); setDiscountInput(v); updateDiscount(discountType === '%' ? estimate.subtotal * (v / 100) : v) }}
+                placeholder="0" style={{ width: 80, padding: '5px 8px', fontSize: 13, borderRadius: 7, border: `1.5px solid ${border}`, background: bgInput, color: col, outline: 'none', textAlign: 'right' }} />
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#16a34a' }}>{estimate.discount > 0 ? `− ${money(estimate.discount)}` : '—'}</span>
+              <button onClick={() => { setShowDiscount(false); setDiscountInput(0); updateDiscount(0) }} style={{ fontSize: 12, color: colMuted, background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
+            </div>
+          </div>
+        )}
+
+        {/* Tax row — mobile */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '10px 14px', border: `1.5px solid ${border}`, borderRadius: 10, background: dk ? '#1a2030' : '#FAFAF9', marginTop: 8 }}>
+          <div>
+            <span style={{ fontSize: 14, color: colMuted }}>Sales Tax</span>
+            {estimate.tax_rate > 0 && <span style={{ fontSize: 11, marginLeft: 6, color: '#d97706', background: '#fef3c7', padding: '1px 6px', borderRadius: 8 }}>Base rate</span>}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ position: 'relative' }}>
+              <input type="number" min={0} max={30} step={0.25} value={estimate.tax_rate || ''} onChange={e => updateTaxRate(Number(e.target.value))} placeholder="0"
+                style={{ width: 72, padding: '5px 24px 5px 8px', fontSize: 13, borderRadius: 7, border: `1.5px solid ${border}`, background: bgInput, color: col, outline: 'none', textAlign: 'right' }} />
+              <span style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: colMuted, fontSize: 12, pointerEvents: 'none' }}>%</span>
+            </div>
+            <span style={{ fontSize: 13, fontWeight: 600, color: colBody, minWidth: 60, textAlign: 'right' }}>{estimate.tax_amount > 0 ? money(estimate.tax_amount) : '—'}</span>
+          </div>
+        </div>
+
+        {/* Add Item — mobile */}
+        <button onClick={addItem}
+          style={{ width: '100%', padding: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: 14, fontWeight: 500, color: '#0F766E', background: 'transparent', border: `1.5px dashed ${dk ? '#1e3a5f' : '#99f6e4'}`, borderRadius: 10, cursor: 'pointer', marginTop: 8 }}>
+          <Plus size={15} />
+          Add Item
+        </button>
+      </div>
+
+      {/* ── DESKTOP table (hidden below xl) ── */}
+      <div className="hidden xl:block">
     <div style={{ maxWidth: '100%' }}>
     <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' as any, width: '100%' }}>
     <div style={{ minWidth: 500 }}>
@@ -352,6 +489,8 @@ export default function EstimateItems({
 
     </div>
     </div>
+    </div>
+      </div>
       {/* ── Modifier pills ── */}
       <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
         {!showDiscount && (

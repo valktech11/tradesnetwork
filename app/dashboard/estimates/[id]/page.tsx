@@ -187,8 +187,8 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
       darkMode={dk}
       onToggleDark={toggleDark}
     >
-      <div className={`min-h-screen pb-12 ${dk ? "bg-[#0A1628]" : "bg-[#F5F4F0]"}`}>
-        <div className="max-w-[1400px] mx-auto px-3 py-4 lg:px-4 lg:py-6 space-y-5">
+      <div className={`min-h-screen pb-12 w-full max-w-[100vw] overflow-x-hidden ${dk ? "bg-[#0A1628]" : "bg-[#F5F4F0]"}`}>
+        <div className="w-full max-w-[1400px] mx-auto px-3 py-4 lg:px-4 lg:py-6 space-y-5 min-w-0">
 
           {/* ── Top action bar ── */}
           <div className="flex items-center justify-between">
@@ -281,7 +281,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
               <div className="rounded-xl"><SmartNudges darkMode={dk} /></div>
 
               {/* ── Main 2-col layout ── */}
-              <div className="flex flex-col lg:flex-row gap-5 items-start">
+              <div className="flex flex-col xl:flex-row gap-5 items-start">
 
                 {/* Left — items + tabs */}
                 <div className="flex-1 min-w-0 space-y-5 min-w-0">
@@ -357,7 +357,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                   {/* ── Save as reusable job nudge ── */}
                   {activeTab === 'items' && (
                     <button onClick={() => setShowSaveTemplate(true)}
-                      className={`w-full flex items-center justify-between px-4 py-4 rounded-xl border transition-colors text-left overflow-hidden ${
+                      className={`w-full flex items-center justify-between px-4 py-4 rounded-xl border transition-colors text-left overflow-hidden max-w-full ${
                         dk ? 'border-[#334155] bg-[#1E293B] hover:border-[#0F766E]' : 'border-[#E8E2D9] bg-white hover:border-[#0F766E]'
                       }`}>
                       <div className="flex items-center gap-3">
@@ -423,12 +423,12 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                   {/* ── Client Actions footer ── */}
                   <div className={`rounded-xl border p-5 overflow-hidden ${card}`}>
                     <p className={`text-[11px] font-bold uppercase tracking-widest mb-4 ${muted}`}>Client Actions</p>
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2">
 
                       {/* Primary: View Estimate — teal filled */}
                       <button
                         onClick={() => window.open(`${window.location.origin}/estimate/${id}`, '_blank')}
-                        className="flex items-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-lg bg-gradient-to-r from-[#0F766E] to-[#0D9488] text-white shadow-sm hover:opacity-90 transition-opacity">
+                        className="flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-lg bg-gradient-to-r from-[#0F766E] to-[#0D9488] text-white shadow-sm hover:opacity-90 transition-opacity w-full sm:w-auto">
                         <Link2 size={14} /> View Estimate
                       </button>
 
@@ -457,14 +457,14 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                           }
                           setTimeout(() => setSaveMsg(null), 4000)
                         }}
-                        className="flex items-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-lg border-2 border-[#0F766E] text-[#0F766E] hover:bg-teal-50 transition-colors">
+                        className="flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-lg border-2 border-[#0F766E] text-[#0F766E] hover:bg-teal-50 transition-colors w-full sm:w-auto">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         Download PDF
                       </button>
 
                       {/* Tertiary: Mark as Sent — ghost with checkmark on already-sent */}
                       {estimate.status === 'sent' || estimate.status === 'viewed' || estimate.status === 'approved' || estimate.status === 'paid' ? (
-                        <div className="flex items-center gap-1.5 text-sm font-medium text-teal-600 px-4 py-2.5 rounded-lg bg-teal-50 border border-teal-100">
+                        <div className="flex items-center justify-center gap-1.5 text-sm font-medium text-teal-600 px-4 py-2.5 rounded-lg bg-teal-50 border border-teal-100 w-full sm:w-auto">
                           <Check size={14} /> Marked as Sent
                         </div>
                       ) : (
@@ -501,7 +501,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                 </div>
 
                 {/* Right sidebar */}
-                <div className="w-full lg:w-[340px] lg:shrink-0 space-y-5">
+                <div className="w-full xl:w-[340px] xl:shrink-0 space-y-5">
                   <EstimateSummary estimate={estimate} darkMode={dk} />
                   <PaymentPanel
                     estimate={estimate}
