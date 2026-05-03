@@ -1,3 +1,4 @@
+'use client'
 import DashboardShell from '@/components/layout/DashboardShell'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
