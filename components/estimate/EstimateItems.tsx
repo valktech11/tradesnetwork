@@ -81,7 +81,14 @@ export default function EstimateItems({
   function remove(id: string) {
     if (editingId === id) cancelEdit()
     const items = estimate.items.filter(i => i.id !== id)
-    setEstimate(prev => prev ? { ...prev, items, ...recalc(items, prev.tax_rate, prev.discount) } : prev)
+    // If no items left, clear discount
+    if (items.length === 0) {
+      setShowDiscount(false)
+      setDiscountInput(0)
+      setEstimate(prev => prev ? { ...prev, items, discount: 0, ...recalc(items, prev.tax_rate, 0) } : prev)
+    } else {
+      setEstimate(prev => prev ? { ...prev, items, ...recalc(items, prev.tax_rate, prev.discount) } : prev)
+    }
   }
   function updateDiscount(val: number) {
     setEstimate(prev => prev ? { ...prev, discount: val, ...recalc(prev.items, prev.tax_rate, val) } : prev)
