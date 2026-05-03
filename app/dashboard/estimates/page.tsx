@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, FileText, Search, Trash2 } from 'lucide-react'
+import { Plus, FileText, Search, Trash2, X, User } from 'lucide-react'
 import { Session } from '@/types'
 import DashboardShell from '@/components/layout/DashboardShell'
 
@@ -39,10 +39,14 @@ export default function EstimatesPage() {
     return localStorage.getItem('pg_darkmode') === '1'
   })
 
-  const [estimates, setEstimates] = useState<EstimateSummary[]>([])
-  const [loading, setLoading] = useState(true)
-  const [creating, setCreating] = useState(false)
-  const [search, setSearch] = useState('')
+  const [estimates,    setEstimates]    = useState<EstimateSummary[]>([])
+  const [loading,      setLoading]      = useState(true)
+  const [creating,     setCreating]     = useState(false)
+  const [search,       setSearch]       = useState('')
+  const [showPicker,   setShowPicker]   = useState(false)
+  const [leads,        setLeads]        = useState<any[]>([])
+  const [leadSearch,   setLeadSearch]   = useState('')
+  const [loadingLeads, setLoadingLeads] = useState(false)
 
   useEffect(() => {
     if (!session) { router.push('/login'); return }
@@ -61,20 +65,45 @@ export default function EstimatesPage() {
 
   const handleCreate = async () => {
     if (!session || creating) return
+    setShowPicker(true)
+    setLoadingLeads(true)
+    setLeadSearch('')
+    try {
+      const r = await fetch(`/api/leads?pro_id=${session.id}`)
+      const d = await r.json()
+      setLeads(d.leads || [])
+    } catch { setLeads([]) }
+    finally { setLoadingLeads(false) }
+  }
+
+  const createFromLead = async (lead?: any) => {
+    if (!session || creating) return
     setCreating(true)
+    setShowPicker(false)
     try {
       const r = await fetch('/api/estimates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pro_id: session.id, state: session.state || '' }),
+        body: JSON.stringify({
+          pro_id:        session.id,
+          state:         session.state || '',
+          lead_id:       lead?.id || null,
+          lead_name:     lead?.contact_name || 'New Client',
+          lead_source:   lead?.lead_source || '',
+          trade:         session.trade || '',
+          contact_phone: lead?.contact_phone || '',
+          contact_email: lead?.contact_email || '',
+        }),
       })
       const d = await r.json()
-      if (d.estimate?.id) {
+      if (d.existed) {
+        if (confirm(`A draft estimate already exists for ${lead?.contact_name}. Open it?`)) {
+          router.push(`/dashboard/estimates/${d.estimate.id}`)
+        } else setCreating(false)
+      } else if (d.estimate?.id) {
         router.push(`/dashboard/estimates/${d.estimate.id}`)
       }
-    } catch {
-      setCreating(false)
-    }
+    } catch { setCreating(false) }
   }
 
   const deleteEstimate = async (e: React.MouseEvent, estId: string) => {
@@ -219,6 +248,82 @@ export default function EstimatesPage() {
 
         </div>
       </div>
+      {/* ── Lead picker modal ── */}
+      {showPicker && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.5)' }}
+          onClick={() => setShowPicker(false)}>
+          <div className={`w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden ${dk ? 'bg-[#1E293B]' : 'bg-white'}`}
+            onClick={e => e.stopPropagation()}>
+
+            {/* Modal header */}
+            <div className={`flex items-center justify-between px-5 py-4 border-b ${dk ? 'border-[#334155]' : 'border-[#E8E2D9]'}`}>
+              <div>
+                <h3 className={`font-semibold ${dk ? 'text-white' : 'text-gray-900'}`}>New Estimate</h3>
+                <p className={`text-xs mt-0.5 ${dk ? 'text-slate-400' : 'text-[#6B7280]'}`}>Select a lead or create a blank estimate</p>
+              </div>
+              <button onClick={() => setShowPicker(false)} className={dk ? 'text-slate-400 hover:text-white' : 'text-gray-400 hover:text-gray-900'}>
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Search */}
+            <div className={`flex items-center gap-2 px-4 py-3 border-b ${dk ? 'border-[#334155]' : 'border-[#E8E2D9]'}`}>
+              <Search size={15} className={dk ? 'text-slate-400' : 'text-[#9CA3AF]'} />
+              <input
+                autoFocus
+                value={leadSearch}
+                onChange={e => setLeadSearch(e.target.value)}
+                placeholder="Search leads by name..."
+                className={`flex-1 bg-transparent text-sm focus:outline-none ${dk ? 'text-white placeholder:text-slate-500' : 'text-gray-900 placeholder:text-gray-400'}`}
+              />
+            </div>
+
+            {/* Lead list */}
+            <div className="max-h-80 overflow-y-auto">
+              {loadingLeads ? (
+                <div className={`p-8 text-center text-sm ${dk ? 'text-slate-400' : 'text-[#6B7280]'}`}>Loading leads...</div>
+              ) : (
+                <>
+                  {leads
+                    .filter(l => l.contact_name?.toLowerCase().includes(leadSearch.toLowerCase()))
+                    .slice(0, 15)
+                    .map(lead => (
+                      <button key={lead.id} onClick={() => createFromLead(lead)}
+                        className={`w-full flex items-center gap-3 px-5 py-3.5 text-left border-b transition-colors ${
+                          dk ? 'border-[#334155] hover:bg-[#0F172A]' : 'border-[#E8E2D9] hover:bg-[#F9FAFB]'}`}>
+                        <div className="w-9 h-9 rounded-full bg-teal-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                          {lead.contact_name?.split(' ').map((n: string) => n[0]).join('').slice(0,2).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm font-semibold ${dk ? 'text-white' : 'text-gray-900'}`}>{lead.contact_name}</p>
+                          <p className={`text-xs mt-0.5 ${dk ? 'text-slate-400' : 'text-[#6B7280]'}`}>
+                            {(lead.lead_source || '').replace(/_/g, ' ')}
+                            {lead.contact_phone ? ` · ${lead.contact_phone}` : ''}
+                          </p>
+                        </div>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${
+                          lead.lead_status === 'Contacted' ? 'bg-blue-50 text-blue-600' :
+                          lead.lead_status === 'Quoted'    ? 'bg-purple-50 text-purple-600' :
+                          'bg-amber-50 text-amber-600'}`}>
+                          {lead.lead_status}
+                        </span>
+                      </button>
+                    ))}
+                </>
+              )}
+            </div>
+
+            {/* Skip — blank estimate */}
+            <div className={`px-5 py-3 border-t ${dk ? 'border-[#334155]' : 'border-[#E8E2D9]'}`}>
+              <button onClick={() => createFromLead(undefined)}
+                className={`w-full flex items-center gap-2 py-2 text-sm transition-colors ${dk ? 'text-slate-400 hover:text-white' : 'text-[#6B7280] hover:text-[#0F766E]'}`}>
+                <User size={14} />
+                Skip — create blank estimate without a lead
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardShell>
   )
 }

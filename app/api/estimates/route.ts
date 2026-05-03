@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
 // Creates a blank draft estimate and returns it so the UI can redirect to /[id]
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const { pro_id, lead_id, lead_name, lead_source, trade, force_new, state } = body
+  const { pro_id, lead_id, lead_name, lead_source, trade, force_new, state, contact_phone, contact_email } = body
 
   if (!pro_id) return NextResponse.json({ error: 'pro_id required' }, { status: 400 })
 
@@ -85,6 +85,8 @@ export async function POST(req: NextRequest) {
       deposit_percent: 50,
       require_deposit: true,
       valid_until:     validUntil.toISOString(),
+      contact_phone:   contact_phone || null,
+      contact_email:   contact_email || null,
       terms:           'This estimate is valid for 14 days. Payment is due upon job completion. A 50% deposit is required to begin work.',
     })
     .select()

@@ -49,6 +49,9 @@ export async function PATCH(
     deposit_percent,
     terms,
     status,
+    notes,
+    contact_phone,
+    contact_email,
   } = body
 
   // Update estimate header
@@ -64,6 +67,9 @@ export async function PATCH(
       deposit_percent,
       terms,
       status,
+      notes,
+      contact_phone: contact_phone || undefined,
+      contact_email: contact_email || undefined,
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
@@ -95,6 +101,12 @@ export async function PATCH(
       .delete()
       .eq('estimate_id', id)
       .not('id', 'in', `(${incomingIds.join(',')})`)
+  }
+
+  // Sync lead.quoted_amount with estimate total
+  const { data: estimateData } = await sb.from('estimates').select('lead_id, total').eq('id', id).single()
+  if (estimateData?.lead_id && total !== undefined) {
+    await sb.from('leads').update({ quoted_amount: total }).eq('id', estimateData.lead_id)
   }
 
   return NextResponse.json({ ok: true })

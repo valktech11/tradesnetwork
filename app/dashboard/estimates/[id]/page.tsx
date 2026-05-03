@@ -2,7 +2,7 @@
 
 import React, { use, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Eye, Send, Save } from 'lucide-react'
+import { ArrowLeft, Send, Save, Phone, Mail, Link2, Check } from 'lucide-react'
 import DashboardShell from '@/components/layout/DashboardShell'
 import EstimateItems from '@/components/estimate/EstimateItems'
 import EstimateSummary from '@/components/estimate/EstimateSummary'
@@ -41,6 +41,8 @@ export type Estimate = {
   terms: string
   items: EstimateItem[]
   notes?: string
+  contact_phone?: string
+  contact_email?: string
   timeline: { event: string; label: string; timestamp: string | null }[]
 }
 
@@ -239,15 +241,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                       <span>Last edited {timeAgo(estimate.updated_at || estimate.created_at)}</span>
                     </div>
                   </div>
-                  {/* Top right: ··· Preview Send */}
                   <div className="flex items-start gap-2 shrink-0">
-                    <button className={`p-2 rounded-lg border transition-colors ${dk ? 'border-[#334155] text-slate-400 hover:border-[#0F766E]' : 'border-[#E8E2D9] text-gray-500 hover:border-[#0F766E]'}`}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-                    </button>
-                    <button className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${dk ? 'border-[#334155] text-slate-300 hover:border-[#0F766E] hover:text-[#0F766E]' : 'border-[#E8E2D9] text-gray-600 hover:border-[#0F766E] hover:text-[#0F766E]'}`}>
-                      <Eye size={15} />
-                      Preview
-                    </button>
                     <button
                       onClick={async () => { await handleSave(); setEstimate(prev => prev ? { ...prev, status: 'sent' } : prev) }}
                       disabled={saving}
@@ -258,16 +252,19 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                   </div>
                 </div>
 
-                {/* Row 4: Lead Source | Created | Valid Until — 3 columns */}
-                <div className={`flex items-center gap-8 mt-5 pt-5 border-t flex-wrap ${dk ? 'border-[#334155]' : 'border-[#E8E2D9]'}`}>
+                {/* Row 4: Lead Source | Created | Valid Until — pipe separated, exact reference */}
+                <div className={`flex items-stretch gap-0 mt-5 pt-5 border-t ${dk ? 'border-[#334155]' : 'border-[#E8E2D9]'}`}>
                   {[
-                    { label: 'Lead Source', value: estimate.lead_source || '—', color: '' },
-                    { label: 'Created',     value: new Date(estimate.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), color: '' },
-                    { label: 'Valid Until', value: new Date(estimate.valid_until).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), color: 'text-amber-500' },
-                  ].map(({ label, value, color }) => (
-                    <div key={label}>
-                      <p className={`text-xs font-medium mb-0.5 ${muted}`}>{label}</p>
-                      <p className={`text-sm font-semibold ${color || (dk ? 'text-white' : 'text-gray-900')}`}>{value}</p>
+                    { label: 'Lead Source', value: estimate.lead_source || '—', amber: false },
+                    { label: 'Created',     value: new Date(estimate.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), amber: false },
+                    { label: 'Valid Until', value: new Date(estimate.valid_until).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), amber: true },
+                  ].map(({ label, value, amber }, i) => (
+                    <div key={label} className="flex items-stretch">
+                      {i > 0 && <div className={`w-px mx-6 ${dk ? 'bg-[#334155]' : 'bg-[#E8E2D9]'}`} />}
+                      <div>
+                        <p className={`text-xs font-medium mb-1 ${muted}`}>{label}</p>
+                        <p className={`text-sm font-bold ${amber ? 'text-amber-500' : (dk ? 'text-white' : 'text-gray-900')}`}>{value}</p>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -398,22 +395,26 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                     <p className={`text-xs font-semibold uppercase tracking-widest mb-3 ${muted}`}>Client Actions</p>
                     <div className="flex items-center gap-3 flex-wrap">
                       <button
-                        title="Opens a public client-facing preview page (v76)"
+                        onClick={() => {
+                          const url = `${window.location.origin}/estimate/${id}`
+                          navigator.clipboard.writeText(url)
+                          setSaveMsg('Link copied ✓')
+                        }}
                         className={`flex items-center gap-2 text-sm px-4 py-2 rounded-lg border transition-colors ${dk ? 'border-[#334155] text-slate-300 hover:border-[#0F766E] hover:text-[#0F766E]' : 'border-[#E8E2D9] text-[#374151] hover:border-[#0F766E] hover:text-[#0F766E]'}`}>
-                        <Eye size={14} /> View Estimate
+                        <Link2 size={14} /> View Estimate
                       </button>
                       <button
                         title="PDF generation coming in v76"
-                        className={`flex items-center gap-2 text-sm px-4 py-2 rounded-lg border transition-colors opacity-50 cursor-not-allowed ${dk ? 'border-[#334155] text-slate-300' : 'border-[#E8E2D9] text-[#374151]'}`}>
+                        className={`flex items-center gap-2 text-sm px-4 py-2 rounded-lg border opacity-40 cursor-not-allowed ${dk ? 'border-[#334155] text-slate-300' : 'border-[#E8E2D9] text-[#374151]'}`}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Download PDF <span className="text-[10px] ml-1 opacity-60">v76</span>
+                        Download PDF <span className="text-[10px] ml-1">v76</span>
                       </button>
                       <button
                         onClick={async () => {
                           if (!estimate) return
                           await fetch(`/api/estimates/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...estimate, status: 'sent' }) })
                           setEstimate(prev => prev ? { ...prev, status: 'sent' } : prev)
-                          setSaveMsg('Marked as sent')
+                          setSaveMsg('Marked as sent ✓')
                         }}
                         className={`flex items-center gap-2 text-sm px-4 py-2 rounded-lg border transition-colors ${dk ? 'border-[#334155] text-slate-300 hover:border-[#0F766E] hover:text-[#0F766E]' : 'border-[#E8E2D9] text-[#374151] hover:border-[#0F766E] hover:text-[#0F766E]'}`}>
                         <Send size={14} /> Mark as Sent
@@ -425,8 +426,20 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                 {/* Right sidebar */}
                 <div className="w-[340px] shrink-0 space-y-5">
                   <EstimateSummary estimate={estimate} darkMode={dk} />
-                  <PaymentPanel estimate={estimate} setEstimate={setEstimate} darkMode={dk} />
-                  <ApprovalTimeline timeline={estimate.timeline} darkMode={dk} />
+                  <PaymentPanel
+                    estimate={estimate}
+                    setEstimate={setEstimate}
+                    darkMode={dk}
+                    onAction={msg => { setSaveMsg(msg); setTimeout(() => setSaveMsg(null), 4000) }}
+                  />
+                  <ApprovalTimeline
+                    timeline={estimate.timeline}
+                    darkMode={dk}
+                    estimateId={estimate.id}
+                    contactPhone={estimate.contact_phone}
+                    contactEmail={estimate.contact_email}
+                    onAction={msg => { setSaveMsg(msg); setTimeout(() => setSaveMsg(null), 4000) }}
+                  />
                 </div>
               </div>
             </>

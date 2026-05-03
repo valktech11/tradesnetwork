@@ -117,7 +117,9 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
   const [composerText, setComposerText] = useState('')
   const [savingNote, setSavingNote] = useState(false)
 
-  const [toasts, setToasts] = useState<ToastItem[]>([])
+  const [toasts,       setToasts]       = useState<ToastItem[]>([])
+  const [leadEstimate, setLeadEstimate] = useState<{ id: string; estimate_number: string; total: number } | null>(null)
+  const [creatingEst,  setCreatingEst]  = useState(false)
   const [toastSeq, setToastSeq] = useState(0)
 
   useEffect(() => {
@@ -282,6 +284,29 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
   const [avBg, avFg] = lead ? avatarColor(lead.contact_name) : ['#E1F5EE', '#0F6E56']
   const locationStr = [lead?.contact_city, lead?.contact_state].filter(Boolean).join(', ') || null
 
+  const createEstimate = async () => {
+    if (!lead || !session || creatingEst) return
+    setCreatingEst(true)
+    try {
+      const r = await fetch('/api/estimates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pro_id:        session.id,
+          lead_id:       lead.id,
+          lead_name:     lead.contact_name,
+          lead_source:   lead.lead_source || '',
+          trade:         session.trade || '',
+          state:         session.state || '',
+          contact_phone: lead.contact_phone || '',
+          contact_email: lead.contact_email || '',
+        }),
+      })
+      const d = await r.json()
+      if (d.estimate?.id) router.push(`/dashboard/estimates/${d.estimate.id}`)
+    } catch { setCreatingEst(false) }
+  }
+
   return (
     <DashboardShell session={session} newLeads={0} onAddLead={() => {}} darkMode={dk} onToggleDark={() => { const n = !dk; setDk(n); localStorage.setItem('pg_darkmode', n ? '1' : '0') }}>
       <div style={{ background: bg, minHeight: '100vh', padding: '20px 24px', paddingBottom: 60 }}>
@@ -360,7 +385,19 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                   </div>
                   <div>
                     <label style={{ fontSize: 12, color: ts, display: 'block', marginBottom: 5 }}>Estimated value</label>
-                    <input type="number" value={dQuote} onChange={e => setDQuote(e.target.value)} placeholder="0.00" style={inputStyle} />
+                    {leadEstimate ? (
+                      <div>
+                        <div style={{ ...inputStyle, background: dk ? '#0f172a' : '#f9fafb', color: '#0F766E', fontWeight: 600, cursor: 'default' }}>
+                          ${leadEstimate.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        </div>
+                        <button onClick={() => router.push(`/dashboard/estimates/${leadEstimate.id}`)}
+                          style={{ fontSize: 11, color: '#0F766E', background: 'none', border: 'none', cursor: 'pointer', padding: '3px 0', textDecoration: 'underline' }}>
+                          From estimate #{leadEstimate.estimate_number} →
+                        </button>
+                      </div>
+                    ) : (
+                      <input type="number" value={dQuote} onChange={e => setDQuote(e.target.value)} placeholder="0.00" style={inputStyle} />
+                    )}
                   </div>
                   <div>
                     <label style={{ fontSize: 12, color: ts, display: 'block', marginBottom: 5 }}>Lead status</label>
@@ -514,10 +551,26 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                   <div style={{ fontSize: 14, color: dk ? '#A5B4FC' : '#6D6494' }}>{nbaData.sub}</div>
                 </div>
                 <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
-                  <button style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 18px', background: '#0F766E', color: 'white', border: 'none', borderRadius: 9, fontSize: 14, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                    <Ic color="white" size={14}><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></Ic>
-                    Call Now
-                  </button>
+                  {(currentStage === 'Contacted' || currentStage === 'Quoted') ? (
+                    leadEstimate ? (
+                      <button onClick={() => router.push(`/dashboard/estimates/${leadEstimate.id}`)}
+                        style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 18px', background: '#0F766E', color: 'white', border: 'none', borderRadius: 9, fontSize: 14, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        <Ic color="white" size={14}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6"/></Ic>
+                        View Estimate #{leadEstimate.estimate_number}
+                      </button>
+                    ) : (
+                      <button onClick={createEstimate} disabled={creatingEst}
+                        style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 18px', background: '#0F766E', color: 'white', border: 'none', borderRadius: 9, fontSize: 14, fontWeight: 500, cursor: creatingEst ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap', opacity: creatingEst ? 0.7 : 1 }}>
+                        <Ic color="white" size={14}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6"/></Ic>
+                        {creatingEst ? 'Creating...' : 'Create Estimate'}
+                      </button>
+                    )
+                  ) : (
+                    <button style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 18px', background: '#0F766E', color: 'white', border: 'none', borderRadius: 9, fontSize: 14, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                      <Ic color="white" size={14}><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></Ic>
+                      Call Now
+                    </button>
+                  )}
                   <button style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 18px', background: card, color: tp, border: `1px solid ${border}`, borderRadius: 9, fontSize: 14, cursor: 'pointer', whiteSpace: 'nowrap' }}>
                     <Ic color={tp} size={14}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></Ic>
                     Send Reminder SMS
