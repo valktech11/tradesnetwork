@@ -249,19 +249,16 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                     </div>
                   </div>
 
-                  {/* Col 2: Lead Source | Created | Valid Until — pipe separated, fixed width */}
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-0.5">
+                  {/* Col 2: Lead Source · Created · Valid Until — inline on mobile */}
+                  <div className="flex flex-wrap gap-x-5 gap-y-2">
                     {[
                       { label: 'Lead Source', value: estimate.lead_source || '—', amber: false },
                       { label: 'Created',     value: new Date(estimate.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), amber: false },
                       { label: 'Valid Until', value: new Date(estimate.valid_until).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), amber: true },
-                    ].map(({ label, value, amber }, i) => (
-                      <div key={label} className="flex items-stretch">
-                        {i > 0 && <div className={`w-px mx-4 self-stretch ${dk ? 'bg-[#334155]' : 'bg-[#E2E8F0]'}`} />}
-                        <div>
-                          <p className={`text-[10px] font-semibold uppercase tracking-wider leading-none ${muted}`}>{label}</p>
-                          <p className={`text-sm font-bold mt-1 ${amber ? 'text-amber-500' : (dk ? 'text-white' : 'text-gray-900')}`}>{value}</p>
-                        </div>
+                    ].map(({ label, value, amber }) => (
+                      <div key={label}>
+                        <p className={`text-[10px] font-semibold uppercase tracking-wider leading-none ${muted}`}>{label}</p>
+                        <p className={`text-sm font-bold mt-1 ${amber ? 'text-amber-500' : (dk ? 'text-white' : 'text-gray-900')}`}>{value}</p>
                       </div>
                     ))}
                   </div>
