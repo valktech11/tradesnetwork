@@ -291,28 +291,30 @@ export default function EstimateItems({
         </button>
       </div>
 
-      {/* ── Save time with templates nudge ── */}
-      <div style={{
-        marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '14px 18px', borderRadius: 12, border: `1px solid ${border}`, background: bgCard,
-      }}>
+      {/* ── Save as reusable job nudge — matches new reference ── */}
+      <button
+        onClick={onSaveTemplate}
+        style={{
+          marginTop: 16, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '14px 18px', borderRadius: 12, border: `1px solid ${border}`, background: bgCard,
+          cursor: 'pointer', textAlign: 'left',
+        }}
+        onMouseEnter={e => (e.currentTarget.style.borderColor = '#0F766E')}
+        onMouseLeave={e => (e.currentTarget.style.borderColor = border)}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ width: 36, height: 36, borderRadius: 8, background: dk ? '#0f172a' : '#f0f9ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <BookOpen size={17} color="#0F766E" />
           </div>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: col }}>Save time with templates</div>
-            <div style={{ fontSize: 12, color: colMuted, marginTop: 2 }}>Create reusable templates for your common jobs and send estimates in seconds.</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: col }}>Save this estimate as reusable job</div>
+            <div style={{ fontSize: 12, color: colMuted, marginTop: 2 }}>Use it again for similar jobs and save time.</div>
           </div>
         </div>
-        <button onClick={onOpenTemplatePicker}
-          style={{ flexShrink: 0, marginLeft: 16, padding: '7px 14px', fontSize: 13, fontWeight: 500, borderRadius: 8, border: `1px solid ${border}`, background: 'transparent', color: col, cursor: 'pointer', whiteSpace: 'nowrap' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#0F766E'; (e.currentTarget as HTMLButtonElement).style.color = '#0F766E' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = border; (e.currentTarget as HTMLButtonElement).style.color = col }}
-        >
-          Manage Templates
-        </button>
-      </div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colMuted} strokeWidth="2" style={{ flexShrink: 0, marginLeft: 12 }}>
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
     </div>
   )
 }

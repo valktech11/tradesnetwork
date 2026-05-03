@@ -66,7 +66,7 @@ export default function EstimatesPage() {
       const r = await fetch('/api/estimates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pro_id: session.id }),
+        body: JSON.stringify({ pro_id: session.id, state: session.state || '' }),
       })
       const d = await r.json()
       if (d.estimate?.id) {

@@ -35,14 +35,19 @@ export default function EstimateSummary({
           </div>
         )}
 
-        <div className="flex justify-between">
-          <span className={muted}>Tax ({estimate.tax_rate}%)</span>
+        <div className="flex justify-between items-start">
+          <div>
+            <span className={muted}>Tax ({estimate.tax_rate}%)</span>
+            {estimate.tax_rate > 0 && (
+              <p className="text-[10px] mt-0.5 text-amber-500">Base state rate — adjust for your county</p>
+            )}
+          </div>
           <span className="font-medium">{fmt(estimate.tax_amount)}</span>
         </div>
       </div>
 
       <div className={`border-t mt-4 pt-4 flex justify-between items-center ${divider}`}>
-        <span className="font-semibold">Total Estimate</span>
+        <span className="font-semibold">Total You'll Earn</span>
         <span className="text-2xl font-bold text-[#0F766E]">{fmt(estimate.total)}</span>
       </div>
 

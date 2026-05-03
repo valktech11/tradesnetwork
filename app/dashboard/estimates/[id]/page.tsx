@@ -29,6 +29,7 @@ export type Estimate = {
   trade: string
   job_description: string
   created_at: string
+  updated_at?: string
   valid_until: string
   subtotal: number
   discount: number
@@ -197,17 +198,11 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
             </button>
 
             <div className="flex items-center gap-3">
-              <button
-                onClick={async () => {
-                  await handleSave()
-                  setEstimate(prev => prev ? { ...prev, status: 'sent' } : prev)
-                }}
-                disabled={saving}
-                className="flex items-center gap-2 bg-gradient-to-r from-[#0F766E] to-[#0D9488] text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity disabled:opacity-60"
-              >
-                <Send size={15} />
-                Send & Get Paid Faster
-              </button>
+              {saveMsg && (
+                <span className={`text-sm font-medium ${saveMsg.includes('✓') ? 'text-teal-600' : 'text-red-500'}`}>
+                  {saveMsg}
+                </span>
+              )}
             </div>
           </div>
 
@@ -215,51 +210,66 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
             <EstimateSkeleton dk={dk} />
           ) : estimate ? (
             <>
-              {/* ── Estimate header card ── */}
+              {/* ── Estimate header card — matches new reference ── */}
               <div className={`rounded-xl border p-6 ${card}`}>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-3">
-                      <h1 className="text-2xl font-bold tracking-tight">
-                        Estimate #{estimate.estimate_number}
+                {/* Row 1: Lead name + actions */}
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    {/* Lead name is hero */}
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <h1 className={`text-2xl font-bold tracking-tight ${dk ? 'text-white' : 'text-gray-900'}`}>
+                        {estimate.lead_name}
                       </h1>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${STATUS_STYLES[estimate.status].bg} ${STATUS_STYLES[estimate.status].text}`}>
-                        {STATUS_STYLES[estimate.status].label}
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200">
+                        Lead
                       </span>
                     </div>
-
-                    {/* Client meta row */}
-                    <div className="flex items-center gap-6 mt-3 flex-wrap">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-full bg-teal-600 flex items-center justify-center text-white text-sm font-bold">
-                          {estimate.lead_name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="font-semibold text-sm">{estimate.lead_name}</p>
-                          <p className={`text-xs ${muted}`}>{estimate.trade}</p>
-                        </div>
-                      </div>
-
-                      <div className={`text-sm ${muted} flex items-center gap-1`}>
-                        <span className="font-medium text-gray-500 dark:text-slate-400">Lead Source</span>
-                        <span className={`ml-1 font-semibold ${dk ? 'text-white' : 'text-gray-800'}`}>{estimate.lead_source}</span>
-                      </div>
-
-                      <div className={`text-sm ${muted}`}>
-                        <span className="font-medium">Created</span>
-                        <span className={`ml-1 font-semibold ${dk ? 'text-white' : 'text-gray-800'}`}>
-                          {new Date(estimate.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                        </span>
-                      </div>
-
-                      <div className={`text-sm ${muted}`}>
-                        <span className="font-medium">Valid Until</span>
-                        <span className="ml-1 font-semibold text-amber-600">
-                          {new Date(estimate.valid_until).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                        </span>
-                      </div>
+                    {/* Row 2: Trade + location */}
+                    {estimate.trade && (
+                      <p className={`text-sm mt-1 ${muted}`}>{estimate.trade}</p>
+                    )}
+                    {/* Row 3: Estimate meta */}
+                    <div className={`flex items-center gap-2 mt-2 text-xs flex-wrap ${muted}`}>
+                      <span className="font-medium">Estimate #{estimate.estimate_number}</span>
+                      <span>•</span>
+                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${STATUS_STYLES[estimate.status].bg} ${STATUS_STYLES[estimate.status].text}`}>
+                        {STATUS_STYLES[estimate.status].label}
+                      </span>
+                      <span>•</span>
+                      <span>Last edited {timeAgo(estimate.updated_at || estimate.created_at)}</span>
                     </div>
                   </div>
+                  {/* Top right: ··· Preview Send */}
+                  <div className="flex items-start gap-2 shrink-0">
+                    <button className={`p-2 rounded-lg border transition-colors ${dk ? 'border-[#334155] text-slate-400 hover:border-[#0F766E]' : 'border-[#E8E2D9] text-gray-500 hover:border-[#0F766E]'}`}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                    </button>
+                    <button className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${dk ? 'border-[#334155] text-slate-300 hover:border-[#0F766E] hover:text-[#0F766E]' : 'border-[#E8E2D9] text-gray-600 hover:border-[#0F766E] hover:text-[#0F766E]'}`}>
+                      <Eye size={15} />
+                      Preview
+                    </button>
+                    <button
+                      onClick={async () => { await handleSave(); setEstimate(prev => prev ? { ...prev, status: 'sent' } : prev) }}
+                      disabled={saving}
+                      className="flex items-center gap-2 bg-gradient-to-r from-[#0F766E] to-[#0D9488] text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity disabled:opacity-60">
+                      <Send size={14} />
+                      Send Estimate
+                    </button>
+                  </div>
+                </div>
+
+                {/* Row 4: Lead Source | Created | Valid Until — 3 columns */}
+                <div className={`flex items-center gap-8 mt-5 pt-5 border-t flex-wrap ${dk ? 'border-[#334155]' : 'border-[#E8E2D9]'}`}>
+                  {[
+                    { label: 'Lead Source', value: estimate.lead_source || '—', color: '' },
+                    { label: 'Created',     value: new Date(estimate.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), color: '' },
+                    { label: 'Valid Until', value: new Date(estimate.valid_until).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), color: 'text-amber-500' },
+                  ].map(({ label, value, color }) => (
+                    <div key={label}>
+                      <p className={`text-xs font-medium mb-0.5 ${muted}`}>{label}</p>
+                      <p className={`text-sm font-semibold ${color || (dk ? 'text-white' : 'text-gray-900')}`}>{value}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -289,21 +299,12 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                       {/* Action buttons — right side of tab bar */}
                       {activeTab === 'items' && (
                         <div className="flex items-center gap-2 pr-4">
-                          {estimate.items.length > 0 && (
-                            <button onClick={() => setShowSaveTemplate(true)}
-                              className={`flex items-center gap-1.5 text-sm font-medium px-3.5 py-1.5 rounded-lg border transition-colors ${
-                                dk ? 'border-[#334155] text-slate-400 hover:border-[#0F766E] hover:text-[#0F766E]'
-                                   : 'border-[#E8E2D9] text-[#6B7280] hover:border-[#0F766E] hover:text-[#0F766E]'}`}>
-                              <Save size={13} />
-                              Save as Template
-                            </button>
-                          )}
                           <button onClick={openTemplatePicker}
                             className={`flex items-center gap-1.5 text-sm font-medium px-3.5 py-1.5 rounded-lg border transition-colors ${
                               dk ? 'border-[#334155] text-slate-400 hover:border-[#0F766E] hover:text-[#0F766E]'
                                  : 'border-[#E8E2D9] text-[#6B7280] hover:border-[#0F766E] hover:text-[#0F766E]'}`}>
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-                            Add from Template
+                            Use Previous Job
                           </button>
                         </div>
                       )}
@@ -443,7 +444,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
           <div className={`w-full max-w-md rounded-2xl shadow-2xl overflow-hidden ${dk ? 'bg-[#1E293B]' : 'bg-white'}`}
             onClick={e => e.stopPropagation()}>
             <div className={`flex items-center justify-between px-5 py-4 border-b ${dk ? 'border-[#334155]' : 'border-[#E8E2D9]'}`}>
-              <h3 className={`font-semibold ${dk ? 'text-white' : 'text-gray-900'}`}>Add from Template</h3>
+              <h3 className={`font-semibold ${dk ? 'text-white' : 'text-gray-900'}`}>Use Previous Job</h3>
               <button onClick={() => setShowTemplatePicker(false)} className={muted}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             </div>
             <div className="max-h-80 overflow-y-auto">
@@ -558,6 +559,17 @@ function NotesTab({ estimate, setEstimate, darkMode }: {
       </div>
     </div>
   )
+}
+
+function timeAgo(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins} min${mins > 1 ? 's' : ''} ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs} hr${hrs > 1 ? 's' : ''} ago`
+  const days = Math.floor(hrs / 24)
+  return `${days} day${days > 1 ? 's' : ''} ago`
 }
 
 function EstimateSkeleton({ dk }: { dk: boolean }) {

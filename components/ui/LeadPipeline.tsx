@@ -233,6 +233,7 @@ function LeadCard({ lead, stage, onOpen }: {
           lead_name:   lead.contact_name,
           lead_source: lead.lead_source || '',
           trade:       session.trade    || '',
+          state:       session.state    || '',
         }),
       })
       const d = await r.json()
@@ -264,6 +265,7 @@ function LeadCard({ lead, stage, onOpen }: {
           lead_name:   lead.contact_name,
           lead_source: lead.lead_source || '',
           trade:       session.trade    || '',
+          state:       session.state    || '',
           force_new:   true,
         }),
       })
