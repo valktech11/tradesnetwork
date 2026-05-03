@@ -2,12 +2,11 @@
 
 import React, { use, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Send, Save, Phone, Mail, Link2, Check } from 'lucide-react'
+import { ArrowLeft, Send, Save, Check } from 'lucide-react'
 import DashboardShell from '@/components/layout/DashboardShell'
 import EstimateItems from '@/components/estimate/EstimateItems'
 import EstimateSummary from '@/components/estimate/EstimateSummary'
 import PaymentPanel from '@/components/estimate/PaymentPanel'
-import ApprovalTimeline from '@/components/estimate/ApprovalTimeline'
 import SmartNudges from '@/components/estimate/SmartNudges'
 import EstimateProgressBar from '@/components/estimate/EstimateProgressBar'
 import { Session } from '@/types'
@@ -79,6 +78,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState<string | null>(null)
+  const [isDirty, setIsDirty] = useState(false)
   const [creatingInvoice, setCreatingInvoice] = useState(false)
   const [activeTab, setActiveTab] = useState<'items' | 'notes'>('items')
   const [showTemplatePicker, setShowTemplatePicker] = useState(false)
@@ -104,6 +104,12 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
         setLoading(false)
       })
   }, [id, session, router])
+
+  // Wrap setEstimate for user edits — marks form dirty
+  const setEstimateDirty: typeof setEstimate = (val) => {
+    setEstimate(val)
+    setIsDirty(true)
+  }
 
   const handleCreateInvoice = async () => {
     if (!estimate || !session || creatingInvoice) return
@@ -158,6 +164,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
         setSaveMsg(err.error || 'Save failed — check DB')
       } else {
         setSaveMsg('Saved ✓')
+        setIsDirty(false)
       }
     } catch {
       setSaveMsg('Network error')
@@ -252,43 +259,32 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
             <EstimateSkeleton dk={dk} />
           ) : estimate ? (
             <>
-              {/* ── Estimate header — matches reference exactly ── */}
+              {/* ── Estimate header ── */}
               <div className={`rounded-xl border px-6 py-5 ${card}`}>
-                {/* Single row: [name+meta left] [source columns] [send button right] */}
                 <div className="flex flex-col xl:flex-row xl:items-start xl:gap-6 gap-3">
-
-                  {/* Col 1: name / trade / estimate# — grows on desktop */}
+                  {/* Col 1: Name H1 + EST# line 2 */}
                   <div className="xl:flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       {estimate.lead_id ? (
-                        <button
-                          onClick={() => router.push(`/dashboard/pipeline/${estimate.lead_id}`)}
-                          className={`text-xl font-bold leading-tight hover:text-[#0F766E] transition-colors text-left ${dk ? 'text-white' : 'text-gray-900'}`}
-                          title="View lead details">
+                        <button onClick={() => router.push(`/dashboard/pipeline/${estimate.lead_id}`)}
+                          className={`text-[22px] font-bold leading-tight hover:text-[#0F766E] transition-colors text-left ${dk ? 'text-white' : 'text-gray-900'}`}>
                           {estimate.lead_name}
                         </button>
                       ) : (
-                        <h1 className={`text-xl font-bold leading-tight ${dk ? 'text-white' : 'text-gray-900'}`}>
-                          {estimate.lead_name}
-                        </h1>
+                        <h1 className={`text-[22px] font-bold leading-tight ${dk ? 'text-white' : 'text-gray-900'}`}>{estimate.lead_name}</h1>
                       )}
-                      <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-teal-50 text-teal-700 border border-teal-100 shrink-0">
-                        Lead
-                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-teal-50 text-teal-700 border border-teal-100 shrink-0">Lead</span>
                     </div>
-                    {estimate.trade && (
-                      <p className={`text-sm mt-0.5 ${muted}`}>{estimate.trade}</p>
-                    )}
-                    <div className={`flex items-center gap-1.5 mt-0.5 text-xs ${muted}`}>
-                      <span>Estimate #{estimate.estimate_number}</span>
-                      <span>·</span>
-                      <span className={`font-medium ${STATUS_STYLES[estimate.status].text}`}>{STATUS_STYLES[estimate.status].label}</span>
-                      <span>·</span>
-                      <span>Last edited {timeAgo(estimate.updated_at || estimate.created_at)}</span>
+                    <div className="flex items-center gap-1.5 mt-1.5 flex-wrap" style={{ fontSize: 13 }}>
+                      <span style={{ fontWeight: 600, color: dk ? '#CBD5E1' : '#374151' }}>#{estimate.estimate_number}</span>
+                      <span style={{ opacity: 0.35 }}>·</span>
+                      <span className={`font-semibold ${STATUS_STYLES[estimate.status].text}`}>{STATUS_STYLES[estimate.status].label}</span>
+                      {estimate.trade && <><span style={{ opacity: 0.35 }}>·</span><span style={{ color: dk ? '#94A3B8' : '#6B7280' }}>{estimate.trade}</span></>}
+                      <span style={{ opacity: 0.35 }}>·</span>
+                      <span style={{ fontSize: 12, color: dk ? '#64748B' : '#9CA3AF' }}>Last edited {timeAgo(estimate.updated_at || estimate.created_at)}</span>
                     </div>
                   </div>
-
-                  {/* Col 2: Lead Source | Created | Valid Until — pipes on desktop, stacked on mobile */}
+                  {/* Col 2: Lead Source | Created | Valid Until */}
                   <div className="flex flex-col gap-2 xl:flex-row xl:items-center xl:gap-0">
                     {[
                       { label: 'Lead Source', value: estimate.lead_source || '—', amber: false },
@@ -296,7 +292,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                       { label: 'Valid Until', value: new Date(estimate.valid_until).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), amber: true },
                     ].map(({ label, value, amber }, i) => (
                       <div key={label} className="flex items-center gap-0">
-                        {i > 0 && <span className="hidden xl:block mx-5 text-gray-300 select-none" style={{ color: dk ? '#334155' : '#D1D5DB' }}>|</span>}
+                        {i > 0 && <span className="hidden xl:block mx-5 select-none" style={{ color: dk ? '#334155' : '#D1D5DB' }}>|</span>}
                         <div>
                           <p className={`text-[10px] font-semibold uppercase tracking-wider leading-none ${muted}`}>{label}</p>
                           <p className={`text-sm font-bold mt-1 ${amber ? 'text-amber-500' : (dk ? 'text-white' : 'text-gray-900')}`}>{value}</p>
@@ -304,16 +300,35 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                       </div>
                     ))}
                   </div>
-
-                  {/* Col 3: Send button — right-anchored on desktop */}
-                  <div className="flex flex-col items-start xl:items-end gap-1 xl:shrink-0 xl:ml-auto">
-                    <button
-                      onClick={async () => { await handleSave(); setEstimate(prev => prev ? { ...prev, status: 'sent' } : prev) }}
-                      disabled={saving}
-                      className="flex items-center gap-2 bg-gradient-to-r from-[#0F766E] to-[#0D9488] text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity disabled:opacity-60 whitespace-nowrap">
-                      <Send size={14} />
-                      Send Estimate
-                    </button>
+                  {/* Col 3: Preview + dynamic primary CTA */}
+                  <div className="flex flex-col items-start xl:items-end gap-2 xl:shrink-0 xl:ml-auto">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => window.open(`${window.location.origin}/estimate/${id}`, '_blank')}
+                        style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, fontSize: 13, fontWeight: 500, border: `1.5px solid ${t.inputBorder}`, background: 'transparent', color: t.textBody, cursor: 'pointer' }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = '#0F766E'; e.currentTarget.style.color = '#0F766E' }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = t.inputBorder; e.currentTarget.style.color = t.textBody }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        Preview
+                      </button>
+                      {(estimate.status === 'approved' || estimate.status === 'invoiced') ? (
+                        <button onClick={handleCreateInvoice} disabled={creatingInvoice}
+                          className="flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60 whitespace-nowrap"
+                          style={{ background: 'linear-gradient(135deg, #0F766E, #0D9488)' }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                          {creatingInvoice ? 'Creating...' : estimate.invoice_id ? 'View Invoice' : 'Create Invoice'}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={async () => { await handleSave(); setEstimate(prev => prev ? { ...prev, status: 'sent' } : prev) }}
+                          disabled={saving}
+                          className="flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60 whitespace-nowrap"
+                          style={{ background: 'linear-gradient(135deg, #0F766E, #0D9488)' }}>
+                          <Send size={14} />
+                          Send Estimate
+                        </button>
+                      )}
+                    </div>
                     <p className={`text-[11px] text-right ${muted}`}>Client can approve &amp; pay instantly</p>
                   </div>
                 </div>
@@ -374,7 +389,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                       {activeTab === 'items' ? (
                         <EstimateItems
                           estimate={estimate}
-                          setEstimate={setEstimate}
+                          setEstimate={setEstimateDirty}
                           darkMode={dk}
                           onOpenTemplatePicker={openTemplatePicker}
                           onSaveTemplate={() => setShowSaveTemplate(true)}
@@ -385,53 +400,53 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                     </div>
                   </div>
 
-                  {/* ── Save Changes bar ── */}
-                  {activeTab === 'items' && (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, padding: '12px 16px', borderRadius: 12, border: `1px solid ${t.cardBorder}`, background: t.cardBg }}>
-                      <div>
+                  {/* ── Dirty-state Save bar — only shown when there are unsaved changes ── */}
+                  {activeTab === 'items' && isDirty && (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, padding: '11px 16px', borderRadius: 12, border: `1.5px solid #F59E0B`, background: dk ? 'rgba(245,158,11,0.08)' : '#FFFBEB' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#F59E0B', display: 'inline-block', flexShrink: 0 }} />
                         {saveMsg ? (
-                          <span style={{ fontSize: 13, fontWeight: 500, color: saveMsg.includes('✓') ? '#0F766E' : '#EF4444' }}>
-                            {saveMsg}
-                          </span>
+                          <span style={{ fontSize: 13, fontWeight: 500, color: saveMsg.includes('✓') ? '#0F766E' : '#EF4444' }}>{saveMsg}</span>
                         ) : (
-                          <span style={{ fontSize: 13, color: t.textMuted }}>Changes are saved to draft — send when ready</span>
+                          <span style={{ fontSize: 13, color: dk ? '#FCD34D' : '#92400E' }}>You have unsaved changes</span>
                         )}
                       </div>
-                      <button
-                        onClick={handleSave}
-                        disabled={saving}
-                        style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600, border: `1.5px solid ${t.inputBorder}`, background: t.cardBg, color: t.textBody, cursor: 'pointer', opacity: saving ? 0.6 : 1 }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = '#0F766E'; e.currentTarget.style.color = '#0F766E' }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = t.inputBorder; e.currentTarget.style.color = t.textBody }}
-                      >
-                        <Save size={14} />
-                        {saving ? 'Saving...' : 'Save Changes'}
-                      </button>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <button onClick={() => setShowSaveTemplate(true)}
+                          style={{ fontSize: 12, color: dk ? '#94A3B8' : '#6B7280', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textDecorationColor: 'transparent' }}
+                          onMouseEnter={e => (e.currentTarget.style.textDecorationColor = 'currentColor')}
+                          onMouseLeave={e => (e.currentTarget.style.textDecorationColor = 'transparent')}>
+                          Save as template
+                        </button>
+                        <button
+                          onClick={handleSave}
+                          disabled={saving}
+                          style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 18px', borderRadius: 8, fontSize: 13, fontWeight: 600, border: 'none', background: '#0F766E', color: '#fff', cursor: 'pointer', opacity: saving ? 0.6 : 1 }}>
+                          <Save size={13} />
+                          {saving ? 'Saving...' : 'Save Changes'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {/* Post-save confirmation — shown briefly after save */}
+                  {activeTab === 'items' && !isDirty && saveMsg && saveMsg.includes('✓') && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 12, border: `1px solid #99F6E4`, background: dk ? 'rgba(15,118,110,0.1)' : '#F0FDFA' }}>
+                      <Check size={14} color="#0F766E" />
+                      <span style={{ fontSize: 13, color: '#0F766E', fontWeight: 500 }}>{saveMsg}</span>
                     </div>
                   )}
 
-                  {/* ── Save as reusable job nudge ── */}
-                  {activeTab === 'items' && (
-                    <button onClick={() => setShowSaveTemplate(true)}
-                      style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: 12, border: `1px solid ${t.cardBorder}`, background: t.cardBg, cursor: 'pointer', textAlign: 'left', maxWidth: '100%' }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#0F766E' }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = t.cardBorder }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ width: 36, height: 36, borderRadius: 8, background: t.cardBgAlt, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2">
-                            <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
-                          </svg>
-                        </div>
-                        <div>
-                          <p style={{ fontSize: 13, fontWeight: 600, color: t.textPri }}>Save this estimate as reusable job</p>
-                          <p style={{ fontSize: 12, marginTop: 2, color: t.textMuted }}>Use it again for similar jobs and save time.</p>
-                        </div>
-                      </div>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={t.textMuted} strokeWidth="2" style={{ flexShrink: 0, marginLeft: 12 }}>
-                        <polyline points="9 18 15 12 9 6"/>
-                      </svg>
-                    </button>
+                  {/* ── Save as template — slim text link ── */}
+                  {activeTab === 'items' && !isDirty && (
+                    <div style={{ textAlign: 'center', padding: '2px 0 4px' }}>
+                      <button onClick={() => setShowSaveTemplate(true)}
+                        style={{ fontSize: 12, color: t.textSubtle, background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}
+                        onMouseEnter={e => (e.currentTarget.style.color = '#0F766E')}
+                        onMouseLeave={e => (e.currentTarget.style.color = t.textSubtle)}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                        Save as reusable template
+                      </button>
+                    </div>
                   )}
 
                   {/* ── Terms & Conditions — editable ── */}
@@ -475,85 +490,54 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                     )}
                   </div>
 
-                  {/* ── Client Actions footer ── */}
-                  <div style={{ borderRadius: 12, border: `1px solid ${t.cardBorder}`, background: t.cardBg, padding: '16px 20px' }}>
-                    <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: t.textMuted, marginBottom: 14 }}>Client Actions</p>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-
-                      {/* Primary: View Estimate */}
-                      <button
-                        onClick={() => window.open(`${window.location.origin}/estimate/${id}`, '_blank')}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13, fontWeight: 600, padding: '9px 16px', borderRadius: 8, background: 'linear-gradient(135deg, #0F766E, #0D9488)', color: '#fff', border: 'none', cursor: 'pointer', flex: '1 1 auto' }}>
-                        <Link2 size={14} /> View Estimate
-                      </button>
-
-                      {/* Secondary: Download PDF */}
+                  {/* ── Secondary actions — slim row ── */}
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {/* Download PDF */}
+                    <button
+                      onClick={async () => {
+                        if (!estimate || estimate.id === 'mock-1') { setSaveMsg('Save estimate to DB first'); setTimeout(() => setSaveMsg(null), 3000); return }
+                        setSaveMsg('Generating PDF...')
+                        try {
+                          const r = await fetch(`/api/estimates/pdf?id=${id}`)
+                          if (!r.ok) throw new Error('PDF failed')
+                          const blob = await r.blob()
+                          const url = URL.createObjectURL(blob)
+                          const a = document.createElement('a')
+                          a.href = url; a.download = `Estimate-${estimate.estimate_number}.pdf`; a.click()
+                          URL.revokeObjectURL(url)
+                          setSaveMsg('PDF downloaded ✓')
+                        } catch { setSaveMsg('PDF generation failed') }
+                        setTimeout(() => setSaveMsg(null), 4000)
+                      }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, fontSize: 13, fontWeight: 500, border: `1.5px solid ${t.inputBorder}`, background: 'transparent', color: t.textBody, cursor: 'pointer' }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#0F766E'; e.currentTarget.style.color = '#0F766E' }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = t.inputBorder; e.currentTarget.style.color = t.textBody }}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      Download PDF
+                    </button>
+                    {/* Mark as Sent / Sent state */}
+                    {['sent','viewed','approved','invoiced','paid'].includes(estimate.status) ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, fontSize: 13, fontWeight: 500, color: '#0F766E', background: '#F0FDFA', border: '1px solid #99F6E4' }}>
+                        <Check size={13} /> Marked as Sent
+                      </div>
+                    ) : (
                       <button
                         onClick={async () => {
-                          if (!estimate || estimate.id === 'mock-1') {
-                            setSaveMsg('Save estimate to DB first')
-                            setTimeout(() => setSaveMsg(null), 3000)
-                            return
-                          }
-                          setSaveMsg('Generating PDF...')
-                          try {
-                            const r = await fetch(`/api/estimates/pdf?id=${id}`)
-                            if (!r.ok) throw new Error('PDF failed')
-                            const blob = await r.blob()
-                            const url = URL.createObjectURL(blob)
-                            const a = document.createElement('a')
-                            a.href = url
-                            a.download = `Estimate-${estimate.estimate_number}.pdf`
-                            a.click()
-                            URL.revokeObjectURL(url)
-                            setSaveMsg('PDF downloaded ✓')
-                          } catch {
-                            setSaveMsg('PDF generation failed')
-                          }
-                          setTimeout(() => setSaveMsg(null), 4000)
+                          if (!estimate) return
+                          const sentAt = new Date().toISOString()
+                          await fetch(`/api/estimates/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...estimate, status: 'sent', sent_at: sentAt }) })
+                          setEstimate(prev => {
+                            if (!prev) return prev
+                            return { ...prev, status: 'sent', timeline: prev.timeline.map(tl => tl.event === 'sent' ? { ...tl, timestamp: sentAt } : tl) }
+                          })
+                          setSaveMsg('Marked as sent ✓'); setTimeout(() => setSaveMsg(null), 3000)
                         }}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13, fontWeight: 600, padding: '9px 16px', borderRadius: 8, border: `2px solid #0F766E`, background: 'transparent', color: '#0F766E', cursor: 'pointer', flex: '1 1 auto' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = dk ? 'rgba(15,118,110,0.1)' : '#F0FDFA' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Download PDF
+                        style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, fontSize: 13, fontWeight: 500, border: `1.5px solid ${t.inputBorder}`, background: 'transparent', color: t.textBody, cursor: 'pointer' }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = '#0F766E'; e.currentTarget.style.color = '#0F766E' }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = t.inputBorder; e.currentTarget.style.color = t.textBody }}>
+                        <Send size={13} /> Mark as Sent
                       </button>
-
-                      {/* Tertiary: Mark as Sent */}
-                      {estimate.status === 'sent' || estimate.status === 'viewed' || estimate.status === 'approved' || estimate.status === 'paid' ? (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13, fontWeight: 500, color: '#0F766E', padding: '9px 16px', borderRadius: 8, background: '#F0FDFA', border: '1px solid #99F6E4', flex: '1 1 auto' }}>
-                          <Check size={14} /> Marked as Sent
-                        </div>
-                      ) : (
-                        <button
-                          onClick={async () => {
-                            if (!estimate) return
-                            const sentAt = new Date().toISOString()
-                            await fetch(`/api/estimates/${id}`, {
-                              method: 'PATCH',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ ...estimate, status: 'sent', sent_at: sentAt }),
-                            })
-                            setEstimate(prev => {
-                              if (!prev) return prev
-                              const updatedTimeline = prev.timeline.map(t =>
-                                t.event === 'sent' ? { ...t, timestamp: sentAt } : t
-                              )
-                              return { ...prev, status: 'sent', timeline: updatedTimeline }
-                            })
-                            setSaveMsg('Marked as sent ✓')
-                            setTimeout(() => setSaveMsg(null), 3000)
-                          }}
-                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13, fontWeight: 500, padding: '9px 16px', borderRadius: 8, border: `1.5px solid ${t.btnBorder}`, background: 'transparent', color: t.btnText, cursor: 'pointer', flex: '1 1 auto' }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = '#0F766E'; e.currentTarget.style.color = '#0F766E' }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor = t.btnBorder; e.currentTarget.style.color = t.btnText }}
-                        >
-                          <Send size={14} /> Mark as Sent
-                        </button>
-                      )}
-
-                    </div>
+                    )}
                   </div>
                 </div>
 
@@ -564,14 +548,6 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                     estimate={estimate}
                     setEstimate={setEstimate}
                     darkMode={dk}
-                    onAction={msg => { setSaveMsg(msg); setTimeout(() => setSaveMsg(null), 4000) }}
-                  />
-                  <ApprovalTimeline
-                    timeline={estimate.timeline}
-                    darkMode={dk}
-                    estimateId={estimate.id}
-                    contactPhone={estimate.contact_phone}
-                    contactEmail={estimate.contact_email}
                     onAction={msg => { setSaveMsg(msg); setTimeout(() => setSaveMsg(null), 4000) }}
                   />
                 </div>

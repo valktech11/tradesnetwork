@@ -37,8 +37,8 @@ export default function PaymentPanel({ estimate, setEstimate, darkMode, onAction
   return (
     <div style={{ borderRadius: 12, border: `1px solid ${t.cardBorder}`, background: t.cardBg, padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h3 style={{ fontSize: 13, fontWeight: 600, color: t.textPri }}>Get Paid Faster</h3>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <h3 style={{ fontSize: 13, fontWeight: 600, color: t.textPri }}>Deposit</h3>
         <span style={{ fontSize: 11, fontWeight: 600, background: '#F3E8FF', color: '#7C3AED', padding: '2px 8px', borderRadius: 20 }}>Recommended</span>
       </div>
 
@@ -87,16 +87,6 @@ export default function PaymentPanel({ estimate, setEstimate, darkMode, onAction
         style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'linear-gradient(135deg, #0F766E, #0D9488)', color: '#fff', padding: '10px', borderRadius: 8, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
         <CreditCard size={14} />
         Request Deposit
-      </button>
-
-      {/* Send with Payment Link */}
-      <button onClick={copyPaymentLink}
-        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '10px', borderRadius: 8, fontSize: 13, fontWeight: 500, border: `1.5px solid ${t.inputBorder}`, background: 'transparent', color: t.textMuted, cursor: 'pointer' }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = '#0F766E'; e.currentTarget.style.color = '#0F766E' }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = t.inputBorder; e.currentTarget.style.color = t.textMuted }}
-      >
-        <Link2 size={14} />
-        Send with Payment Link
       </button>
 
       {!estimate.contact_email && (

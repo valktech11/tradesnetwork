@@ -1,7 +1,7 @@
 'use client'
 
 import { Dispatch, SetStateAction, useState } from 'react'
-import { Plus, Pencil, Copy, Trash2, GripVertical } from 'lucide-react'
+import { Plus, Pencil, Trash2, GripVertical } from 'lucide-react'
 import { Estimate, EstimateItem } from '@/app/dashboard/estimates/[id]/page'
 
 function uid() {
@@ -326,16 +326,14 @@ export default function EstimateItems({
                   {rowAmount > 0 ? money(rowAmount) : <span style={{ color: colMuted }}>—</span>}
                 </div>
 
-                {/* Action buttons — always visible, clear styling */}
+                {/* Action buttons — pencil + trash only */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 5 }}>
                   {([
                     { icon: <Pencil size={14} />, action: () => isEditing ? cancelEdit() : startEdit(item), title: 'Edit',
-                      bg: isEditing ? '#0F766E' : bgInput, fg: isEditing ? '#fff' : '#374151',
+                      bg: isEditing ? '#0F766E' : bgInput, fg: isEditing ? '#fff' : colBody,
                       hoverBg: '#0F766E', hoverFg: '#fff', bd: isEditing ? '#0F766E' : border },
-                    { icon: <Copy size={14} />, action: () => duplicate(item), title: 'Duplicate',
-                      bg: bgInput, fg: '#374151', hoverBg: '#0F766E', hoverFg: '#fff', bd: border },
                     { icon: <Trash2 size={14} />, action: () => remove(item.id), title: 'Delete',
-                      bg: bgInput, fg: '#374151', hoverBg: '#fee2e2', hoverFg: '#dc2626', bd: border },
+                      bg: bgInput, fg: colBody, hoverBg: '#fee2e2', hoverFg: '#dc2626', bd: border },
                   ] as const).map(({ icon, action, title, bg, fg, hoverBg, hoverFg, bd }) => (
                     <button key={title} onClick={action} title={title}
                       style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
