@@ -473,19 +473,22 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                   <Ic color={ts}><polyline points="15 18 9 12 15 6"/></Ic>
                   Back to Pipeline
                 </button>
-                <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, border: `1px solid ${border}`, background: card, color: tp, fontSize: 14, cursor: 'pointer' }}>
-                  <Ic color={tp}><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></Ic>
-                  Call
+                {lead.contact_phone ? (
+                  <a href={`tel:${lead.contact_phone.replace(/\D/g,'')}`}
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, border: `1px solid ${border}`, background: card, color: tp, fontSize: 14, textDecoration: 'none' }}>
+                    <Ic color={tp}><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></Ic>
+                    Call
+                  </a>
+                ) : (
+                  <button disabled style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, border: `1px solid ${border}`, background: card, color: ts, fontSize: 14, opacity: 0.45, cursor: 'not-allowed' }}>
+                    <Ic color={ts}><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></Ic>
+                    Call
+                  </button>
+                )}
+                <button onClick={handleSaveDrawer} disabled={savingDrawer}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 8, border: 'none', background: '#0F766E', color: 'white', fontSize: 14, fontWeight: 500, cursor: savingDrawer ? 'wait' : 'pointer', opacity: savingDrawer ? 0.7 : 1 }}>
+                  {savingDrawer ? 'Saving…' : 'Save Changes'}
                 </button>
-                <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, border: `1px solid ${border}`, background: card, color: tp, fontSize: 14, cursor: 'pointer' }}>
-                  <Ic color={tp}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></Ic>
-                  Send SMS
-                </button>
-                <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, border: 'none', background: '#0F766E', color: 'white', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>
-                  <Ic color="white"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></Ic>
-                  Follow Up
-                </button>
-                <button style={{ padding: '8px 11px', borderRadius: 8, border: `1px solid ${border}`, background: card, color: ts, fontSize: 18, lineHeight: 1, cursor: 'pointer' }}>···</button>
               </div>
 
               {/* Hero */}
@@ -494,7 +497,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                   <div style={{ width: 52, height: 52, borderRadius: '50%', background: avBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 500, color: avFg, flexShrink: 0 }}>
                     {initials(lead.contact_name)}
                   </div>
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 5 }}>
                       <span style={{ fontSize: 20, fontWeight: 600, color: tp, wordBreak: 'break-word' }}>{lead.contact_name}</span>
                       <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: '#EEEDFE', color: '#3C3489', fontWeight: 500 }}>{currentStage}</span>
@@ -507,19 +510,21 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                       <span>Lead #{shortId(lead.id)}</span>
                     </div>
                   </div>
-                  {/* Last activity + Status */}
-                  <div style={{ display: 'flex', gap: 0, flexShrink: 0, border: `1px solid ${border}`, borderRadius: 10, overflow: 'hidden', width: '100%', marginTop: 2 }}>
-                    <div style={{ padding: '12px 18px', borderRight: `1px solid ${border}` }}>
-                      <div style={{ fontSize: 11, color: ts, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Last activity</div>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: tp }}>
-                        {new Date(lead.updated_at || lead.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at {new Date(lead.updated_at || lead.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                  {/* Last activity + Status — full width on mobile, inline right on xl+ */}
+                  <div className="w-full xl:w-auto xl:flex-shrink-0">
+                    <div style={{ display: 'flex', gap: 0, border: `1px solid ${border}`, borderRadius: 10, overflow: 'hidden', marginTop: 2 }}>
+                      <div style={{ padding: '10px 16px', borderRight: `1px solid ${border}` }}>
+                        <div style={{ fontSize: 11, color: ts, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>Last activity</div>
+                        <div style={{ fontSize: 13, fontWeight: 500, color: tp, whiteSpace: 'nowrap' }}>
+                          {new Date(lead.updated_at || lead.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at {new Date(lead.updated_at || lead.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                        </div>
                       </div>
-                    </div>
-                    <div style={{ padding: '12px 18px' }}>
-                      <div style={{ fontSize: 11, color: ts, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Status</div>
-                      <div style={{ fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 5, color: nbaData.urgent ? '#C2410C' : '#0F766E' }}>
-                        <span>{nbaData.urgent ? '🔥' : '✓'}</span>
-                        <span>{nbaData.urgent ? 'Needs attention' : 'On track'}</span>
+                      <div style={{ padding: '10px 16px' }}>
+                        <div style={{ fontSize: 11, color: ts, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>Status</div>
+                        <div style={{ fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 5, color: nbaData.urgent ? '#C2410C' : '#0F766E', whiteSpace: 'nowrap' }}>
+                          <span>{nbaData.urgent ? '🔥' : '✓'}</span>
+                          <span>{nbaData.urgent ? 'Needs attention' : 'On track'}</span>
+                        </div>
                       </div>
                     </div>
                   </div>

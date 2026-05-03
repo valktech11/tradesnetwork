@@ -399,7 +399,7 @@ function TopHeader({ session, dk, onAddLead, onToggleDark }: {
               </div>
 
               {/* Dark mode toggle */}
-              <button onClick={() => { if (onToggleDark) onToggleDark() }}
+              <button onClick={() => { if (onToggleDark) onToggleDark(); setUserOpen(false) }}
                 className="w-full flex items-center justify-between px-4 py-3 hover:opacity-70 transition-opacity">
                 <div className="flex items-center gap-2.5">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={txt} strokeWidth="1.8" strokeLinecap="round">
