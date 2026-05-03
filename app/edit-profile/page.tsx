@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { theme } from '@/lib/theme'
 
 type Session = { id: string; name: string; email: string; plan: string }
 type TradeCategory = { id: string; category_name: string; slug: string }
@@ -52,6 +53,10 @@ export default function EditProfilePage() {
   const [saved, setSaved]       = useState(false)
   const [errors, setErrors]     = useState<Record<string, string>>({})
   const [activeTab, setActiveTab] = useState<'basic' | 'credentials' | 'preferences'>('basic')
+  const [dk, setDk] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem('pg_darkmode') === '1'
+  })
 
   // Basic
   const [fullName, setFullName]         = useState('')
@@ -237,8 +242,9 @@ export default function EditProfilePage() {
     }
   }
 
+  const t = theme(dk)
   if (loading) return (
-    <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+    <div style={{ minHeight: '100vh', background: t.pageBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div className="w-8 h-8 border-2 border-teal-600 border-t-transparent rounded-full animate-spin" />
     </div>
   )
@@ -250,14 +256,14 @@ export default function EditProfilePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div style={{ minHeight: '100vh', background: t.pageBg }}>
       <div className="max-w-4xl mx-auto px-4 py-10">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="font-serif text-3xl text-gray-900">Edit profile</h1>
-            <p className="text-gray-400 text-sm mt-1">Keep your profile up to date to attract more homeowners.</p>
+            <h1 style={{ fontSize: 28, fontWeight: 700, color: t.textPri }}>Edit profile</h1>
+            <p style={{ fontSize: 13, color: t.textMuted, marginTop: 4 }}>Keep your profile up to date to attract more homeowners.</p>
           </div>
           <div className="flex gap-3 text-sm">
             <Link href="/dashboard" className="text-gray-400 hover:text-gray-700">← Dashboard</Link>
@@ -288,7 +294,7 @@ export default function EditProfilePage() {
 
           {/* LEFT — Photo (always visible) */}
           <div>
-            <div className="bg-white border border-gray-100 rounded-2xl p-6 text-center">
+            <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 16, padding: 24, textAlign: 'center' as const }}>
               <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5">Profile photo</div>
               <div className="relative w-24 h-24 mx-auto mb-4">
                 {photoUrl
@@ -344,7 +350,7 @@ export default function EditProfilePage() {
             {/* ══════════ BASIC TAB ══════════ */}
             {activeTab === 'basic' && (<>
 
-              <div className="bg-white border border-gray-100 rounded-2xl p-7">
+              <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 16, padding: 28 }}>
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">Basic information</div>
                 <Field label="Full name" error={errors.fullName}>
                   <input value={fullName} onChange={e => { setFullName(e.target.value); setErrors(p => ({ ...p, fullName: '' })) }}
@@ -382,7 +388,7 @@ export default function EditProfilePage() {
                 </Field>
               </div>
 
-              <div className="bg-white border border-gray-100 rounded-2xl p-7">
+              <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 16, padding: 28 }}>
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">About you</div>
                 <Field label="Bio" hint="Tell homeowners about your experience and why they should hire you">
                   <textarea value={bio} onChange={e => setBio(e.target.value)}
@@ -394,7 +400,7 @@ export default function EditProfilePage() {
                 </div>
               </div>
 
-              <div className="bg-white border border-gray-100 rounded-2xl p-7">
+              <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 16, padding: 28 }}>
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">Location</div>
                 <div className="grid grid-cols-2 gap-4">
                   <Field label="State">
@@ -426,7 +432,7 @@ export default function EditProfilePage() {
             {activeTab === 'credentials' && (<>
 
               {/* License expiry */}
-              <div className="bg-white border border-gray-100 rounded-2xl p-7">
+              <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 16, padding: 28 }}>
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">License expiry</div>
                 <Field label="License expiry date" hint="We'll alert you before it expires">
                   <input type="date" value={licenseExpiry} onChange={e => setLicenseExpiry(e.target.value)} className={inp()} />
@@ -439,7 +445,7 @@ export default function EditProfilePage() {
               </div>
 
               {/* OSHA */}
-              <div className="bg-white border border-gray-100 rounded-2xl p-7">
+              <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 16, padding: 28 }}>
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">OSHA certification (self-reported)</div>
                 <Field label="OSHA card type">
                   <select value={oshaType} onChange={e => setOshaType(e.target.value)} className={inp()}>
@@ -461,7 +467,7 @@ export default function EditProfilePage() {
               </div>
 
               {/* Equipment */}
-              <div className="bg-white border border-gray-100 rounded-2xl p-7">
+              <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 16, padding: 28 }}>
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">Equipment &amp; tool proficiency</div>
                 <p className="text-xs text-gray-400 mb-4">Add equipment and tools you're proficient with.</p>
                 <div className="flex gap-2 mb-4">
@@ -485,7 +491,7 @@ export default function EditProfilePage() {
               </div>
 
               {/* Multiple licenses */}
-              <div className="bg-white border border-gray-100 rounded-2xl p-7">
+              <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 16, padding: 28 }}>
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">Licenses</div>
                 <p className="text-xs text-gray-400 mb-4">Add all your DBPR licenses. Each appears with its own badge on your profile.</p>
                 {proLicenses.length > 0 && (
@@ -519,7 +525,7 @@ export default function EditProfilePage() {
               </div>
 
               {/* Memberships */}
-              <div className="bg-white border border-gray-100 rounded-2xl p-7">
+              <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 16, padding: 28 }}>
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">Associations &amp; memberships</div>
                 <p className="text-xs text-gray-400 mb-4">List trade associations you belong to.</p>
                 <div className="flex gap-2 mb-4">
@@ -543,7 +549,7 @@ export default function EditProfilePage() {
               </div>
 
               {/* COI Insurance */}
-              <div className="bg-white border border-gray-100 rounded-2xl p-7">
+              <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 16, padding: 28 }}>
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">Certificate of Insurance (COI)</div>
                 <p className="text-xs text-gray-400 mb-4">Upload your insurance certificate. AI extracts the expiry date automatically and shows a 🛡️ verified badge on your profile.</p>
 
@@ -603,7 +609,7 @@ export default function EditProfilePage() {
             {activeTab === 'preferences' && (<>
 
               {/* Availability */}
-              <div className="bg-white border border-gray-100 rounded-2xl p-7">
+              <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 16, padding: 28 }}>
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">Availability</div>
                 <div className="flex items-center justify-between mb-4">
                   <div>
@@ -628,7 +634,7 @@ export default function EditProfilePage() {
               </div>
 
               {/* Preferred language */}
-              <div className="bg-white border border-gray-100 rounded-2xl p-7">
+              <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 16, padding: 28 }}>
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">Preferred language</div>
                 <div className="flex gap-3">
                   {[['en','🇺🇸 English'],['es','🇪🇸 Spanish']].map(([val, label]) => (
@@ -641,7 +647,7 @@ export default function EditProfilePage() {
               </div>
 
               {/* Counties served */}
-              <div className="bg-white border border-gray-100 rounded-2xl p-7">
+              <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 16, padding: 28 }}>
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5 pb-3 border-b border-gray-100">Services Offered</div>
                 <p className="text-xs text-gray-400 mb-4">Add specific services you offer — shown on your profile as tags. e.g. "Panel upgrades", "EV charger install", "Generator hookup"</p>
 

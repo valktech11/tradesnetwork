@@ -7,6 +7,7 @@ import LeadPipeline from '@/components/ui/LeadPipeline'
 import ActionAlert from '@/components/ui/ActionAlert'
 import AddLeadModal from '@/components/ui/AddLeadModal'
 import FilterPanel, { FilterState, DEFAULT_FILTERS, isFilterActive, applyFilters } from '@/components/ui/FilterPanel'
+import { theme } from '@/lib/theme'
 
 export default function PipelinePage() {
   const router = useRouter()
@@ -65,6 +66,7 @@ export default function PipelinePage() {
 
   const TEAL     = '#0F766E'
   const textMain = dk ? '#F1F5F9' : '#0A1628'
+  const t        = theme(dk)
 
   // Status change — PATCH [id] route, then re-fetch from DB (no optimistic state)
   async function handleStatusChange(leadId: string, status: string) {
@@ -126,27 +128,26 @@ export default function PipelinePage() {
         </div>
 
         {/* Stats bar */}
-        <div className="flex items-center justify-between mb-5 px-5 py-4 rounded-2xl bg-white border border-gray-100"
-          style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="pr-6">
-              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Total Leads</div>
-              <div className="text-[28px] font-bold leading-tight" style={{ color: textMain }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, padding: '16px 20px', borderRadius: 16, background: t.cardBg, border: `1px solid ${t.cardBorder}`, boxShadow: dk ? 'none' : '0 1px 3px rgba(0,0,0,0.06)', flexWrap: 'wrap', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexWrap: 'wrap' }}>
+            <div style={{ paddingRight: 24 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 2 }}>Total Leads</div>
+              <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.1, color: textMain }}>
                 {filteredLeads.length}
                 {activeFilterCount > 0 && (
-                  <span className="text-[13px] font-medium ml-2" style={{ color: '#9CA3AF' }}>of {leads.length}</span>
+                  <span style={{ fontSize: 13, fontWeight: 500, marginLeft: 8, color: t.textSubtle }}>of {leads.length}</span>
                 )}
               </div>
             </div>
-            <div className="pl-6 border-l border-gray-200">
-              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Pipeline Value</div>
-              <div className="text-[28px] font-bold leading-tight" style={{ color: textMain }}>
+            <div style={{ paddingLeft: 24, borderLeft: `1px solid ${t.cardBorder}` }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 2 }}>Pipeline Value</div>
+              <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.1, color: textMain }}>
                 ${filteredLeads.filter(l => l.quoted_amount && !['Lost','Archived'].includes(l.lead_status)).reduce((s, l) => s + (l.quoted_amount || 0), 0).toLocaleString()}
               </div>
             </div>
             {/* Active filter chips */}
             {activeFilterCount > 0 && (
-              <div className="flex items-center gap-2 flex-wrap pl-4">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', paddingLeft: 16 }}>
                 {filters.stages.map(s => (
                   <span key={s}><Chip label={s} onRemove={() => setFilters(f => ({ ...f, stages: f.stages.filter(x => x !== s) }))} /></span>
                 ))}
@@ -157,10 +158,7 @@ export default function PipelinePage() {
                   <Chip label="🔥 Needs attention" onRemove={() => setFilters(f => ({ ...f, needsAttention: false }))} />
                 )}
                 {(filters.minValue || filters.maxValue) && (
-                  <Chip
-                    label={`$${filters.minValue || '0'} – $${filters.maxValue || '∞'}`}
-                    onRemove={() => setFilters(f => ({ ...f, minValue: '', maxValue: '' }))}
-                  />
+                  <Chip label={`$${filters.minValue || '0'} – $${filters.maxValue || '∞'}`} onRemove={() => setFilters(f => ({ ...f, minValue: '', maxValue: '' }))} />
                 )}
                 {filters.dateReceived && (
                   <Chip label={{ today: 'Today', week: 'This week', month: 'This month' }[filters.dateReceived] || ''} onRemove={() => setFilters(f => ({ ...f, dateReceived: '' }))} />
@@ -168,23 +166,20 @@ export default function PipelinePage() {
                 {filters.followUpDue && (
                   <Chip label={`Follow-up: ${{ overdue: 'Overdue', today: 'Today', week: 'This week' }[filters.followUpDue] || ''}`} onRemove={() => setFilters(f => ({ ...f, followUpDue: '' }))} />
                 )}
-                <button
-                  onClick={() => setFilters(DEFAULT_FILTERS)}
-                  className="text-[11px] font-semibold px-2 py-1 rounded-lg"
-                  style={{ color: '#6B7280' }}
-                >
+                <button onClick={() => setFilters(DEFAULT_FILTERS)} style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: 'none', border: 'none', color: t.textMuted, cursor: 'pointer' }}>
                   Clear all
                 </button>
               </div>
             )}
           </div>
+          {/* Filter button */}
           <button
             onClick={() => setShowFilter(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold border transition-colors shrink-0"
             style={{
-              borderColor: activeFilterCount > 0 ? '#0F766E' : '#E5E7EB',
-              color: activeFilterCount > 0 ? '#0F766E' : '#374151',
-              background: activeFilterCount > 0 ? '#F0FDFA' : '#ffffff',
+              display: 'flex', alignItems: 'center', gap: 8, padding: '9px 16px', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', flexShrink: 0,
+              border: `1.5px solid ${activeFilterCount > 0 ? '#0F766E' : t.inputBorder}`,
+              color: activeFilterCount > 0 ? '#0F766E' : t.textBody,
+              background: activeFilterCount > 0 ? (dk ? 'rgba(15,118,110,0.12)' : '#F0FDFA') : t.cardBg,
             }}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -192,7 +187,7 @@ export default function PipelinePage() {
             </svg>
             Filter
             {activeFilterCount > 0 && (
-              <span className="w-5 h-5 rounded-full text-white text-[11px] font-bold flex items-center justify-center" style={{ background: '#0F766E' }}>
+              <span style={{ width: 20, height: 20, borderRadius: '50%', background: '#0F766E', color: '#fff', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {activeFilterCount}
               </span>
             )}

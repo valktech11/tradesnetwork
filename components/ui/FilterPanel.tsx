@@ -130,29 +130,14 @@ interface Props {
 
 export default function FilterPanel({ open, filters, onChange, onClose, onClear, dk }: Props) {
   const panelRef = useRef<HTMLDivElement>(null)
-  const onCloseRef = useRef(onClose)
-  useEffect(() => { onCloseRef.current = onClose }, [onClose])
 
-  // Close on outside click — uses ref so effect never re-runs on re-render
+  // Close on Escape only — no document mousedown listener (caused close-on-pill-click bug)
   useEffect(() => {
     if (!open) return
-    function handleClick(e: MouseEvent) {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-        onCloseRef.current()
-      }
-    }
-    // Use capture phase so it fires before any child onClick
-    document.addEventListener('mousedown', handleClick, true)
-    return () => document.removeEventListener('mousedown', handleClick, true)
-  }, [open])
-
-  // Close on Escape — stable, no onClose dep
-  useEffect(() => {
-    if (!open) return
-    function handleKey(e: KeyboardEvent) { if (e.key === 'Escape') onCloseRef.current() }
+    function handleKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', handleKey)
     return () => document.removeEventListener('keydown', handleKey)
-  }, [open])
+  }, [open, onClose])
 
   function toggleArr(arr: string[], val: string): string[] {
     return arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val]
@@ -168,7 +153,7 @@ export default function FilterPanel({ open, filters, onChange, onClose, onClear,
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50" style={{ background: 'rgba(0,0,0,0.35)' }}>
+    <div className="fixed inset-0 z-50" style={{ background: 'rgba(0,0,0,0.35)' }} onClick={onClose}>
       <div
         ref={panelRef}
         className="absolute right-0 top-0 h-full flex flex-col shadow-2xl"
@@ -178,6 +163,7 @@ export default function FilterPanel({ open, filters, onChange, onClose, onClear,
           background: card,
           borderLeft: `1px solid ${border}`,
         }}
+        onClick={e => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: `1px solid ${border}` }}>

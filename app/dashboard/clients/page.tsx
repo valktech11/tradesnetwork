@@ -5,24 +5,34 @@ import Link from 'next/link'
 import DashboardShell from '@/components/layout/DashboardShell'
 import { Session } from '@/types'
 import { initials, avatarColor, timeAgo } from '@/lib/utils'
+import { theme } from '@/lib/theme'
 
-const TAG_COLORS: Record<string, string> = {
-  Residential: 'bg-blue-50 text-blue-700',
-  Commercial:  'bg-purple-50 text-purple-700',
-  Repeat:      'bg-green-50 text-green-700',
-  VIP:         'bg-amber-50 text-amber-700',
+const TAG_COLORS: Record<string, { bg: string; text: string }> = {
+  Residential: { bg: '#EFF6FF', text: '#1D4ED8' },
+  Commercial:  { bg: '#F5F3FF', text: '#6D28D9' },
+  Repeat:      { bg: '#F0FDF4', text: '#15803D' },
+  VIP:         { bg: '#FFFBEB', text: '#B45309' },
 }
 
 export default function ClientsPage() {
   const router = useRouter()
-  const [session, setSession]   = useState<Session | null>(null)
+
+  const [session, setSession] = useState<Session | null>(null)
+  const [dk, setDk] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem('pg_darkmode') === '1'
+  })
+  const toggleDark = () => {
+    const next = !dk
+    localStorage.setItem('pg_darkmode', next ? '1' : '0')
+    setDk(next)
+  }
+
   const [clients, setClients]   = useState<any[]>([])
   const [loading, setLoading]   = useState(true)
   const [search,  setSearch]    = useState('')
   const [sort,    setSort]      = useState<'name' | 'value' | 'recent'>('recent')
   const [showAdd, setShowAdd]   = useState(false)
-
-  // New client form
   const [newName,  setNewName]  = useState('')
   const [newPhone, setNewPhone] = useState('')
   const [newEmail, setNewEmail] = useState('')
@@ -40,7 +50,7 @@ export default function ClientsPage() {
     fetch(`/api/clients?pro_id=${s.id}`)
       .then(r => r.json())
       .then(d => { setClients(d.clients || []); setLoading(false) })
-  }, [])
+  }, [router])
 
   async function addClient() {
     if (!newName.trim()) { setErr('Name is required'); return }
@@ -49,14 +59,7 @@ export default function ClientsPage() {
     const r = await fetch('/api/clients', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        pro_id: session.id,
-        full_name: newName.trim(),
-        phone: newPhone.trim() || null,
-        email: newEmail.trim() || null,
-        notes: newNotes.trim() || null,
-        tags: newTags,
-      }),
+      body: JSON.stringify({ pro_id: session.id, full_name: newName.trim(), phone: newPhone.trim() || null, email: newEmail.trim() || null, notes: newNotes.trim() || null, tags: newTags }),
     })
     const d = await r.json()
     setSaving(false)
@@ -78,224 +81,212 @@ export default function ClientsPage() {
     setNewTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])
   }
 
-  // Filter + sort
   const filtered = clients
-    .filter(c => !search || c.full_name.toLowerCase().includes(search.toLowerCase()) ||
-      (c.phone || '').includes(search))
+    .filter(c => !search || c.full_name.toLowerCase().includes(search.toLowerCase()) || (c.phone || '').includes(search))
     .sort((a, b) => {
-      if (sort === 'name')   return a.full_name.localeCompare(b.full_name)
-      if (sort === 'value')  return (b.lifetime_value || 0) - (a.lifetime_value || 0)
+      if (sort === 'name')  return a.full_name.localeCompare(b.full_name)
+      if (sort === 'value') return (b.lifetime_value || 0) - (a.lifetime_value || 0)
       return new Date(b.last_contact || b.created_at).getTime() - new Date(a.last_contact || a.created_at).getTime()
     })
 
   const totalValue = clients.reduce((sum, c) => sum + (c.lifetime_value || 0), 0)
+  const t = theme(dk)
 
-  const leads_count = 0 // placeholder
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '10px 14px', fontSize: 13, borderRadius: 10,
+    border: `1.5px solid ${t.inputBorder}`, background: t.inputBg,
+    color: t.textPri, outline: 'none', boxSizing: 'border-box',
+  }
+
   return (
-    <DashboardShell session={session} newLeads={0}>
-      <div className="max-w-4xl mx-auto px-4 py-7">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Link href="/dashboard" className="text-sm text-gray-400 hover:text-teal-600 transition-colors">Dashboard</Link>
-              <span className="text-gray-300">/</span>
-              <span className="text-sm font-semibold text-[#0A1628]">Clients</span>
+    <DashboardShell session={session} newLeads={0} onAddLead={() => {}} darkMode={dk} onToggleDark={toggleDark}>
+      <div style={{ background: t.pageBg, minHeight: '100vh', padding: '28px 16px' }}>
+        <div style={{ maxWidth: 896, margin: '0 auto' }}>
+
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <Link href="/dashboard" style={{ fontSize: 13, color: t.textMuted, textDecoration: 'none' }}>Dashboard</Link>
+                <span style={{ color: t.textSubtle }}>/</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: t.textPri }}>Clients</span>
+              </div>
+              <h1 style={{ fontSize: 22, fontWeight: 700, color: t.textPri, margin: 0 }}>Client address book</h1>
+              <p style={{ fontSize: 13, color: t.textMuted, marginTop: 2 }}>
+                {clients.length} client{clients.length !== 1 ? 's' : ''}
+                {totalValue > 0 && ` · $${totalValue.toLocaleString()} lifetime revenue`}
+              </p>
             </div>
-            <h1 className="text-2xl font-bold text-[#0A1628]">Client address book</h1>
-            <p className="text-sm text-gray-400 mt-0.5">
-              {clients.length} client{clients.length !== 1 ? 's' : ''}
-              {totalValue > 0 && ` · $${totalValue.toLocaleString()} lifetime revenue`}
-            </p>
+            <button onClick={() => setShowAdd(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', fontSize: 13, fontWeight: 700, color: '#fff', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #0F766E, #0C5F57)', cursor: 'pointer' }}>
+              <span style={{ fontSize: 18, lineHeight: 1 }}>+</span> Add client
+            </button>
           </div>
-          <button onClick={() => setShowAdd(true)}
-            className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-white rounded-xl"
-            style={{ background: 'linear-gradient(135deg, #0F766E, #0C5F57)' }}>
-            <span className="text-lg leading-none">+</span> Add client
-          </button>
-        </div>
 
-        {/* Search + sort */}
-        <div className="flex gap-3 mb-5">
-          <input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search by name or phone..."
-            className="flex-1 px-4 py-2.5 text-sm border border-[#E8E2D9] rounded-xl outline-none bg-white text-[#0A1628]"
-            onFocus={e => e.target.style.borderColor = '#0F766E'}
-            onBlur={e => e.target.style.borderColor = '#E8E2D9'} />
-          <select value={sort} onChange={e => setSort(e.target.value as any)}
-            className="px-3 py-2.5 text-sm border border-[#E8E2D9] rounded-xl outline-none bg-white text-[#0A1628]">
-            <option value="recent">Recent</option>
-            <option value="value">Top value</option>
-            <option value="name">Name A–Z</option>
-          </select>
-        </div>
+          {/* Search + sort */}
+          <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+            <input value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Search by name or phone..."
+              style={{ ...inputStyle, flex: 1 }}
+              onFocus={e => (e.target.style.borderColor = '#0F766E')}
+              onBlur={e => (e.target.style.borderColor = t.inputBorder)} />
+            <select value={sort} onChange={e => setSort(e.target.value as any)}
+              style={{ ...inputStyle, width: 'auto', paddingRight: 28 }}>
+              <option value="recent">Recent</option>
+              <option value="value">Top value</option>
+              <option value="name">Name A–Z</option>
+            </select>
+          </div>
 
-        {/* Client list */}
-        <div className="bg-white border border-[#E8E2D9] rounded-2xl overflow-hidden">
-          {loading ? (
-            <div className="p-8 space-y-3">
-              {[1,2,3].map(i => <div key={i} className="h-16 animate-pulse rounded-xl bg-gray-50" />)}
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="text-4xl mb-3 opacity-20">👥</div>
-              <p className="text-base font-semibold text-gray-600 mb-1">
-                {search ? 'No clients match your search' : 'No clients yet'}
-              </p>
-              <p className="text-sm text-gray-400 mb-5">
-                {search ? 'Try a different name or phone number' : 'Add your first client or save one from a lead'}
-              </p>
-              {!search && (
-                <button onClick={() => setShowAdd(true)}
-                  className="text-sm font-semibold text-teal-600 hover:underline">
-                  + Add your first client
-                </button>
-              )}
-            </div>
-          ) : filtered.map((client, i) => {
-            const [bg, fg] = avatarColor(client.full_name)
-            return (
-              <Link key={client.id} href={`/dashboard/clients/${client.id}`}
-                className={`flex items-center gap-4 px-5 py-4 hover:bg-[#FAF9F6] transition-colors ${
-                  i > 0 ? 'border-t border-gray-50' : ''
-                }`}>
-                {/* Avatar */}
-                <div className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-                  style={{ background: bg, color: fg }}>
-                  {initials(client.full_name)}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-base font-semibold text-[#0A1628] truncate">{client.full_name}</span>
-                    {(client.tags || []).map((tag: string) => (
-                      <span key={tag} className={`text-xs font-semibold px-2 py-0.5 rounded-full ${TAG_COLORS[tag] || 'bg-gray-50 text-gray-500'}`}>
-                        {tag}
-                      </span>
-                    ))}
+          {/* Client list */}
+          <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 16, overflow: 'hidden' }}>
+            {loading ? (
+              <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[1,2,3].map(i => <div key={i} style={{ height: 64, borderRadius: 10, background: t.cardBgAlt, animation: 'pulse 1.5s infinite' }} />)}
+              </div>
+            ) : filtered.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '64px 24px' }}>
+                <div style={{ fontSize: 36, marginBottom: 12, opacity: 0.2 }}>👥</div>
+                <p style={{ fontSize: 15, fontWeight: 600, color: t.textPri, marginBottom: 4 }}>
+                  {search ? 'No clients match your search' : 'No clients yet'}
+                </p>
+                <p style={{ fontSize: 13, color: t.textMuted, marginBottom: 16 }}>
+                  {search ? 'Try a different name or phone number' : 'Add your first client or save one from a lead'}
+                </p>
+                {!search && (
+                  <button onClick={() => setShowAdd(true)}
+                    style={{ fontSize: 13, fontWeight: 600, color: '#0F766E', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+                    + Add your first client
+                  </button>
+                )}
+              </div>
+            ) : filtered.map((client, i) => {
+              const [bg, fg] = avatarColor(client.full_name)
+              return (
+                <Link key={client.id} href={`/dashboard/clients/${client.id}`}
+                  style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', borderTop: i > 0 ? `1px solid ${t.divider}` : 'none', textDecoration: 'none', transition: 'background 0.15s' }}
+                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = dk ? '#1a2940' : '#FAF9F6')}
+                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+                >
+                  <div style={{ width: 44, height: 44, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, flexShrink: 0, background: bg, color: fg }}>
+                    {initials(client.full_name)}
                   </div>
-                  <div className="flex items-center gap-3 mt-0.5">
-                    {client.phone && <span className="text-sm text-gray-400">{client.phone}</span>}
-                    {client.email && <span className="text-sm text-gray-400 truncate">{client.email}</span>}
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div className="text-right flex-shrink-0">
-                  {client.lifetime_value > 0 && (
-                    <div className="text-base font-bold text-teal-600">
-                      ${client.lifetime_value.toLocaleString()}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: t.textPri }}>{client.full_name}</span>
+                      {(client.tags || []).map((tag: string) => {
+                        const tc = TAG_COLORS[tag] || { bg: t.cardBgAlt, text: t.textMuted }
+                        return (
+                          <span key={tag} style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: tc.bg, color: tc.text }}>{tag}</span>
+                        )
+                      })}
                     </div>
-                  )}
-                  <div className="text-xs text-gray-400">
-                    {client.job_count} job{client.job_count !== 1 ? 's' : ''} · {timeAgo(client.last_contact || client.created_at)}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 2 }}>
+                      {client.phone && <span style={{ fontSize: 13, color: t.textMuted }}>{client.phone}</span>}
+                      {client.email && <span style={{ fontSize: 13, color: t.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{client.email}</span>}
+                    </div>
                   </div>
-                </div>
-
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#C4BCAF" strokeWidth="1.5" strokeLinecap="round">
-                  <path d="M6 4l4 4-4 4" />
-                </svg>
-              </Link>
-            )
-          })}
-        </div>
-
-        {/* Delete confirm modal */}
-        {deleteTarget && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background: 'rgba(0,0,0,0.6)' }}
-            onClick={() => setDeleteTarget(null)}>
-            <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl"
-              onClick={e => e.stopPropagation()}>
-              <h3 className="text-lg font-bold text-gray-900 text-center mb-2">
-                Delete {deleteTarget.full_name}?
-              </h3>
-              <p className="text-sm text-gray-500 text-center leading-relaxed mb-2">
-                This removes them from your client book permanently.
-              </p>
-              <p className="text-xs text-gray-400 text-center mb-5">
-                Their job history will remain in your pipeline.
-              </p>
-              <div className="flex gap-3">
-                <button onClick={() => setDeleteTarget(null)}
-                  className="flex-1 py-3.5 rounded-xl text-sm font-bold border-2 border-gray-200 text-gray-600 hover:bg-gray-50">
-                  Cancel
-                </button>
-                <button onClick={deleteClient}
-                  className="flex-1 py-3.5 rounded-xl text-sm font-bold text-white bg-red-500 hover:bg-red-600 transition-colors">
-                  Delete
-                </button>
-              </div>
-            </div>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    {client.lifetime_value > 0 && (
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#0F766E' }}>${client.lifetime_value.toLocaleString()}</div>
+                    )}
+                    <div style={{ fontSize: 12, color: t.textSubtle }}>
+                      {client.job_count} job{client.job_count !== 1 ? 's' : ''} · {timeAgo(client.last_contact || client.created_at)}
+                    </div>
+                  </div>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke={t.textSubtle} strokeWidth="1.5" strokeLinecap="round">
+                    <path d="M6 4l4 4-4 4" />
+                  </svg>
+                </Link>
+              )
+            })}
           </div>
-        )}
 
-        {/* Add client modal */}
-        {showAdd && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
-            style={{ background: 'rgba(0,0,0,0.6)' }}
-            onClick={() => setShowAdd(false)}>
-            <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl"
-              onClick={e => e.stopPropagation()}>
-              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-                <h2 className="text-lg font-bold text-[#0A1628]">New client</h2>
-                <button onClick={() => setShowAdd(false)}
-                  className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 text-xl">×</button>
-              </div>
-              <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-                {[
-                  { label: 'Full name *', value: newName, set: setNewName, placeholder: 'John Smith', type: 'text' },
-                  { label: 'Phone', value: newPhone, set: (v: string) => setNewPhone(v.replace(/[^\d\s\-\(\)\+]/g, '')), placeholder: '(555) 555-5555', type: 'tel' },
-                  { label: 'Email', value: newEmail, set: setNewEmail, placeholder: 'john@example.com', type: 'email' },
-                ].map(f => (
-                  <div key={f.label}>
-                    <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">{f.label}</p>
-                    <input value={f.value} onChange={e => f.set(e.target.value)}
-                      placeholder={f.placeholder} type={f.type}
-                      className="w-full px-4 py-3 text-sm border-2 border-[#E8E2D9] rounded-xl outline-none text-[#0A1628]"
-                      onFocus={e => e.target.style.borderColor = '#0F766E'}
-                      onBlur={e => e.target.style.borderColor = '#E8E2D9'} />
-                  </div>
-                ))}
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Tags</p>
-                  <div className="flex gap-2 flex-wrap">
-                    {['Residential','Commercial','Repeat','VIP'].map(tag => (
-                      <button key={tag} onClick={() => toggleTag(tag)}
-                        className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${
-                          newTags.includes(tag)
-                            ? 'bg-teal-600 text-white border-teal-600'
-                            : 'bg-white text-gray-500 border-gray-200'
-                        }`}>
-                        {tag}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Notes</p>
-                  <textarea value={newNotes} onChange={e => setNewNotes(e.target.value)}
-                    placeholder="Gate code 1234, has two dogs, prefers morning appointments..."
-                    rows={3}
-                    className="w-full px-4 py-3 text-sm border-2 border-[#E8E2D9] rounded-xl outline-none resize-none text-[#0A1628]"
-                    onFocus={e => e.target.style.borderColor = '#0F766E'}
-                    onBlur={e => e.target.style.borderColor = '#E8E2D9'} />
-                </div>
-                {err && <p className="text-sm text-red-500">{err}</p>}
-                <div className="flex gap-3 pt-2">
-                  <button onClick={() => setShowAdd(false)}
-                    className="flex-1 py-3.5 rounded-2xl text-sm font-bold border-2 border-gray-200 text-gray-600">Cancel</button>
-                  <button onClick={addClient} disabled={saving}
-                    className="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white disabled:opacity-50"
-                    style={{ background: 'linear-gradient(135deg, #0F766E, #0C5F57)' }}>
-                    {saving ? 'Saving...' : 'Save client'}
+          {/* Delete confirm modal */}
+          {deleteTarget && (
+            <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.6)' }}
+              onClick={() => setDeleteTarget(null)}>
+              <div style={{ background: t.cardBg, borderRadius: 20, width: '100%', maxWidth: 360, padding: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}
+                onClick={e => e.stopPropagation()}>
+                <h3 style={{ fontSize: 17, fontWeight: 700, color: t.textPri, textAlign: 'center', marginBottom: 8 }}>Delete {deleteTarget.full_name}?</h3>
+                <p style={{ fontSize: 13, color: t.textMuted, textAlign: 'center', marginBottom: 4 }}>This removes them from your client book permanently.</p>
+                <p style={{ fontSize: 12, color: t.textSubtle, textAlign: 'center', marginBottom: 20 }}>Their job history will remain in your pipeline.</p>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button onClick={() => setDeleteTarget(null)}
+                    style={{ flex: 1, padding: '12px', borderRadius: 10, fontSize: 13, fontWeight: 700, border: `2px solid ${t.cardBorder}`, background: 'transparent', color: t.textMuted, cursor: 'pointer' }}>
+                    Cancel
+                  </button>
+                  <button onClick={deleteClient}
+                    style={{ flex: 1, padding: '12px', borderRadius: 10, fontSize: 13, fontWeight: 700, border: 'none', background: '#EF4444', color: '#fff', cursor: 'pointer' }}>
+                    Delete
                   </button>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Add client modal */}
+          {showAdd && (
+            <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.6)' }}
+              onClick={() => setShowAdd(false)}>
+              <div style={{ background: t.cardBg, width: '100%', maxWidth: 480, borderRadius: '24px 24px 0 0', boxShadow: '0 -8px 40px rgba(0,0,0,0.25)' }}
+                onClick={e => e.stopPropagation()}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: `1px solid ${t.cardBorder}` }}>
+                  <h2 style={{ fontSize: 17, fontWeight: 700, color: t.textPri }}>New client</h2>
+                  <button onClick={() => setShowAdd(false)}
+                    style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', border: 'none', background: t.cardBgAlt, color: t.textMuted, cursor: 'pointer', fontSize: 18 }}>×</button>
+                </div>
+                <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16, maxHeight: '70vh', overflowY: 'auto' }}>
+                  {[
+                    { label: 'Full name *', value: newName, set: setNewName, placeholder: 'John Smith', type: 'text' },
+                    { label: 'Phone', value: newPhone, set: (v: string) => setNewPhone(v.replace(/[^\d\s\-\(\)\+]/g, '')), placeholder: '(555) 555-5555', type: 'tel' },
+                    { label: 'Email', value: newEmail, set: setNewEmail, placeholder: 'john@example.com', type: 'email' },
+                  ].map(f => (
+                    <div key={f.label}>
+                      <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: t.textMuted, marginBottom: 8 }}>{f.label}</p>
+                      <input value={f.value} onChange={e => f.set(e.target.value)}
+                        placeholder={f.placeholder} type={f.type}
+                        style={inputStyle}
+                        onFocus={e => (e.target.style.borderColor = '#0F766E')}
+                        onBlur={e => (e.target.style.borderColor = t.inputBorder)} />
+                    </div>
+                  ))}
+                  <div>
+                    <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: t.textMuted, marginBottom: 8 }}>Tags</p>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {['Residential','Commercial','Repeat','VIP'].map(tag => (
+                        <button key={tag} onClick={() => toggleTag(tag)}
+                          style={{ fontSize: 12, fontWeight: 600, padding: '6px 14px', borderRadius: 20, cursor: 'pointer', border: `1.5px solid ${newTags.includes(tag) ? '#0F766E' : t.inputBorder}`, background: newTags.includes(tag) ? '#0F766E' : 'transparent', color: newTags.includes(tag) ? '#fff' : t.textMuted }}>
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: t.textMuted, marginBottom: 8 }}>Notes</p>
+                    <textarea value={newNotes} onChange={e => setNewNotes(e.target.value)}
+                      placeholder="Gate code 1234, has two dogs, prefers morning appointments..."
+                      rows={3}
+                      style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }}
+                      onFocus={e => (e.target.style.borderColor = '#0F766E')}
+                      onBlur={e => (e.target.style.borderColor = t.inputBorder)} />
+                  </div>
+                  {err && <p style={{ fontSize: 13, color: '#EF4444' }}>{err}</p>}
+                  <div style={{ display: 'flex', gap: 10, paddingTop: 8 }}>
+                    <button onClick={() => setShowAdd(false)}
+                      style={{ flex: 1, padding: '13px', borderRadius: 14, fontSize: 13, fontWeight: 700, border: `2px solid ${t.cardBorder}`, background: 'transparent', color: t.textMuted, cursor: 'pointer' }}>
+                      Cancel
+                    </button>
+                    <button onClick={addClient} disabled={saving}
+                      style={{ flex: 1, padding: '13px', borderRadius: 14, fontSize: 13, fontWeight: 700, border: 'none', background: 'linear-gradient(135deg, #0F766E, #0C5F57)', color: '#fff', cursor: 'pointer', opacity: saving ? 0.6 : 1 }}>
+                      {saving ? 'Saving...' : 'Save client'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </DashboardShell>
   )

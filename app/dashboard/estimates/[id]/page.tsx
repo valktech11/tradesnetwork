@@ -217,11 +217,11 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
             <>
               {/* ── Estimate header — matches reference exactly ── */}
               <div className={`rounded-xl border px-6 py-5 ${card}`}>
-                {/* Single row: [name+meta left] [source columns center-right] [send button right] */}
-                <div className="flex flex-col items-start gap-3">
+                {/* Single row: [name+meta left] [source columns] [send button right] */}
+                <div className="flex flex-col xl:flex-row xl:items-start xl:gap-6 gap-3">
 
-                  {/* Col 1: name / trade / estimate# — grows */}
-                  <div className="flex-1 min-w-0">
+                  {/* Col 1: name / trade / estimate# — grows on desktop */}
+                  <div className="xl:flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       {estimate.lead_id ? (
                         <button
@@ -268,8 +268,8 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                     ))}
                   </div>
 
-                  {/* Col 3: Send button */}
-                  <div className="flex flex-col items-start lg:items-end gap-1 lg:pt-0.5 lg:shrink-0">
+                  {/* Col 3: Send button — right-anchored on desktop */}
+                  <div className="flex flex-col items-start xl:items-end gap-1 xl:shrink-0 xl:ml-auto">
                     <button
                       onClick={async () => { await handleSave(); setEstimate(prev => prev ? { ...prev, status: 'sent' } : prev) }}
                       disabled={saving}
