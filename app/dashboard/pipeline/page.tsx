@@ -6,6 +6,7 @@ import DashboardShell from '@/components/layout/DashboardShell'
 import LeadPipeline from '@/components/ui/LeadPipeline'
 import ActionAlert from '@/components/ui/ActionAlert'
 import AddLeadModal from '@/components/ui/AddLeadModal'
+import FilterPanel, { FilterState, DEFAULT_FILTERS, isFilterActive, applyFilters } from '@/components/ui/FilterPanel'
 
 export default function PipelinePage() {
   const router = useRouter()
@@ -33,9 +34,8 @@ export default function PipelinePage() {
   const [dataLoading, setDataLoading] = useState(true)
   const [showAddLead, setShowAddLead] = useState(false)
   const [saveError,   setSaveError]   = useState<string | null>(null)
-  const [filterToast,  setFilterToast]  = useState(false)
-  // Auto-dismiss filter toast
-  useEffect(() => { if (filterToast) { const t = setTimeout(() => setFilterToast(false), 3000); return () => clearTimeout(t) } }, [filterToast])
+  const [showFilter,  setShowFilter]  = useState(false)
+  const [filters,     setFilters]     = useState<FilterState>(DEFAULT_FILTERS)
 
   // Single fetch function — reused on mount, after add, after save
   const fetchLeads = useCallback(async () => {
@@ -56,6 +56,12 @@ export default function PipelinePage() {
     const days = (Date.now() - new Date(l.created_at).getTime()) / 86400000
     return days >= 3 && l.lead_status === 'New'
   })
+
+  const filteredLeads = applyFilters(leads, filters)
+  const activeFilterCount = isFilterActive(filters)
+    ? [filters.stages.length > 0, filters.sources.length > 0, filters.needsAttention,
+       filters.minValue !== '' || filters.maxValue !== '', filters.dateReceived !== '', filters.followUpDue !== ''].filter(Boolean).length
+    : 0
 
   const TEAL     = '#0F766E'
   const textMain = dk ? '#F1F5F9' : '#0A1628'
@@ -122,39 +128,76 @@ export default function PipelinePage() {
         {/* Stats bar */}
         <div className="flex items-center justify-between mb-5 px-5 py-4 rounded-2xl bg-white border border-gray-100"
           style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <div className="flex items-center">
-            <div className="pr-8">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="pr-6">
               <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Total Leads</div>
-              <div className="text-[28px] font-bold leading-tight" style={{ color: textMain }}>{leads.length}</div>
-            </div>
-            <div className="pl-8 border-l border-gray-200">
-              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Total Pipeline Value</div>
               <div className="text-[28px] font-bold leading-tight" style={{ color: textMain }}>
-                ${leads.filter(l => l.quoted_amount && !['Lost','Archived'].includes(l.lead_status)).reduce((s, l) => s + (l.quoted_amount || 0), 0).toLocaleString()}
+                {filteredLeads.length}
+                {activeFilterCount > 0 && (
+                  <span className="text-[13px] font-medium ml-2" style={{ color: '#9CA3AF' }}>of {leads.length}</span>
+                )}
               </div>
             </div>
+            <div className="pl-6 border-l border-gray-200">
+              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Pipeline Value</div>
+              <div className="text-[28px] font-bold leading-tight" style={{ color: textMain }}>
+                ${filteredLeads.filter(l => l.quoted_amount && !['Lost','Archived'].includes(l.lead_status)).reduce((s, l) => s + (l.quoted_amount || 0), 0).toLocaleString()}
+              </div>
+            </div>
+            {/* Active filter chips */}
+            {activeFilterCount > 0 && (
+              <div className="flex items-center gap-2 flex-wrap pl-4">
+                {filters.stages.map(s => (
+                  <span key={s}><Chip label={s} onRemove={() => setFilters(f => ({ ...f, stages: f.stages.filter(x => x !== s) }))} /></span>
+                ))}
+                {filters.sources.map(s => (
+                  <span key={s}><Chip label={s.replace('_', ' ')} onRemove={() => setFilters(f => ({ ...f, sources: f.sources.filter(x => x !== s) }))} /></span>
+                ))}
+                {filters.needsAttention && (
+                  <Chip label="🔥 Needs attention" onRemove={() => setFilters(f => ({ ...f, needsAttention: false }))} />
+                )}
+                {(filters.minValue || filters.maxValue) && (
+                  <Chip
+                    label={`$${filters.minValue || '0'} – $${filters.maxValue || '∞'}`}
+                    onRemove={() => setFilters(f => ({ ...f, minValue: '', maxValue: '' }))}
+                  />
+                )}
+                {filters.dateReceived && (
+                  <Chip label={{ today: 'Today', week: 'This week', month: 'This month' }[filters.dateReceived] || ''} onRemove={() => setFilters(f => ({ ...f, dateReceived: '' }))} />
+                )}
+                {filters.followUpDue && (
+                  <Chip label={`Follow-up: ${{ overdue: 'Overdue', today: 'Today', week: 'This week' }[filters.followUpDue] || ''}`} onRemove={() => setFilters(f => ({ ...f, followUpDue: '' }))} />
+                )}
+                <button
+                  onClick={() => setFilters(DEFAULT_FILTERS)}
+                  className="text-[11px] font-semibold px-2 py-1 rounded-lg"
+                  style={{ color: '#6B7280' }}
+                >
+                  Clear all
+                </button>
+              </div>
+            )}
           </div>
           <button
-            onClick={() => setFilterToast(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+            onClick={() => setShowFilter(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold border transition-colors shrink-0"
+            style={{
+              borderColor: activeFilterCount > 0 ? '#0F766E' : '#E5E7EB',
+              color: activeFilterCount > 0 ? '#0F766E' : '#374151',
+              background: activeFilterCount > 0 ? '#F0FDFA' : '#ffffff',
+            }}
+          >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
             </svg>
             Filter
+            {activeFilterCount > 0 && (
+              <span className="w-5 h-5 rounded-full text-white text-[11px] font-bold flex items-center justify-center" style={{ background: '#0F766E' }}>
+                {activeFilterCount}
+              </span>
+            )}
           </button>
         </div>
-
-        {/* Filter coming soon toast */}
-        {filterToast && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl shadow-xl text-[13px] font-semibold text-white"
-            style={{ background: '#0F766E' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            Filter is coming in v75 — stay tuned!
-            <button onClick={() => setFilterToast(false)} className="ml-2 opacity-70 hover:opacity-100 text-lg leading-none">×</button>
-          </div>
-        )}
 
         {/* Save error toast */}
         {saveError && (
@@ -179,13 +222,23 @@ export default function PipelinePage() {
 
         {session && (
           <LeadPipeline
-            leads={leads}
+            leads={filteredLeads}
             onStatusChange={handleStatusChange}
             onUpdate={handleUpdate}
             isPaid={['Pro','Elite','Pro_Founding','Elite_Founding','Pro_Annual','Elite_Annual','Pro_Founding_Annual','Elite_Founding_Annual'].includes(session.plan)}
           />
         )}
       </div>
+
+      {/* Filter panel */}
+      <FilterPanel
+        open={showFilter}
+        filters={filters}
+        onChange={setFilters}
+        onClose={() => setShowFilter(false)}
+        onClear={() => setFilters(DEFAULT_FILTERS)}
+        dk={dk}
+      />
 
       {showAddLead && session && (
         <AddLeadModal
@@ -198,5 +251,15 @@ export default function PipelinePage() {
         />
       )}
     </DashboardShell>
+  )
+}
+
+function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
+  return (
+    <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold"
+      style={{ background: '#F0FDFA', color: '#0F766E', border: '1px solid #99F6E4' }}>
+      {label}
+      <button onClick={onRemove} className="ml-0.5 opacity-60 hover:opacity-100 text-[13px] leading-none">×</button>
+    </span>
   )
 }
