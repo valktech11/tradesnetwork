@@ -187,7 +187,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
       darkMode={dk}
       onToggleDark={toggleDark}
     >
-      <div className={`min-h-screen pb-12 overflow-x-hidden ${dk ? "bg-[#0A1628]" : "bg-[#F5F4F0]"}`}>
+      <div className={`min-h-screen pb-12 ${dk ? "bg-[#0A1628]" : "bg-[#F5F4F0]"}`}>
         <div className="max-w-[1400px] mx-auto px-3 py-4 lg:px-4 lg:py-6 space-y-5">
 
           {/* ── Top action bar ── */}
@@ -278,16 +278,16 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
               </div>
 
               {/* ── Smart nudge ── */}
-              <div className="overflow-hidden rounded-xl"><SmartNudges darkMode={dk} /></div>
+              <div className="rounded-xl"><SmartNudges darkMode={dk} /></div>
 
               {/* ── Main 2-col layout ── */}
               <div className="flex flex-col lg:flex-row gap-5 items-start">
 
                 {/* Left — items + tabs */}
-                <div className="flex-1 min-w-0 space-y-5 overflow-hidden">
+                <div className="flex-1 min-w-0 space-y-5 min-w-0">
 
                   {/* ── Tab strip — matches reference: tabs left, buttons right ── */}
-                  <div className={`rounded-xl border ${card} overflow-hidden`}>
+                  <div className={`rounded-xl border ${card}`}>
                     <div className={`flex items-center justify-between border-b ${dk ? 'border-[#334155]' : 'border-[#E8E2D9]'}`}>
                       {/* Tabs */}
                       <div className="flex">
@@ -330,7 +330,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
 
                   {/* ── Save Changes bar ── */}
                   {activeTab === 'items' && (
-                    <div className={`flex items-center justify-between px-5 py-3.5 rounded-xl border ${card}`}>
+                    <div className={`flex items-center justify-between flex-wrap gap-2 px-4 py-3 rounded-xl border ${card}`}>
                       <div>
                         {saveMsg ? (
                           <span className={`text-sm font-medium ${saveMsg.includes('✓') || saveMsg === 'Saved ✓' ? 'text-teal-600' : 'text-red-500'}`}>
@@ -357,7 +357,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                   {/* ── Save as reusable job nudge ── */}
                   {activeTab === 'items' && (
                     <button onClick={() => setShowSaveTemplate(true)}
-                      className={`w-full flex items-center justify-between px-5 py-4 rounded-xl border transition-colors text-left ${
+                      className={`w-full flex items-center justify-between px-4 py-4 rounded-xl border transition-colors text-left overflow-hidden ${
                         dk ? 'border-[#334155] bg-[#1E293B] hover:border-[#0F766E]' : 'border-[#E8E2D9] bg-white hover:border-[#0F766E]'
                       }`}>
                       <div className="flex items-center gap-3">
@@ -421,7 +421,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                   </div>
 
                   {/* ── Client Actions footer ── */}
-                  <div className={`rounded-xl border p-5 ${card}`}>
+                  <div className={`rounded-xl border p-5 overflow-hidden ${card}`}>
                     <p className={`text-[11px] font-bold uppercase tracking-widest mb-4 ${muted}`}>Client Actions</p>
                     <div className="flex items-center gap-2 flex-wrap">
 

@@ -115,9 +115,9 @@ export default function EstimateItems({
   const GRID = '22px 26px 1fr 80px 110px 110px 100px'
 
   return (
-    <div>
-    <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' as any }}>
-    <div style={{ minWidth: 520 }}>
+    <div style={{ maxWidth: '100%' }}>
+    <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' as any, width: '100%' }}>
+    <div style={{ minWidth: 500 }}>
       {/* ── Column headers ── */}
       <div style={{ display: 'grid', gridTemplateColumns: GRID, gap: '0 12px', padding: '0 8px 10px' }}>
         <span /><span />
