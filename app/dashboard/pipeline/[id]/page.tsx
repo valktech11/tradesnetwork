@@ -330,7 +330,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
 
   return (
     <DashboardShell session={session} newLeads={0} onAddLead={() => {}} darkMode={dk} onToggleDark={() => { const n = !dk; setDk(n); localStorage.setItem('pg_darkmode', n ? '1' : '0') }}>
-      <div style={{ background: bg, minHeight: '100vh', padding: '12px 16px', paddingBottom: 60 }}>
+      <div style={{ background: bg, minHeight: '100vh', padding: '12px 16px', paddingBottom: 60, overflowX: 'hidden', maxWidth: '100vw' }}>
 
         {/* Toasts */}
         <div style={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', zIndex: 400, display: 'flex', flexDirection: 'column', gap: 10, pointerEvents: 'none', alignItems: 'center' }}>
@@ -689,9 +689,10 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                   })
                 }
 
-                {/* Composer */}
-                <div style={{ marginTop: 16, borderTop: `1px solid ${border}`, paddingTop: 14, display: 'flex', gap: 8, alignItems: 'stretch' }}>
-                  <div style={{ flex: '0 0 58%', padding: '10px 14px', background: inputBg, borderRadius: 10 }}>
+                {/* Composer — stacks vertically on mobile */}
+                <div style={{ marginTop: 16, borderTop: `1px solid ${border}`, paddingTop: 14 }}>
+                  {/* Text input — full width */}
+                  <div style={{ padding: '10px 14px', background: inputBg, borderRadius: 10, marginBottom: 8 }}>
                     <input
                       value={composerText}
                       onChange={e => setComposerText(e.target.value)}
@@ -700,7 +701,8 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                       style={{ width: '100%', fontSize: 14, background: 'transparent', color: tp, border: 'none', outline: 'none', fontFamily: 'inherit' }}
                     />
                   </div>
-                  <div style={{ flex: 1, display: 'flex', gap: 8 }}>
+                  {/* Action buttons row — equal width, all visible */}
+                  <div style={{ display: 'flex', gap: 8 }}>
                     {[
                       { label: 'Add Note', icon: 'note', color: '#16A34A' },
                       { label: 'Send SMS', icon: 'sms',  color: '#2563EB' },
@@ -714,8 +716,8 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                           onClick={action}
                           disabled={isNote && (savingNote || !composerText.trim())}
                           style={{
-                            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                            padding: '0 12px', minHeight: 44, borderRadius: 10, fontSize: 14, fontWeight: 500,
+                            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                            padding: '10px 4px', borderRadius: 10, fontSize: 13, fontWeight: 500,
                             cursor: isNote && !composerText.trim() ? 'default' : 'pointer',
                             border: `1px solid ${border}`,
                             background: dk ? '#1E293B' : '#FFFFFF',
@@ -725,7 +727,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                             whiteSpace: 'nowrap',
                           }}
                         >
-                          <svg width="17" height="17" viewBox="0 0 24 24" fill={btn.color} stroke="none">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill={btn.color} stroke="none">
                             {btn.icon === 'note' && <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM8 13h8v1.5H8V13zm0 3h5v1.5H8V16z"/>}
                             {btn.icon === 'sms'  && <path d="M20 2H4a2 2 0 00-2 2v18l4-4h14a2 2 0 002-2V4a2 2 0 00-2-2z"/>}
                             {btn.icon === 'call' && <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/>}

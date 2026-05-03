@@ -187,7 +187,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
       darkMode={dk}
       onToggleDark={toggleDark}
     >
-      <div className={`min-h-screen pb-12 ${dk ? 'bg-[#0A1628]' : 'bg-[#F5F4F0]'}`}>
+      <div className={`min-h-screen pb-12 overflow-x-hidden ${dk ? "bg-[#0A1628]" : "bg-[#F5F4F0]"}`}>
         <div className="max-w-[1400px] mx-auto px-3 py-4 lg:px-4 lg:py-6 space-y-5">
 
           {/* ── Top action bar ── */}
@@ -419,7 +419,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                         </div>
                       </div>
                     ) : (
-                      <p className={`text-sm leading-relaxed ${muted}`}>{estimate.terms}</p>
+                      <p className={`text-sm leading-relaxed break-words ${muted}`} style={{ wordBreak: "break-word", overflowWrap: "break-word" }}>{estimate.terms}</p>
                     )}
                   </div>
 
