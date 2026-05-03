@@ -118,8 +118,10 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
   const [savingNote, setSavingNote] = useState(false)
 
   const [toasts,       setToasts]       = useState<ToastItem[]>([])
-  const [leadEstimate, setLeadEstimate] = useState<{ id: string; estimate_number: string; total: number } | null>(null)
+  const [leadEstimate, setLeadEstimate] = useState<{ id: string; estimate_number: string; total: number; invoice_id?: string } | null>(null)
+  const [leadInvoice,  setLeadInvoice]  = useState<{ id: string; invoice_number: string; status: string; balance_due: number } | null>(null)
   const [creatingEst,  setCreatingEst]  = useState(false)
+  const [creatingInv,  setCreatingInv]  = useState(false)
   const [toastSeq, setToastSeq] = useState(0)
   const stageBarRef = useRef<HTMLDivElement>(null)
   const activePillRef = useRef<HTMLButtonElement>(null)
@@ -145,11 +147,20 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
   // Fetch existing estimate for this lead
   useEffect(() => {
     if (!session || !lead) return
+    // Fetch estimate for this lead
     fetch(`/api/estimates?pro_id=${session.id}`)
       .then(r => r.json())
       .then(d => {
         const match = (d.estimates || []).find((e: any) => e.lead_id === lead.id)
         if (match) setLeadEstimate(match)
+      })
+      .catch(() => {})
+    // Fetch invoice for this lead
+    fetch(`/api/invoices?pro_id=${session.id}&lead_id=${lead.id}`)
+      .then(r => r.json())
+      .then(d => {
+        const inv = (d.invoices || []).find((i: any) => i.status !== 'void')
+        if (inv) setLeadInvoice(inv)
       })
       .catch(() => {})
   }, [session, lead])
@@ -326,6 +337,32 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
       const d = await r.json()
       if (d.estimate?.id) router.push(`/dashboard/estimates/${d.estimate.id}`)
     } catch { setCreatingEst(false) }
+  }
+
+  const createInvoice = async () => {
+    if (!lead || !session || creatingInv) return
+    // If invoice already exists navigate to it
+    if (leadInvoice) { router.push(`/dashboard/invoices/${leadInvoice.id}`); return }
+    setCreatingInv(true)
+    try {
+      const r = await fetch('/api/invoices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pro_id:        session.id,
+          lead_id:       lead.id,
+          estimate_id:   leadEstimate?.id || undefined,
+          lead_name:     lead.contact_name,
+          trade:         session.trade || '',
+          contact_name:  lead.contact_name,
+          contact_email: lead.contact_email || '',
+          contact_phone: lead.contact_phone || '',
+        }),
+      })
+      const d = await r.json()
+      if (d.invoice?.id) router.push(`/dashboard/invoices/${d.invoice.id}`)
+    } catch { /* toast shown by push failure */ }
+    finally { setCreatingInv(false) }
   }
 
   return (
@@ -588,6 +625,20 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                         style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 18px', background: '#0F766E', color: 'white', border: 'none', borderRadius: 9, fontSize: 14, fontWeight: 500, cursor: creatingEst ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap', opacity: creatingEst ? 0.7 : 1 }}>
                         <Ic color="white" size={14}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6"/></Ic>
                         {creatingEst ? 'Creating...' : 'Create Estimate'}
+                      </button>
+                    )
+                  ) : currentStage === 'Completed' ? (
+                    leadInvoice ? (
+                      <button onClick={() => router.push(`/dashboard/invoices/${leadInvoice.id}`)}
+                        style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 18px', background: '#0F766E', color: 'white', border: 'none', borderRadius: 9, fontSize: 14, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        <Ic color="white" size={14}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6"/></Ic>
+                        View Invoice #{leadInvoice.invoice_number}
+                      </button>
+                    ) : (
+                      <button onClick={createInvoice} disabled={creatingInv}
+                        style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 18px', background: '#0F766E', color: 'white', border: 'none', borderRadius: 9, fontSize: 14, fontWeight: 500, cursor: creatingInv ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap', opacity: creatingInv ? 0.7 : 1 }}>
+                        <Ic color="white" size={14}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6"/></Ic>
+                        {creatingInv ? 'Creating...' : '📄 Generate Invoice'}
                       </button>
                     )
                   ) : (

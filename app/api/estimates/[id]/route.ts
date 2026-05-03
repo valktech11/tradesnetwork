@@ -138,6 +138,11 @@ function buildTimeline(estimate: any) {
       timestamp: estimate.approved_at ?? null,
     },
     {
+      event: 'invoiced',
+      label: 'Invoice created',
+      timestamp: estimate.invoiced_at ?? null,
+    },
+    {
       event: 'paid',
       label: 'Payment received',
       timestamp: estimate.paid_at ?? null,

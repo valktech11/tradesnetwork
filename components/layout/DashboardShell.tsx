@@ -51,7 +51,7 @@ function buildNav(nl: number): NavGroup[] {
     ]},
     { title: 'MONEY', items: [
       { label: 'Estimates',   href: '/dashboard/estimates', icon: icon.estimates },
-      { label: 'Invoices',    href: '/dashboard/invoices',  icon: icon.invoices,   soon: true },
+      { label: 'Invoices',    href: '/dashboard/invoices',  icon: icon.invoices },
       { label: 'Revenue',     href: '/dashboard/revenue',   icon: icon.revenue,    soon: true },
     ]},
     { title: 'MY BUSINESS', items: [

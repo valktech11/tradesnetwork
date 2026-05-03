@@ -9,6 +9,7 @@ import EstimateSummary from '@/components/estimate/EstimateSummary'
 import PaymentPanel from '@/components/estimate/PaymentPanel'
 import ApprovalTimeline from '@/components/estimate/ApprovalTimeline'
 import SmartNudges from '@/components/estimate/SmartNudges'
+import EstimateProgressBar from '@/components/estimate/EstimateProgressBar'
 import { Session } from '@/types'
 import { theme } from '@/lib/theme'
 
@@ -24,8 +25,9 @@ export type EstimateItem = {
 export type Estimate = {
   id: string
   estimate_number: string
-  status: 'draft' | 'sent' | 'viewed' | 'approved' | 'paid'
+  status: 'draft' | 'sent' | 'viewed' | 'approved' | 'invoiced' | 'paid'
   lead_id?: string
+  invoice_id?: string
   lead_name: string
   lead_source: string
   trade: string
@@ -53,6 +55,7 @@ const STATUS_STYLES: Record<Estimate['status'], { bg: string; text: string; labe
   sent:     { bg: 'bg-blue-50',    text: 'text-blue-600',   label: 'Sent' },
   viewed:   { bg: 'bg-purple-50',  text: 'text-purple-600', label: 'Viewed' },
   approved: { bg: 'bg-teal-50',    text: 'text-teal-700',   label: 'Approved' },
+  invoiced: { bg: 'bg-orange-50',  text: 'text-orange-700', label: 'Invoiced' },
   paid:     { bg: 'bg-green-50',   text: 'text-green-700',  label: 'Paid' },
 }
 
@@ -76,6 +79,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState<string | null>(null)
+  const [creatingInvoice, setCreatingInvoice] = useState(false)
   const [activeTab, setActiveTab] = useState<'items' | 'notes'>('items')
   const [showTemplatePicker, setShowTemplatePicker] = useState(false)
   const [showSaveTemplate,   setShowSaveTemplate]   = useState(false)
@@ -100,6 +104,39 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
         setLoading(false)
       })
   }, [id, session, router])
+
+  const handleCreateInvoice = async () => {
+    if (!estimate || !session || creatingInvoice) return
+    // If invoice already exists, navigate to it
+    if (estimate.invoice_id) { router.push(`/dashboard/invoices/${estimate.invoice_id}`); return }
+    setCreatingInvoice(true)
+    try {
+      const r = await fetch('/api/invoices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pro_id:        session.id,
+          estimate_id:   estimate.id,
+          lead_id:       estimate.lead_id,
+          lead_name:     estimate.lead_name,
+          trade:         estimate.trade,
+          contact_name:  estimate.lead_name,
+          contact_email: estimate.contact_email,
+          contact_phone: estimate.contact_phone,
+        }),
+      })
+      const d = await r.json()
+      if (!r.ok) throw new Error(d.error)
+      // Update local estimate state to reflect invoiced status
+      setEstimate(prev => prev ? { ...prev, status: 'invoiced', invoice_id: d.invoice.id } : prev)
+      router.push(`/dashboard/invoices/${d.invoice.id}`)
+    } catch (e: any) {
+      setSaveMsg(`Failed to create invoice: ${e.message}`)
+      setTimeout(() => setSaveMsg(null), 4000)
+    } finally {
+      setCreatingInvoice(false)
+    }
+  }
 
   const handleSave = async () => {
     if (!estimate) return
@@ -283,7 +320,20 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
               </div>
 
               {/* ── Smart nudge ── */}
-              <div className="rounded-xl"><SmartNudges darkMode={dk} /></div>
+              {/* Horizontal progress bar */}
+              <EstimateProgressBar timeline={estimate.timeline} darkMode={dk} />
+
+              {/* Context-aware smart nudge */}
+              <SmartNudges
+                darkMode={dk}
+                status={estimate.status}
+                invoiceId={estimate.invoice_id}
+                onCta={() => {
+                  if (estimate.status === 'approved' || estimate.status === 'invoiced') {
+                    handleCreateInvoice()
+                  }
+                }}
+              />
 
               {/* ── Main 2-col layout ── */}
               <div className="flex flex-col xl:flex-row gap-5 items-start">
