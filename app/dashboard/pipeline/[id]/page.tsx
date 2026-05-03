@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, use, useCallback } from 'react'
+import { useState, useEffect, use, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Lead, Session, LeadStatus } from '@/types'
 import { avatarColor, initials, timeAgo } from '@/lib/utils'
@@ -121,6 +121,8 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
   const [leadEstimate, setLeadEstimate] = useState<{ id: string; estimate_number: string; total: number } | null>(null)
   const [creatingEst,  setCreatingEst]  = useState(false)
   const [toastSeq, setToastSeq] = useState(0)
+  const stageBarRef = useRef<HTMLDivElement>(null)
+  const activePillRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     if (typeof window !== 'undefined') setDk(localStorage.getItem('pg_darkmode') === '1')
@@ -151,6 +153,13 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
       })
       .catch(() => {})
   }, [session, lead])
+
+  // Scroll active stage pill into view on mobile
+  useEffect(() => {
+    if (activePillRef.current && stageBarRef.current) {
+      activePillRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+    }
+  }, [currentStage])
 
   function openDrawer() {
     if (!lead) return
@@ -518,7 +527,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
               </div>
 
               {/* Stage pills */}
-              <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, padding: '14px 24px', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4, overflowX: 'auto' }}>
+              <div ref={stageBarRef} style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, padding: '12px 16px', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch' as any }}>
                 {STAGES.map((stage, i) => {
                   const done = i < curIdx; const active = i === curIdx
                   return (
@@ -526,8 +535,9 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                       <button
                         onClick={() => handleStageClick(stage)}
                         disabled={stageSaving}
+                        ref={active ? activePillRef : undefined}
                         style={{
-                          padding: '7px 16px', borderRadius: 20, fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap',
+                          padding: '6px 14px', borderRadius: 20, fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap',
                           background: done ? '#DCFCE7' : 'transparent',
                           border: `1.5px solid ${done ? '#22C55E' : active ? '#7C3AED' : (dk ? '#4B5563' : '#D1D5DB')}`,
                           color: done ? '#166534' : active ? '#7C3AED' : ts,
@@ -589,7 +599,8 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
               </div>
 
               {/* Contact info strip */}
-              <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, marginBottom: 10, display: 'flex', alignItems: 'stretch', overflowX: 'auto', WebkitOverflowScrolling: 'touch' as any }}>
+              <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, marginBottom: 10, overflowX: 'auto', WebkitOverflowScrolling: 'touch' as any }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', minWidth: 320 }}>
                 {[
                   { icon: 'phone', label: 'Phone', value: fmtPhone(lead.contact_phone), copy: lead.contact_phone },
                   { icon: 'email', label: 'Email', value: lead.contact_email || '—', copy: lead.contact_email },
@@ -608,7 +619,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                     copy: null
                   },
                 ].map((cell, ci, arr) => (
-                  <div key={cell.label} style={{ flex: '1 1 0', minWidth: 110, padding: '14px 16px', borderRight: ci < arr.length - 1 ? `1px solid ${border}` : 'none', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  <div key={cell.label} style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 5, borderRight: `1px solid ${border}`, borderBottom: `1px solid ${border}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                       <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#F0FDFA', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Ic color="#0F766E" size={14}>
@@ -628,10 +639,12 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                     </div>
                   </div>
                 ))}
-                {/* Edit pencil at far right */}
-                <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', borderLeft: `1px solid ${border}`, flexShrink: 0 }}>
-                  <button onClick={openDrawer} title="Edit lead info" style={{ background: 'none', border: 'none', cursor: 'pointer', color: ts, padding: 4, borderRadius: 6, display: 'flex', alignItems: 'center' }}>
-                    <Ic color={ts} size={16}><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></Ic>
+                </div>
+                {/* Edit pencil */}
+                <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', borderTop: `1px solid ${border}` }}>
+                  <button onClick={openDrawer} title="Edit lead info" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#0F766E', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                    <Ic color="#0F766E" size={14}><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></Ic>
+                    Edit Lead
                   </button>
                 </div>
               </div>

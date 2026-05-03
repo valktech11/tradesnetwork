@@ -115,7 +115,9 @@ export default function EstimateItems({
   const GRID = '22px 26px 1fr 80px 110px 110px 100px'
 
   return (
-    <div>
+    <div className="-mx-1">
+    <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+    <div style={{ minWidth: 560 }}>
       {/* ── Column headers ── */}
       <div style={{ display: 'grid', gridTemplateColumns: GRID, gap: '0 12px', padding: '0 8px 10px' }}>
         <span /><span />
@@ -348,6 +350,8 @@ export default function EstimateItems({
         </button>
       </div>
 
+    </div>
+    </div>
       {/* ── Modifier pills ── */}
       <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
         {!showDiscount && (

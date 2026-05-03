@@ -216,7 +216,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
               {/* ── Estimate header — matches reference exactly ── */}
               <div className={`rounded-xl border px-6 py-5 ${card}`}>
                 {/* Single row: [name+meta left] [source columns center-right] [send button right] */}
-                <div className="flex flex-col lg:flex-row items-start gap-4">
+                <div className="flex flex-col items-start gap-3">
 
                   {/* Col 1: name / trade / estimate# — grows */}
                   <div className="flex-1 min-w-0">
@@ -250,7 +250,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                   </div>
 
                   {/* Col 2: Lead Source | Created | Valid Until — pipe separated, fixed width */}
-                  <div className="hidden lg:flex items-start shrink-0 gap-0 pt-0.5">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-0.5">
                     {[
                       { label: 'Lead Source', value: estimate.lead_source || '—', amber: false },
                       { label: 'Created',     value: new Date(estimate.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), amber: false },
@@ -281,13 +281,13 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
               </div>
 
               {/* ── Smart nudge ── */}
-              <SmartNudges darkMode={dk} />
+              <div className="overflow-hidden rounded-xl"><SmartNudges darkMode={dk} /></div>
 
               {/* ── Main 2-col layout ── */}
               <div className="flex flex-col lg:flex-row gap-5 items-start">
 
                 {/* Left — items + tabs */}
-                <div className="flex-1 min-w-0 space-y-5">
+                <div className="flex-1 min-w-0 space-y-5 overflow-hidden">
 
                   {/* ── Tab strip — matches reference: tabs left, buttons right ── */}
                   <div className={`rounded-xl border ${card} overflow-hidden`}>
