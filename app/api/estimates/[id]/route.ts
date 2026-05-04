@@ -39,76 +39,43 @@ export async function PATCH(
   const sb = getSupabaseAdmin()
 
   const {
-    items,
-    subtotal,
-    discount,
-    tax_rate,
-    tax_amount,
-    total,
-    require_deposit,
-    deposit_percent,
-    terms,
-    status,
-    notes,
-    contact_phone,
-    contact_email,
-    sent_at,
+    items, subtotal, discount, tax_rate, tax_amount, total,
+    require_deposit, deposit_percent, terms, status, notes,
+    contact_phone, contact_email, sent_at,
+    voided_at, void_reason, declined_at, decline_reason,
   } = body
 
-  // Build update payload — only include sent_at when explicitly provided
   const updatePayload: Record<string, unknown> = {
-    subtotal,
-    discount,
-    tax_rate,
-    tax_amount,
-    total,
-    require_deposit,
-    deposit_percent,
-    terms,
-    status,
-    notes,
+    subtotal, discount, tax_rate, tax_amount, total,
+    require_deposit, deposit_percent, terms, status, notes,
     contact_phone: contact_phone || undefined,
     contact_email: contact_email || undefined,
     updated_at: new Date().toISOString(),
   }
-  if (sent_at !== undefined) updatePayload.sent_at = sent_at
+  if (sent_at      !== undefined) updatePayload.sent_at      = sent_at
+  if (voided_at    !== undefined) updatePayload.voided_at    = voided_at
+  if (void_reason  !== undefined) updatePayload.void_reason  = void_reason
+  if (declined_at  !== undefined) updatePayload.declined_at  = declined_at
+  if (decline_reason !== undefined) updatePayload.decline_reason = decline_reason
 
-  // Update estimate header
-  const { error: estError } = await sb
-    .from('estimates')
-    .update(updatePayload)
-    .eq('id', id)
-
+  const { error: estError } = await sb.from('estimates').update(updatePayload).eq('id', id)
   if (estError) return NextResponse.json({ error: estError.message }, { status: 500 })
 
   // Upsert line items
   if (Array.isArray(items) && items.length > 0) {
     const upsertItems = items.map((item: any) => ({
-      id: item.id,
-      estimate_id: id,
-      name: item.name,
-      description: item.description,
-      qty: item.qty,
-      unit_price: item.unit_price,
+      id: item.id, estimate_id: id,
+      name: item.name, description: item.description,
+      qty: item.qty, unit_price: item.unit_price,
       amount: item.qty * item.unit_price,
     }))
-
-    const { error: itemsError } = await sb
-      .from('estimate_items')
-      .upsert(upsertItems, { onConflict: 'id' })
-
+    const { error: itemsError } = await sb.from('estimate_items').upsert(upsertItems, { onConflict: 'id' })
     if (itemsError) return NextResponse.json({ error: itemsError.message }, { status: 500 })
-
-    // Delete removed items (items in DB but not in current payload)
     const incomingIds = items.map((i: any) => i.id)
-    await sb
-      .from('estimate_items')
-      .delete()
-      .eq('estimate_id', id)
-      .not('id', 'in', `(${incomingIds.join(',')})`)
+    await sb.from('estimate_items').delete().eq('estimate_id', id).not('id', 'in', `(${incomingIds.join(',')})`)
   }
 
-  // Sync lead.quoted_amount with estimate total
+  // Sync lead.quoted_amount
   const { data: estimateData } = await sb.from('estimates').select('lead_id, total').eq('id', id).single()
   if (estimateData?.lead_id && total !== undefined) {
     await sb.from('leads').update({ quoted_amount: total }).eq('id', estimateData.lead_id)
@@ -119,33 +86,26 @@ export async function PATCH(
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function buildTimeline(estimate: any) {
+  const isDeclined = estimate.status === 'declined'
+  const isVoid     = estimate.status === 'void'
+
   return [
-    {
-      event: 'sent',
-      label: 'Sent to client',
-      timestamp: estimate.sent_at ?? null,
-    },
+    { event: 'sent',     label: 'Sent to client',   timestamp: estimate.sent_at     ?? null },
     {
       event: 'viewed',
-      label: estimate.viewed_count > 1
-        ? `Viewed by client (${estimate.viewed_count} times)`
-        : 'Viewed by client',
+      label: estimate.viewed_count > 1 ? `Viewed by client (${estimate.viewed_count} times)` : 'Viewed by client',
       timestamp: estimate.viewed_at ?? null,
     },
     {
-      event: 'approved',
-      label: 'Approved by client',
-      timestamp: estimate.approved_at ?? null,
+      event: isDeclined ? 'declined' : 'approved',
+      label: isDeclined ? 'Declined by client' : 'Approved by client',
+      timestamp: isDeclined ? (estimate.declined_at ?? null) : (estimate.approved_at ?? null),
     },
+    { event: 'invoiced', label: 'Invoice created',   timestamp: estimate.invoiced_at ?? null },
     {
-      event: 'invoiced',
-      label: 'Invoice created',
-      timestamp: estimate.invoiced_at ?? null,
-    },
-    {
-      event: 'paid',
-      label: 'Payment received',
-      timestamp: estimate.paid_at ?? null,
+      event: isVoid ? 'void' : 'paid',
+      label: isVoid ? 'Estimate voided' : 'Payment received',
+      timestamp: isVoid ? (estimate.voided_at ?? null) : (estimate.paid_at ?? null),
     },
   ]
 }

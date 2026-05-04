@@ -9,7 +9,7 @@ import DashboardShell from '@/components/layout/DashboardShell'
 type EstimateSummary = {
   id: string
   estimate_number: string
-  status: 'draft' | 'sent' | 'viewed' | 'approved' | 'invoiced' | 'paid'
+  status: 'draft' | 'sent' | 'viewed' | 'approved' | 'declined' | 'invoiced' | 'paid' | 'void'
   lead_name: string
   trade: string
   total: number
@@ -22,8 +22,10 @@ const STATUS_STYLES: Record<EstimateSummary['status'], { bg: string; text: strin
   sent:     { bg: 'bg-blue-50',    text: 'text-blue-600',   label: 'Sent' },
   viewed:   { bg: 'bg-purple-50',  text: 'text-purple-600', label: 'Viewed' },
   approved: { bg: 'bg-teal-50',    text: 'text-teal-700',   label: 'Approved' },
+  declined: { bg: 'bg-red-50',     text: 'text-red-600',    label: 'Declined' },
   invoiced: { bg: 'bg-orange-50',  text: 'text-orange-700', label: 'Invoiced' },
   paid:     { bg: 'bg-green-50',   text: 'text-green-700',  label: 'Paid' },
+  void:     { bg: 'bg-gray-100',   text: 'text-gray-400',   label: 'Void' },
 }
 
 export default function EstimatesPage() {

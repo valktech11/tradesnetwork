@@ -22,13 +22,14 @@ function money(n: number) {
 }
 
 export default function EstimateItems({
-  estimate, setEstimate, darkMode, onSaveTemplate, onOpenTemplatePicker,
+  estimate, setEstimate, darkMode, onSaveTemplate, onOpenTemplatePicker, locked = false,
 }: {
   estimate: Estimate
   setEstimate: Dispatch<SetStateAction<Estimate | null>>
   darkMode: boolean
   onSaveTemplate?: () => void
   onOpenTemplatePicker?: () => void
+  locked?: boolean
 }) {
   const dk = darkMode
   const [editingId,   setEditingId]   = useState<string | null>(null)
@@ -326,7 +327,8 @@ export default function EstimateItems({
                   {rowAmount > 0 ? money(rowAmount) : <span style={{ color: colMuted }}>—</span>}
                 </div>
 
-                {/* Action buttons — pencil + trash only */}
+                {/* Action buttons — pencil + trash only, hidden when locked */}
+                {!locked && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 5 }}>
                   {([
                     { icon: <Pencil size={14} />, action: () => isEditing ? cancelEdit() : startEdit(item), title: 'Edit',
@@ -343,6 +345,7 @@ export default function EstimateItems({
                     >{icon}</button>
                   ))}
                 </div>
+                )}
               </div>
 
               {/* Edit panel */}
@@ -473,7 +476,8 @@ export default function EstimateItems({
           <span />
         </div>
 
-        {/* + Add Item */}
+        {/* + Add Item — hidden when locked */}
+        {!locked && (
         <button onClick={addItem}
           style={{ width: '100%', padding: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center',
             gap: 8, fontSize: 14, fontWeight: 500, color: '#0F766E', background: 'transparent', border: 'none',
@@ -483,13 +487,15 @@ export default function EstimateItems({
           <Plus size={15} />
           Add Item
         </button>
+        )}
       </div>
 
     </div>
     </div>
     </div>
       </div>
-      {/* ── Modifier pills ── */}
+      {/* ── Modifier pills — hidden when locked ── */}
+      {!locked && (
       <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
         {!showDiscount && (
           <button onClick={() => setShowDiscount(true)}
@@ -500,6 +506,7 @@ export default function EstimateItems({
           </button>
         )}
       </div>
+      )}
 
     </div>
   )

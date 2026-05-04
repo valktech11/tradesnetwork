@@ -46,6 +46,10 @@ export default function PublicEstimatePage({ params }: { params: Promise<{ id: s
   const [notFound, setNotFound] = useState(false)
   const [approved, setApproved] = useState(false)
   const [approving, setApproving] = useState(false)
+  const [declined, setDeclined] = useState(false)
+  const [declining, setDeclining] = useState(false)
+  const [showDeclineInput, setShowDeclineInput] = useState(false)
+  const [declineReason, setDeclineReason] = useState('')
 
   useEffect(() => {
     fetch(`/api/estimates/public/${id}`)
@@ -71,6 +75,21 @@ export default function PublicEstimatePage({ params }: { params: Promise<{ id: s
     finally { setApproving(false) }
   }
 
+  const handleDecline = async () => {
+    if (!estimate || declining) return
+    setDeclining(true)
+    try {
+      await fetch(`/api/estimates/public/${id}/decline`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: declineReason || null }),
+      })
+      setDeclined(true)
+      setEstimate(prev => prev ? { ...prev, status: 'declined' } : prev)
+    } catch { /* silent */ }
+    finally { setDeclining(false) }
+  }
+
   if (loading) return (
     <div className="min-h-screen bg-[#F5F4F0] flex items-center justify-center">
       <div className="text-center">
@@ -93,6 +112,7 @@ export default function PublicEstimatePage({ params }: { params: Promise<{ id: s
   const isExpired  = new Date(estimate.valid_until) < new Date()
   const isPaid     = estimate.status === 'paid'
   const isApproved = estimate.status === 'approved' || approved
+  const isDeclined = estimate.status === 'declined' || declined
   const depositAmt = estimate.total * (estimate.deposit_percent / 100)
 
   return (
@@ -109,10 +129,11 @@ export default function PublicEstimatePage({ params }: { params: Promise<{ id: s
           <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
             isPaid     ? 'bg-green-50 text-green-700' :
             isApproved ? 'bg-teal-50 text-teal-700' :
+            isDeclined ? 'bg-red-50 text-red-600' :
             isExpired  ? 'bg-red-50 text-red-600' :
                          'bg-amber-50 text-amber-700'
           }`}>
-            {isPaid ? 'Paid' : isApproved ? 'Approved' : isExpired ? 'Expired' : 'Awaiting Approval'}
+            {isPaid ? 'Paid' : isApproved ? 'Approved' : isDeclined ? 'Declined' : isExpired ? 'Expired' : 'Awaiting Approval'}
           </span>
         </div>
       </div>
@@ -130,6 +151,17 @@ export default function PublicEstimatePage({ params }: { params: Promise<{ id: s
               <p className="text-xs text-teal-700 mt-0.5">
                 {isPaid ? 'Your payment has been received. We\'ll be in touch shortly.' : 'We\'ll be in touch shortly to confirm the job details.'}
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* ── Declined banner ── */}
+        {isDeclined && (
+          <div className="bg-red-50 border border-red-200 rounded-xl px-5 py-4 flex items-center gap-3">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" className="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            <div>
+              <p className="text-sm font-semibold text-red-800">You declined this estimate</p>
+              <p className="text-xs text-red-700 mt-0.5">The contractor has been notified and may reach out with a revised estimate.</p>
             </div>
           </div>
         )}
@@ -223,9 +255,9 @@ export default function PublicEstimatePage({ params }: { params: Promise<{ id: s
           </div>
         </div>
 
-        {/* ── Approve CTA ── */}
-        {!isApproved && !isPaid && !isExpired && (
-          <div className="bg-white rounded-2xl border border-[#E8E2D9] p-6 text-center">
+        {/* ── Approve + Decline CTAs ── */}
+        {!isApproved && !isPaid && !isDeclined && !isExpired && (
+          <div className="bg-white rounded-2xl border border-[#E8E2D9] p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-1">Ready to move forward?</h2>
             <p className="text-sm text-[#6B7280] mb-5">
               {estimate.require_deposit
@@ -235,11 +267,41 @@ export default function PublicEstimatePage({ params }: { params: Promise<{ id: s
             <button
               onClick={handleApprove}
               disabled={approving}
-              className="w-full max-w-xs mx-auto flex items-center justify-center gap-2 bg-gradient-to-r from-[#0F766E] to-[#0D9488] text-white py-3 rounded-xl text-sm font-bold shadow-sm hover:opacity-90 transition-opacity disabled:opacity-60">
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#0F766E] to-[#0D9488] text-white py-3 rounded-xl text-sm font-bold shadow-sm hover:opacity-90 transition-opacity disabled:opacity-60 mb-3">
               <CheckCircle2 size={16} />
               {approving ? 'Approving...' : estimate.require_deposit ? `Approve & Pay Deposit (${fmt(depositAmt)})` : 'Approve Estimate'}
             </button>
-            <p className="text-xs text-[#9CA3AF] mt-3">By approving, you agree to the terms below.</p>
+            <p className="text-xs text-[#9CA3AF] text-center mb-4">By approving, you agree to the terms below.</p>
+
+            {/* Decline option */}
+            {!showDeclineInput ? (
+              <button onClick={() => setShowDeclineInput(true)}
+                className="w-full text-center text-xs text-[#9CA3AF] hover:text-red-500 transition-colors py-1">
+                Not happy with this estimate? Decline →
+              </button>
+            ) : (
+              <div className="border-t border-[#E8E2D9] pt-4">
+                <p className="text-sm font-medium text-gray-700 mb-2">Tell the contractor why (optional)</p>
+                <textarea
+                  value={declineReason}
+                  onChange={e => setDeclineReason(e.target.value)}
+                  placeholder="Price too high, different scope needed, chose another contractor..."
+                  rows={2}
+                  className="w-full text-sm px-3 py-2.5 rounded-lg border border-[#E8E2D9] bg-[#F9F8F5] text-gray-900 resize-none outline-none mb-3"
+                  style={{ boxSizing: 'border-box' }}
+                />
+                <div className="flex gap-2">
+                  <button onClick={() => setShowDeclineInput(false)}
+                    className="flex-1 py-2 rounded-lg text-sm border border-[#E8E2D9] text-[#6B7280]">
+                    Cancel
+                  </button>
+                  <button onClick={handleDecline} disabled={declining}
+                    className="flex-1 py-2 rounded-lg text-sm font-semibold bg-red-500 text-white disabled:opacity-60">
+                    {declining ? 'Declining...' : 'Decline Estimate'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
