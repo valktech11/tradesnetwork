@@ -184,7 +184,7 @@ export default function OverviewPage() {
   const scheduledLeads = leads.filter(l => l.lead_status === 'Scheduled')
   const completedLeads = leads.filter(l => l.lead_status === 'Completed')
   const paidLeads      = leads.filter(l => l.lead_status === 'Paid')
-  const revenueLeads   = leads.filter(l => ['Paid','Completed'].includes(l.lead_status))
+  const revenueLeads   = leads.filter(l => l.lead_status === 'Paid')  // A6 FIX: Completed = unpaid, not revenue
   const activeLeads    = leads.filter(l => !['Paid','Lost','Archived','Converted','Completed'].includes(l.lead_status))
   const awaitingResp   = contactedLeads.filter(l => (Date.now() - new Date(l.created_at).getTime()) / 86400000 >= 1)
   const waitingOnCust  = quotedLeads

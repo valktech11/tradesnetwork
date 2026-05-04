@@ -17,9 +17,9 @@ export async function POST(req: NextRequest) {
 
   if (error || !orig) return NextResponse.json({ error: 'Estimate not found' }, { status: 404 })
 
-  // Get next estimate number
-  const { count } = await sb.from('estimates').select('id', { count: 'exact', head: true }).eq('pro_id', pro_id)
-  const num = String((count || 0) + 1001).padStart(4, '0')
+  // B11 FIX: use same RPC as main create route to avoid number collisions
+  const { data: numData } = await sb.rpc('next_estimate_number')
+  const estimateNumber: string = numData || `EST-${Date.now().toString().slice(-4)}`
 
   // Create new draft estimate
   const { data: newEst, error: createErr } = await sb.from('estimates').insert({
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     lead_source:     orig.lead_source,
     trade:           orig.trade,
     job_description: orig.job_description,
-    estimate_number: `EST-${num}`,
+    estimate_number: estimateNumber,
     status:          'draft',
     subtotal:        orig.subtotal,
     discount:        orig.discount,

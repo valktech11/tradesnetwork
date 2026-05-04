@@ -159,7 +159,7 @@ const s = StyleSheet.create({
 
 // ── Inner page content ─────────────────────────────────────────────────────────
 function EstimatePage({ estimate }: { estimate: PDFEstimate }) {
-  const depositAmount = estimate.total * (estimate.deposit_percent / 100)
+  const depositAmount = Math.round(estimate.total * (estimate.deposit_percent / 100) * 100) / 100
   const statusLabel = estimate.status.charAt(0).toUpperCase() + estimate.status.slice(1)
 
   return (

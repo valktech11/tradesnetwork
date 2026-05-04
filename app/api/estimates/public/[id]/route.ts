@@ -19,6 +19,11 @@ export async function GET(
     return NextResponse.json({ error: 'Estimate not found' }, { status: 404 })
   }
 
+  // B3 FIX: block draft and void from public access
+  if (['draft', 'void'].includes(estimate.status)) {
+    return NextResponse.json({ error: 'Estimate not available' }, { status: 404 })
+  }
+
   // Don't expose internal fields to client
   const { contact_email, contact_phone, pro_id, ...safe } = estimate
 

@@ -3,16 +3,17 @@ import { getSupabaseAdmin } from '@/lib/supabase'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
-  const id = searchParams.get('id')
+  const id     = searchParams.get('id')
+  const pro_id = searchParams.get('pro_id')
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
   const sb = getSupabaseAdmin()
 
-  const { data: estimate, error } = await sb
-    .from('estimates')
-    .select('*, items:estimate_items(*)')
-    .eq('id', id)
-    .single()
+  const query = sb.from('estimates').select('*, items:estimate_items(*)').eq('id', id)
+  // C6 FIX: if pro_id provided, verify ownership
+  if (pro_id) query.eq('pro_id', pro_id)
+
+  const { data: estimate, error } = await query.single()
 
   if (error || !estimate) {
     return NextResponse.json({ error: 'Estimate not found' }, { status: 404 })

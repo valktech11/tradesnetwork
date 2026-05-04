@@ -147,12 +147,17 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
   // Fetch existing estimate for this lead
   useEffect(() => {
     if (!session || !lead) return
-    // Fetch estimate for this lead
+    // Fetch estimate for this lead — C1 FIX: pick by status priority not newest
     fetch(`/api/estimates?pro_id=${session.id}`)
       .then(r => r.json())
       .then(d => {
-        const match = (d.estimates || []).find((e: any) => e.lead_id === lead.id)
-        if (match) setLeadEstimate(match)
+        const leadEstimates = (d.estimates || []).filter((e: any) => e.lead_id === lead.id && !['void','declined'].includes(e.status))
+        if (leadEstimates.length === 0) return
+        const priority = ['invoiced', 'approved', 'paid', 'sent', 'viewed', 'draft']
+        const best = leadEstimates.sort((a: any, b: any) =>
+          (priority.indexOf(a.status) < priority.indexOf(b.status) ? -1 : 1)
+        )[0]
+        if (best) setLeadEstimate(best)
       })
       .catch(() => {})
     // Fetch invoice for this lead
@@ -247,7 +252,8 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
       lead_source: sourceRaw || null,
       scheduled_date: dScheduled || null,
       follow_up_date: dFollowUp || null,
-      quoted_amount: dQuote ? parseFloat(dQuote) : null,
+      // C3+C4 FIX: when estimate linked, do NOT overwrite estimate-synced quoted_amount
+      quoted_amount: leadEstimate ? undefined : (dQuote ? parseFloat(dQuote) : null),
       lead_status: dStatus,
       notes: dNotes || null,
     })
@@ -262,7 +268,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
         lead_source: sourceRaw || null,
         scheduled_date: dScheduled || null,
         follow_up_date: dFollowUp || null,
-        quoted_amount: dQuote ? parseFloat(dQuote) : null,
+        quoted_amount: leadEstimate ? l?.quoted_amount ?? null : (dQuote ? parseFloat(dQuote) : null),
         lead_status: dStatus,
         notes: dNotes || null,
       } : l)

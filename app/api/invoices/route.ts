@@ -54,9 +54,10 @@ export async function POST(req: NextRequest) {
     // Derive invoice number from estimate number: EST-1009 → INV-1009
     const invoiceNumber = (est.estimate_number || '').replace(/^EST-/, 'INV-')
 
-    // Deposit paid = estimate total * deposit_percent / 100 (if deposit was requested)
-    const depositPaid  = est.require_deposit ? Math.round(est.total * est.deposit_percent) / 100 : 0
-    const balanceDue   = Math.round((est.total - depositPaid) * 100) / 100
+    // A2+A3 FIX: deposit_paid defaults to 0 — pro manually confirms what was actually collected
+    // Formula: round(total * percent/100 * 100) / 100 for precision
+    const depositPaid  = 0  // Do not assume deposit was collected — pro records it manually
+    const balanceDue   = Math.round(est.total * 100) / 100
 
     // Due date = today (due on receipt default)
     const dueDate = new Date(); dueDate.setHours(23, 59, 59, 0)

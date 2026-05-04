@@ -377,11 +377,12 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                     value={invoice.payment_terms}
                     onChange={async e => {
                       const terms = e.target.value
-                      const dueDate = new Date()
-                      if (terms === 'net_7')  dueDate.setDate(dueDate.getDate() + 7)
-                      if (terms === 'net_14') dueDate.setDate(dueDate.getDate() + 14)
-                      if (terms === 'net_30') dueDate.setDate(dueDate.getDate() + 30)
-                      await patchInvoice({ payment_terms: terms, due_date: dueDate.toISOString() })
+                      // A11 FIX: calculate due date from issue_date, not today
+                      const base = new Date(invoice.issue_date)
+                      if (terms === 'net_7')  base.setDate(base.getDate() + 7)
+                      if (terms === 'net_14') base.setDate(base.getDate() + 14)
+                      if (terms === 'net_30') base.setDate(base.getDate() + 30)
+                      await patchInvoice({ payment_terms: terms, due_date: base.toISOString() })
                     }}
                     style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: `1.5px solid ${t.inputBorder}`, background: t.inputBg, color: t.textPri, fontSize: 13, outline: 'none' }}
                   >

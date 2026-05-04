@@ -2,14 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
-  const { data, error } = await getSupabaseAdmin()
-    .from('leads').select('*').eq('id', id).single()
+  // C5 FIX: verify lead belongs to requesting pro
+  const proId = new URL(req.url).searchParams.get('pro_id')
+
+  const query = getSupabaseAdmin().from('leads').select('*').eq('id', id)
+  if (proId) query.eq('pro_id', proId)
+
+  const { data, error } = await query.single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ lead: data })

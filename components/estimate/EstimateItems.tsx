@@ -11,10 +11,11 @@ function uid() {
 }
 
 function recalc(items: EstimateItem[], tax: number, discount: number) {
-  const subtotal   = items.reduce((s, i) => s + i.qty * i.unit_price, 0)
-  const discounted = Math.max(0, subtotal - discount)
-  const tax_amount = discounted * (tax / 100)
-  return { subtotal, tax_amount, total: discounted + tax_amount }
+  const subtotal   = Math.round(items.reduce((s, i) => s + i.qty * i.unit_price, 0) * 100) / 100
+  const discounted = Math.max(0, Math.round((subtotal - discount) * 100) / 100)
+  const tax_amount = Math.round(discounted * (tax / 100) * 100) / 100
+  const total      = Math.round((discounted + tax_amount) * 100) / 100
+  return { subtotal, tax_amount, total }
 }
 
 function money(n: number) {
@@ -206,8 +207,8 @@ export default function EstimateItems({
           })}
         </div>
 
-        {/* Discount row — mobile */}
-        {showDiscount && (
+        {/* Discount row — mobile, hidden when locked */}
+        {showDiscount && !locked && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '10px 14px', border: `1.5px solid ${border}`, borderRadius: 10, background: bgCard, marginTop: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 14, color: colMuted }}>Discount</span>
@@ -227,7 +228,8 @@ export default function EstimateItems({
           </div>
         )}
 
-        {/* Tax row — mobile */}
+        {/* Tax row — mobile, hidden when locked */}
+        {!locked && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '10px 14px', border: `1.5px solid ${border}`, borderRadius: 10, background: dk ? '#1a2030' : '#FAFAF9', marginTop: 8 }}>
           <div>
             <span style={{ fontSize: 14, color: colMuted }}>Sales Tax</span>
@@ -242,6 +244,7 @@ export default function EstimateItems({
             <span style={{ fontSize: 13, fontWeight: 600, color: colBody, minWidth: 60, textAlign: 'right' }}>{estimate.tax_amount > 0 ? money(estimate.tax_amount) : '—'}</span>
           </div>
         </div>
+        )}
 
         {/* Add Item — mobile */}
         <button onClick={addItem}

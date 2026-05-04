@@ -61,24 +61,32 @@ export async function PATCH(
   const { error: estError } = await sb.from('estimates').update(updatePayload).eq('id', id)
   if (estError) return NextResponse.json({ error: estError.message }, { status: 500 })
 
-  // Upsert line items
-  if (Array.isArray(items) && items.length > 0) {
-    const upsertItems = items.map((item: any) => ({
-      id: item.id, estimate_id: id,
-      name: item.name, description: item.description,
-      qty: item.qty, unit_price: item.unit_price,
-      amount: item.qty * item.unit_price,
-    }))
-    const { error: itemsError } = await sb.from('estimate_items').upsert(upsertItems, { onConflict: 'id' })
-    if (itemsError) return NextResponse.json({ error: itemsError.message }, { status: 500 })
+  // B10 FIX: always process items array — even empty (to delete all removed items)
+  if (Array.isArray(items)) {
+    if (items.length > 0) {
+      const upsertItems = items.map((item: any) => ({
+        id: item.id, estimate_id: id,
+        name: item.name, description: item.description,
+        qty: item.qty, unit_price: item.unit_price,
+        amount: Math.round(item.qty * item.unit_price * 100) / 100,
+      }))
+      const { error: itemsError } = await sb.from('estimate_items').upsert(upsertItems, { onConflict: 'id' })
+      if (itemsError) return NextResponse.json({ error: itemsError.message }, { status: 500 })
+    }
+    // Always delete items not in the incoming array (handles empty array = delete all)
     const incomingIds = items.map((i: any) => i.id)
-    await sb.from('estimate_items').delete().eq('estimate_id', id).not('id', 'in', `(${incomingIds.join(',')})`)
+    if (incomingIds.length > 0) {
+      await sb.from('estimate_items').delete().eq('estimate_id', id).not('id', 'in', `(${incomingIds.join(',')})`)
+    } else {
+      await sb.from('estimate_items').delete().eq('estimate_id', id)
+    }
   }
 
-  // Sync lead.quoted_amount
-  const { data: estimateData } = await sb.from('estimates').select('lead_id, total').eq('id', id).single()
-  if (estimateData?.lead_id && total !== undefined) {
-    await sb.from('leads').update({ quoted_amount: total }).eq('id', estimateData.lead_id)
+  // A4 FIX: Only sync quoted_amount from approved/invoiced/paid estimates
+  const { data: estimateData } = await sb.from('estimates').select('lead_id').eq('id', id).single()
+  const syncableStatuses = ['approved', 'invoiced', 'paid']
+  if (estimateData?.lead_id && total !== undefined && status && syncableStatuses.includes(status)) {
+    await sb.from('leads').update({ quoted_amount: Math.round(total * 100) / 100 }).eq('id', estimateData.lead_id)
   }
 
   return NextResponse.json({ ok: true })

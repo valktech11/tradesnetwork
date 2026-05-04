@@ -431,11 +431,26 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                       {/* Primary CTA — per status */}
                       {estimate.status === 'draft' && (
                         <button onClick={async () => {
+                          // D20 FIX: validate before sending
+                          if (estimate.items.length === 0) { setSaveMsg('Add items before sending'); setTimeout(() => setSaveMsg(null), 3000); return }
+                          if (estimate.total <= 0) { setSaveMsg('Total must be greater than $0'); setTimeout(() => setSaveMsg(null), 3000); return }
+                          if (!estimate.contact_email) { setSaveMsg('Add client email to this lead to send estimate'); setTimeout(() => setSaveMsg(null), 4000); return }
+
                           const sentAt = new Date().toISOString()
                           await handleSave()
+
+                          // D1 FIX: update status AND send actual email
                           await fetch(`/api/estimates/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...estimate, status: 'sent', sent_at: sentAt }) })
+
+                          // Send email to client
+                          await fetch('/api/estimates/send-reminder', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ estimateId: id, contactEmail: estimate.contact_email, pro_id: session?.id }),
+                          })
+
                           setEstimate(prev => prev ? { ...prev, status: 'sent', timeline: prev.timeline.map(tl => tl.event === 'sent' ? { ...tl, timestamp: sentAt } : tl) } : prev)
-                          setSaveMsg('Estimate sent ✓'); setTimeout(() => setSaveMsg(null), 3000)
+                          setSaveMsg('Estimate sent to client ✓'); setTimeout(() => setSaveMsg(null), 3000)
                         }} disabled={saving}
                           className="flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 disabled:opacity-60 whitespace-nowrap"
                           style={{ background: 'linear-gradient(135deg, #0F766E, #0D9488)' }}>
@@ -444,7 +459,14 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                       )}
                       {(estimate.status === 'sent' || estimate.status === 'viewed') && (
                         <button onClick={async () => {
-                          setSaveMsg('Reminder sent ✓'); setTimeout(() => setSaveMsg(null), 3000)
+                          if (!estimate.contact_email) { setSaveMsg('No email on file for this client'); setTimeout(() => setSaveMsg(null), 3000); return }
+                          const r = await fetch('/api/estimates/send-reminder', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ estimateId: id, contactEmail: estimate.contact_email, pro_id: session?.id }),
+                          })
+                          setSaveMsg(r.ok ? 'Reminder sent to client ✓' : 'Failed to send reminder')
+                          setTimeout(() => setSaveMsg(null), 3000)
                         }}
                           className="flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 whitespace-nowrap"
                           style={{ background: 'linear-gradient(135deg, #2563EB, #1D4ED8)' }}>
@@ -607,7 +629,10 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                         )}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <button onClick={() => setShowSaveTemplate(true)}
+                        <button onClick={async () => {
+                          if (isDirty) await handleSave()  // C10 FIX: save current state first
+                          setShowSaveTemplate(true)
+                        }}
                           style={{ fontSize: 12, color: dk ? '#94A3B8' : '#6B7280', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textDecorationColor: 'transparent' }}
                           onMouseEnter={e => (e.currentTarget.style.textDecorationColor = 'currentColor')}
                           onMouseLeave={e => (e.currentTarget.style.textDecorationColor = 'transparent')}>
@@ -849,17 +874,28 @@ function NotesTab({ estimate, setEstimate, darkMode }: {
 }) {
   const dk = darkMode
   const [note, setNote] = React.useState(estimate.notes || '')
-  const [saved, setSaved] = React.useState(false)
+  const [saving, setSaving] = React.useState(false)
+  const [saved,  setSaved]  = React.useState(false)
 
   const border  = dk ? '#334155' : '#E8E2D9'
   const bgCard  = dk ? '#1E293B' : '#ffffff'
   const col     = dk ? '#f1f5f9' : '#111827'
   const colMuted= dk ? '#94a3b8' : '#6B7280'
 
+  // C8 FIX: save to DB, not just local state
   const saveNote = async () => {
-    setEstimate(prev => prev ? { ...prev, notes: note } : prev)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+    setSaving(true)
+    try {
+      await fetch(`/api/estimates/${estimate.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: note }),
+      })
+      setEstimate(prev => prev ? { ...prev, notes: note } : prev)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2500)
+    } catch { /* silent — toast not critical here */ }
+    finally { setSaving(false) }
   }
 
   return (
@@ -884,9 +920,9 @@ function NotesTab({ estimate, setEstimate, darkMode }: {
         />
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8, gap: 8, alignItems: 'center' }}>
           {saved && <span style={{ fontSize: 13, color: '#0F766E' }}>✓ Saved</span>}
-          <button onClick={saveNote}
-            style={{ padding: '7px 18px', fontSize: 13, fontWeight: 600, borderRadius: 8, border: 'none', background: '#0F766E', color: '#fff', cursor: 'pointer' }}>
-            Save Note
+          <button onClick={saveNote} disabled={saving}
+            style={{ padding: '7px 18px', fontSize: 13, fontWeight: 600, borderRadius: 8, border: 'none', background: '#0F766E', color: '#fff', cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
+            {saving ? 'Saving...' : 'Save Note'}
           </button>
         </div>
       </div>

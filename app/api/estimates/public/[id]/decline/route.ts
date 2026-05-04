@@ -19,7 +19,7 @@ export async function POST(
       updated_at:     new Date().toISOString(),
     })
     .eq('id', id)
-    .in('status', ['sent', 'viewed']) // only decline if not already actioned
+    .in('status', ['sent', 'viewed']) // B6: symmetric guard matching approve route
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ ok: true })

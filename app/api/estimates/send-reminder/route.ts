@@ -4,8 +4,17 @@ import { Resend } from 'resend'
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(req: NextRequest) {
-  const { estimateId, contactEmail } = await req.json()
+  const { estimateId, contactEmail, pro_id } = await req.json()
   if (!contactEmail) return NextResponse.json({ error: 'contactEmail required' }, { status: 400 })
+  if (!estimateId)   return NextResponse.json({ error: 'estimateId required' }, { status: 400 })
+
+  // C7 FIX: verify estimate belongs to pro before sending email
+  if (pro_id) {
+    const { data: est } = await import('@/lib/supabase')
+      .then(m => m.getSupabaseAdmin().from('estimates').select('pro_id').eq('id', estimateId).single())
+    if (!est || est.pro_id !== pro_id)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  }
 
   const estimateUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://proguild.ai'}/estimate/${estimateId}`
 

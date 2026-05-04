@@ -43,20 +43,25 @@ export async function POST(req: NextRequest) {
 
   const sb = getSupabaseAdmin()
 
-  // If lead_id provided and not forcing new, check for existing draft first
+  // C2 FIX: check for any non-void, non-declined estimate (not just draft)
+  // Priority: approved > invoiced > paid > sent > viewed > draft
   if (lead_id && !force_new) {
     const { data: existing } = await sb
       .from('estimates')
       .select('id, estimate_number, status, total, created_at')
       .eq('pro_id', pro_id)
       .eq('lead_id', lead_id)
-      .eq('status', 'draft')
+      .not('status', 'in', '("void","declined")')
       .order('created_at', { ascending: false })
-      .limit(1)
-      .single()
+      .limit(10)
 
-    if (existing) {
-      return NextResponse.json({ estimate: existing, existed: true })
+    if (existing && existing.length > 0) {
+      // Pick by priority: approved/invoiced/paid > sent/viewed > draft
+      const priority = ['approved', 'invoiced', 'paid', 'sent', 'viewed', 'draft']
+      const best = existing.sort((a, b) =>
+        (priority.indexOf(a.status) - priority.indexOf(b.status))
+      )[0]
+      return NextResponse.json({ estimate: best, existed: true })
     }
   }
 

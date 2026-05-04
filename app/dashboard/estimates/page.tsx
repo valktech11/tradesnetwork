@@ -172,7 +172,9 @@ export default function EstimatesPage() {
   )
 
   // Stats
-  const totalValue    = estimates.reduce((s, e) => s + e.total, 0)
+  // A7 FIX: only count active estimates in pipeline value
+  const activeStatuses = ['sent', 'viewed', 'approved', 'invoiced']
+  const totalValue    = estimates.filter(e => activeStatuses.includes(e.status)).reduce((s, e) => s + e.total, 0)
   const approvedCount = estimates.filter(e => e.status === 'approved' || e.status === 'paid').length
   const sentCount     = estimates.filter(e => e.status === 'sent' || e.status === 'viewed').length
 
