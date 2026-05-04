@@ -15,7 +15,7 @@ type EstimateItem = {
 type PublicEstimate = {
   id: string
   estimate_number: string
-  status: 'draft' | 'sent' | 'viewed' | 'approved' | 'paid'
+  status: 'draft' | 'sent' | 'viewed' | 'approved' | 'declined' | 'paid'
   lead_name: string
   trade: string
   lead_source: string
