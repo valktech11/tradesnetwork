@@ -210,23 +210,23 @@ export default function PublicEstimatePage({ params }: { params: Promise<{ id: s
 
         {/* ── Line items ── */}
         <div className="bg-white rounded-2xl border border-[#E8E2D9] overflow-hidden">
-          <div className="grid grid-cols-[1fr_60px_100px_100px] gap-3 px-6 py-3 bg-gray-50 border-b border-[#E8E2D9]">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#9CA3AF]">Item</span>
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#9CA3AF] text-center">QTY</span>
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#9CA3AF] text-right">Unit Price</span>
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#9CA3AF] text-right">Amount</span>
+          <div className="grid grid-cols-[2fr_40px_80px_80px] md:grid-cols-[1fr_60px_100px_100px] gap-2 md:gap-3 px-4 md:px-6 py-3 bg-gray-50 border-b border-[#E8E2D9]">
+            <span className="text-[12px] font-bold uppercase tracking-wider text-[#6B7280]">Item</span>
+            <span className="text-[12px] font-bold uppercase tracking-wider text-[#6B7280] text-center">Qty</span>
+            <span className="text-[12px] font-bold uppercase tracking-wider text-[#6B7280] text-right">Price</span>
+            <span className="text-[12px] font-bold uppercase tracking-wider text-[#6B7280] text-right">Amount</span>
           </div>
 
           {estimate.items.map((item, i) => (
             <div key={item.id}
-              className={`grid grid-cols-[1fr_60px_100px_100px] gap-3 px-6 py-4 ${i < estimate.items.length - 1 ? 'border-b border-[#E8E2D9]' : ''}`}>
+              className={`grid grid-cols-[2fr_40px_80px_80px] md:grid-cols-[1fr_60px_100px_100px] gap-2 md:gap-3 px-4 md:px-6 py-4 ${i < estimate.items.length - 1 ? 'border-b border-[#E8E2D9]' : ''}`}>
               <div>
-                <p className="text-sm font-semibold text-gray-900">{item.name}</p>
-                {item.description && <p className="text-xs text-[#6B7280] mt-0.5">{item.description}</p>}
+                <p className="text-[14px] font-semibold text-gray-900 leading-snug">{item.name}</p>
+                {item.description && <p className="text-[12px] text-[#6B7280] mt-0.5 leading-snug">{item.description}</p>}
               </div>
-              <p className="text-sm text-[#6B7280] text-center self-center">{item.qty}</p>
-              <p className="text-sm text-[#6B7280] text-right self-center">{fmt(item.unit_price)}</p>
-              <p className="text-sm font-semibold text-gray-900 text-right self-center">{fmt(item.qty * item.unit_price)}</p>
+              <p className="text-[13px] text-[#6B7280] text-center self-center">{item.qty}</p>
+              <p className="text-[13px] text-[#6B7280] text-right self-center">{fmt(item.unit_price)}</p>
+              <p className="text-[13px] font-semibold text-gray-900 text-right self-center">{fmt(item.qty * item.unit_price)}</p>
             </div>
           ))}
 
@@ -237,7 +237,7 @@ export default function PublicEstimatePage({ params }: { params: Promise<{ id: s
           {/* Totals */}
           <div className="border-t border-[#E8E2D9] px-6 py-4 space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-[#6B7280]">Subtotal</span>
+              <span className="text-[#4B5563]">Subtotal</span>
               <span className="font-medium text-gray-900">{fmt(estimate.subtotal)}</span>
             </div>
             {estimate.discount > 0 && (

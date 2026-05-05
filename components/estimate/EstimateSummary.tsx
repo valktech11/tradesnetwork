@@ -31,7 +31,7 @@ export default function EstimateSummary({ estimate, darkMode }: { estimate: Esti
           <div>
             <span style={{ color: t.textMuted }}>Tax ({estimate.tax_rate}%)</span>
             {estimate.tax_rate > 0 && (
-              <p style={{ fontSize: 10, marginTop: 2, color: '#F59E0B' }}>Base state rate — adjust for your county</p>
+              <p style={{ fontSize: 12, marginTop: 2, color: '#D97706' }}>Base state rate — adjust for your county</p>
             )}
           </div>
           <span style={{ fontWeight: 500, color: t.textBody }}>{fmt(estimate.tax_amount)}</span>

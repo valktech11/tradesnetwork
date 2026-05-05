@@ -106,7 +106,7 @@ export default function EstimateItems({
   }
 
   const hdStyle: React.CSSProperties = {
-    fontSize: 11, fontWeight: 700, letterSpacing: '0.09em',
+    fontSize: 13, fontWeight: 700, letterSpacing: '0.07em',
     textTransform: 'uppercase', color: colSub,
   }
   const inputStyle = (extra?: React.CSSProperties): React.CSSProperties => ({
@@ -115,7 +115,7 @@ export default function EstimateItems({
     color: col, outline: 'none', boxSizing: 'border-box', ...extra,
   })
   const labelStyle: React.CSSProperties = {
-    fontSize: 11, fontWeight: 700, letterSpacing: '0.07em',
+    fontSize: 13, fontWeight: 600, letterSpacing: '0.06em',
     textTransform: 'uppercase', color: colMuted, marginBottom: 6, display: 'block',
   }
 

@@ -19,8 +19,8 @@ export function theme(dk: boolean) {
     // Text
     textPri:      dk ? '#F1F5F9' : '#111827',   // headings, names, primary values
     textBody:     dk ? '#CBD5E1' : '#374151',   // body text, amounts, button labels
-    textMuted:    dk ? '#94A3B8' : '#6B7280',   // labels, secondary info, placeholders
-    textSubtle:   dk ? '#64748B' : '#9CA3AF',   // timestamps, hints — use sparingly
+    textMuted:    dk ? '#94A3B8' : '#4B5563',   // labels, secondary info, placeholders
+    textSubtle:   dk ? '#64748B' : '#6B7280',   // timestamps, hints — use sparingly
 
     // Interactive
     btnBorder:    dk ? '#475569' : '#D1D5DB',   // icon action buttons

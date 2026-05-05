@@ -39,7 +39,7 @@ export default function PaymentPanel({ estimate, setEstimate, darkMode, onAction
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <h3 style={{ fontSize: 13, fontWeight: 600, color: t.textPri }}>Deposit</h3>
-        <span style={{ fontSize: 11, fontWeight: 600, background: '#F3E8FF', color: '#7C3AED', padding: '2px 8px', borderRadius: 20 }}>Recommended</span>
+        <span style={{ fontSize: 13, fontWeight: 600, background: '#F3E8FF', color: '#7C3AED', padding: '2px 8px', borderRadius: 20 }}>Recommended</span>
       </div>
 
       {/* Deposit % */}
@@ -90,7 +90,7 @@ export default function PaymentPanel({ estimate, setEstimate, darkMode, onAction
       </button>
 
       {!estimate.contact_email && (
-        <p style={{ fontSize: 11, textAlign: 'center', color: t.textSubtle }}>Add email to this lead to enable deposit requests</p>
+        <p style={{ fontSize: 13, textAlign: 'center', color: t.textSubtle }}>Add email to this lead to enable deposit requests</p>
       )}
     </div>
   )

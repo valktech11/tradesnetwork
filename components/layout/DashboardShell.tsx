@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Session } from '@/types'
+import { Session, isPaidPlan } from '@/types'
 import { initials, avatarColor, planLabel } from '@/lib/utils'
 
 type NavItem  = { label: string; href: string; icon: (a: boolean) => React.ReactNode; badge?: number | null; soon?: boolean; exact?: boolean }
@@ -207,38 +207,154 @@ function MobileNav({ nl, onAdd, onMore }: { nl: number; onAdd: () => void; onMor
 function MoreDrawer({ open, onClose, session, nl }: { open: boolean; onClose: () => void; session: Session | null; nl: number }) {
   const p = usePathname()
   if (!open) return null
+
+  const tradeCity = [session?.trade, session?.city].filter(Boolean).join(' · ')
+
   return (
     <div className="md:hidden fixed inset-0 z-[60]">
-      <div className="absolute inset-0" onClick={onClose} style={{ background: 'rgba(5,15,30,.7)', backdropFilter: 'blur(8px)' }} />
-      <div className="absolute bottom-0 left-0 right-0 rounded-t-[28px]"
-        style={{ background: 'linear-gradient(175deg,#0E2142 0%,#08131F 100%)', maxHeight: '90vh', overflowY: 'auto' }}>
-        <div className="flex justify-center pt-3"><div className="w-10 h-1 rounded-full" style={{ background: 'rgba(255,255,255,.25)' }} /></div>
+      {/* Backdrop */}
+      <div className="absolute inset-0" onClick={onClose}
+        style={{ background: 'rgba(4,12,24,.82)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }} />
+
+      {/* Sheet */}
+      <div className="absolute bottom-0 left-0 right-0 rounded-t-[32px] flex flex-col"
+        style={{
+          background: 'linear-gradient(180deg,#0D1F3C 0%,#070F1C 100%)',
+          maxHeight: '92vh',
+          boxShadow: '0 -8px 40px rgba(0,0,0,.6)',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+        }}>
+
+        {/* Drag handle */}
+        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+          <div className="w-10 h-[5px] rounded-full" style={{ background: 'rgba(255,255,255,.22)' }} />
+        </div>
+
+        {/* User identity card */}
         {session && (
-          <div className="flex items-center gap-3 mx-4 mt-4 mb-2 px-4 py-3 rounded-2xl"
-            style={{ background: 'rgba(255,255,255,.09)', border: '1px solid rgba(255,255,255,.14)' }}>
-            <Av s={session} px={36} />
-            <div>
-              <div className="text-[15px] font-bold text-white">{session.name}</div>
-              <div className="text-[11px]" style={{ color: 'rgba(255,255,255,.58)' }}>{planLabel(session.plan)}</div>
+          <div className="mx-4 mt-3 mb-1 flex-shrink-0">
+            <div className="flex items-center gap-4 px-4 py-4 rounded-2xl"
+              style={{
+                background: 'linear-gradient(135deg, rgba(20,184,166,.18) 0%, rgba(255,255,255,.07) 100%)',
+                border: '1px solid rgba(20,184,166,.25)',
+              }}>
+              {/* Avatar */}
+              <div className="flex-shrink-0">
+                <Av s={session} px={48} />
+              </div>
+              {/* Identity */}
+              <div className="flex-1 min-w-0">
+                <div className="text-[17px] font-bold text-white leading-tight truncate">{session.name}</div>
+                {tradeCity && (
+                  <div className="text-[13px] mt-0.5 truncate" style={{ color: 'rgba(255,255,255,.65)' }}>{tradeCity}</div>
+                )}
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full"
+                    style={{ background: 'rgba(20,184,166,.2)', color: '#2DD4BF', border: '1px solid rgba(20,184,166,.3)' }}>
+                    {planLabel(session.plan)}
+                  </span>
+                  {!isPaidPlan(session.plan) && (
+                    <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full cursor-pointer"
+                      style={{ background: 'rgba(251,191,36,.15)', color: '#FCD34D', border: '1px solid rgba(251,191,36,.25)' }}>
+                      Upgrade ↗
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
-        <div className="px-3 pb-8">
-          {buildNav(nl).map(g => (
-            <div key={g.title} className="mb-2">
-              <div className="px-3 pt-3 pb-1 text-[11px] font-bold tracking-[.12em]" style={{ color: 'rgba(255,255,255,.5)' }}>{g.title}</div>
-              {g.items.map(item => <div key={item.href}><NavLink item={item} active={p === item.href} onNav={onClose} /></div>)}
+
+        {/* Nav groups — scrollable */}
+        <div className="flex-1 overflow-y-auto px-3 pt-3 pb-6" style={{ scrollbarWidth: 'none' }}>
+          {buildNav(nl).map((g, gi) => (
+            <div key={g.title} className={gi > 0 ? 'mt-5' : ''}>
+              {/* Section header with line */}
+              <div className="flex items-center gap-3 px-2 mb-1">
+                <span className="text-[11px] font-bold tracking-[.14em] uppercase flex-shrink-0"
+                  style={{ color: 'rgba(255,255,255,.38)' }}>{g.title}</span>
+                <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,.08)' }} />
+              </div>
+              {/* Items */}
+              {g.items.map(item => (
+                <div key={item.href}>
+                  <DrawerNavLink item={item} active={p === item.href} onNav={onClose} />
+                </div>
+              ))}
             </div>
           ))}
-          <div className="pt-2 mb-2" style={{ borderTop: '1px solid rgba(255,255,255,.12)' }}>
-            <div className="px-3 pt-3 pb-1 text-[11px] font-bold tracking-[.12em]" style={{ color: 'rgba(255,255,255,.5)' }}>ACCOUNT</div>
-            <NavLink item={{ label: 'Profile', href: '/edit-profile', icon: icon.profile }} active={p === '/edit-profile'} onNav={onClose} />
-            <NavLink item={{ label: 'Settings', href: '/dashboard/settings', icon: icon.settings, soon: true }} active={false} />
+
+          {/* Account section */}
+          <div className="mt-5">
+            <div className="flex items-center gap-3 px-2 mb-1">
+              <span className="text-[11px] font-bold tracking-[.14em] uppercase flex-shrink-0"
+                style={{ color: 'rgba(255,255,255,.38)' }}>ACCOUNT</span>
+              <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,.08)' }} />
+            </div>
+            <DrawerNavLink item={{ label: 'Profile', href: '/edit-profile', icon: icon.profile }} active={p === '/edit-profile'} onNav={onClose} />
+            <DrawerNavLink item={{ label: 'Settings', href: '/dashboard/settings', icon: icon.settings, soon: true }} active={false} />
           </div>
         </div>
       </div>
     </div>
   )
+}
+
+// ── Drawer-specific NavLink (larger, bolder than sidebar NavLink) ─────────────
+function DrawerNavLink({ item, active, onNav }: { item: NavItem; active: boolean; onNav?: () => void }) {
+  const row = (
+    <div
+      className="relative flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-150 cursor-pointer mb-0.5"
+      style={
+        active ? {
+          background: 'rgba(20,184,166,0.22)',
+          boxShadow: 'inset 0 0 0 1.5px rgba(20,184,166,0.5)',
+        } : item.soon ? {
+          opacity: 0.4,
+          cursor: 'default',
+        } : {
+          background: 'transparent',
+        }
+      }
+    >
+      {/* Active left accent */}
+      {active && (
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[4px] h-7 rounded-r-full"
+          style={{ background: '#2DD4BF' }} />
+      )}
+
+      {/* Icon */}
+      <span className="flex-shrink-0 flex items-center justify-center w-[26px]"
+        style={{ color: active ? '#2DD4BF' : item.soon ? 'rgba(255,255,255,.3)' : 'rgba(255,255,255,.62)' }}>
+        {item.icon(active)}
+      </span>
+
+      {/* Label */}
+      <span className="flex-1 text-[15px] font-semibold"
+        style={{ color: active ? '#ffffff' : item.soon ? 'rgba(255,255,255,.35)' : 'rgba(255,255,255,.82)' }}>
+        {item.label}
+      </span>
+
+      {/* Badge */}
+      {(item.badge ?? 0) > 0 && (
+        <span className="flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full text-[11px] font-bold"
+          style={{ background: '#0F766E', color: '#fff' }}>
+          {item.badge}
+        </span>
+      )}
+
+      {/* Soon pill */}
+      {item.soon && (
+        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
+          style={{ background: 'rgba(255,255,255,.08)', color: 'rgba(255,255,255,.4)', letterSpacing: '0.04em' }}>
+          SOON
+        </span>
+      )}
+    </div>
+  )
+
+  if (item.soon) return row
+  return <Link href={item.href} onClick={onNav} className="block">{row}</Link>
 }
 
 // ── Quick Add sheet ───────────────────────────────────────────────────────────
