@@ -219,7 +219,7 @@ function MoreDrawer({ open, onClose, session, nl }: { open: boolean; onClose: ()
       {/* Sheet */}
       <div className="absolute bottom-0 left-0 right-0 rounded-t-[32px] flex flex-col"
         style={{
-          background: 'linear-gradient(180deg,#0D1F3C 0%,#070F1C 100%)',
+          background: 'linear-gradient(180deg,#102544 0%,#060C16 100%)',
           maxHeight: '92vh',
           boxShadow: '0 -8px 40px rgba(0,0,0,.6)',
           paddingBottom: 'env(safe-area-inset-bottom)',
@@ -249,13 +249,13 @@ function MoreDrawer({ open, onClose, session, nl }: { open: boolean; onClose: ()
                   <div className="text-[13px] mt-0.5 truncate" style={{ color: 'rgba(255,255,255,.65)' }}>{tradeCity}</div>
                 )}
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full"
-                    style={{ background: 'rgba(20,184,166,.2)', color: '#2DD4BF', border: '1px solid rgba(20,184,166,.3)' }}>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                    style={{ background: 'rgba(20,184,166,.15)', color: '#2DD4BF', border: '1px solid rgba(20,184,166,.25)' }}>
                     {planLabel(session.plan)}
                   </span>
                   {!isPaidPlan(session.plan) && (
-                    <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full cursor-pointer"
-                      style={{ background: 'rgba(251,191,36,.15)', color: '#FCD34D', border: '1px solid rgba(251,191,36,.25)' }}>
+                    <span className="text-[11px] font-bold px-3 py-1 rounded-full cursor-pointer"
+                      style={{ background: 'linear-gradient(135deg, rgba(251,191,36,.25), rgba(245,158,11,.2))', color: '#FCD34D', border: '1px solid rgba(251,191,36,.4)' }}>
                       Upgrade ↗
                     </span>
                   )}
@@ -273,7 +273,7 @@ function MoreDrawer({ open, onClose, session, nl }: { open: boolean; onClose: ()
               <div className="flex items-center gap-3 px-2 mb-1">
                 <span className="text-[11px] font-bold tracking-[.14em] uppercase flex-shrink-0"
                   style={{ color: 'rgba(255,255,255,.38)' }}>{g.title}</span>
-                <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,.08)' }} />
+                <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,.16)' }} />
               </div>
               {/* Items */}
               {g.items.map(item => (
@@ -325,7 +325,7 @@ function DrawerNavLink({ item, active, onNav }: { item: NavItem; active: boolean
 
       {/* Icon */}
       <span className="flex-shrink-0 flex items-center justify-center w-[26px]"
-        style={{ color: active ? '#2DD4BF' : item.soon ? 'rgba(255,255,255,.3)' : 'rgba(255,255,255,.62)' }}>
+        style={{ color: active ? '#2DD4BF' : item.soon ? 'rgba(255,255,255,.25)' : 'rgba(255,255,255,.65)' }}>
         {item.icon(active)}
       </span>
 

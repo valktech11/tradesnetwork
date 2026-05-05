@@ -545,28 +545,28 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 5 }}>
-                      <span style={{ fontSize: 20, fontWeight: 600, color: tp, wordBreak: 'break-word' }}>{lead.contact_name}</span>
+                      <span style={{ fontSize: 22, fontWeight: 700, color: tp, wordBreak: 'break-word' }}>{lead.contact_name}</span>
                       <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: '#EEEDFE', color: '#3C3489', fontWeight: 500 }}>{currentStage}</span>
                       <span style={{ fontSize: 14, color: ts }}>· {timeAgo(lead.created_at)}</span>
                       {overdueFU && <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: '#FCEBEB', color: '#A32D2D', fontWeight: 500 }}>Overdue</span>}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: ts, flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: ts, flexWrap: 'wrap' }}>
                       {lead.lead_source && <><span>{lead.lead_source.replace(/_/g,' ')}</span><span style={{ opacity: 0.4 }}>·</span></>}
                       {lead.quoted_amount != null && <><span>${Number(lead.quoted_amount).toLocaleString()} est. value</span><span style={{ opacity: 0.4 }}>·</span></>}
-                      <span>Lead #{shortId(lead.id)}</span>
+                      <span className="hidden md:inline">Lead #{shortId(lead.id)}</span>
                     </div>
                   </div>
                   {/* Last activity + Status — full width on mobile, inline right on xl+ */}
                   <div className="w-full xl:w-auto xl:flex-shrink-0">
                     <div style={{ display: 'flex', gap: 0, border: `1px solid ${border}`, borderRadius: 10, overflow: 'hidden', marginTop: 2 }}>
                       <div style={{ padding: '10px 16px', borderRight: `1px solid ${border}` }}>
-                        <div style={{ fontSize: 11, color: ts, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>Last activity</div>
+                        <div style={{ fontSize: 11, color: ts, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: 3 }}>Last activity</div>
                         <div style={{ fontSize: 13, fontWeight: 500, color: tp, whiteSpace: 'nowrap' }}>
                           {new Date(lead.updated_at || lead.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at {new Date(lead.updated_at || lead.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                         </div>
                       </div>
                       <div style={{ padding: '10px 16px' }}>
-                        <div style={{ fontSize: 11, color: ts, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>Status</div>
+                        <div style={{ fontSize: 11, color: ts, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: 3 }}>Status</div>
                         <div style={{ fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 5, color: nbaData.urgent ? '#C2410C' : '#0F766E', whiteSpace: 'nowrap' }}>
                           <span>{nbaData.urgent ? '🔥' : '✓'}</span>
                           <span>{nbaData.urgent ? 'Needs attention' : 'On track'}</span>
@@ -656,16 +656,16 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                       Call Now
                     </button>
                   )}
-                  <button style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 18px', background: card, color: tp, border: `1px solid ${border}`, borderRadius: 9, fontSize: 14, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                    <Ic color={tp} size={14}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></Ic>
+                  <button style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 18px', background: card, color: '#0F766E', border: '1.5px solid #0F766E', borderRadius: 9, fontSize: 14, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                    <Ic color="'#0F766E'" size={14}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></Ic>
                     Send Reminder SMS
                   </button>
                 </div>
               </div>
 
               {/* Contact info strip */}
-              <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, marginBottom: 10, overflowX: 'auto', WebkitOverflowScrolling: 'touch' as any }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', minWidth: 320 }}>
+              <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, marginBottom: 10 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}>
                 {[
                   { icon: 'phone', label: 'Phone', value: fmtPhone(lead.contact_phone), copy: lead.contact_phone },
                   { icon: 'email', label: 'Email', value: lead.contact_email || '—', copy: lead.contact_email },
@@ -684,7 +684,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                     copy: null
                   },
                 ].map((cell, ci, arr) => (
-                  <div key={cell.label} style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 5, borderRight: `1px solid ${border}`, borderBottom: `1px solid ${border}` }}>
+                  <div key={cell.label} style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 5, borderRight: `1px solid ${border}`, borderBottom: `1px solid ${border}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                       <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#F0FDFA', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Ic color="#0F766E" size={14}>
@@ -696,9 +696,9 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                           {cell.icon === 'followup' && <><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></>}
                         </Ic>
                       </div>
-                      <span style={{ fontSize: 12, color: ts }}>{cell.label}</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: ts }}>{cell.label}</span>
                     </div>
-                    <div style={{ fontSize: 14, fontWeight: 500, color: tp, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: tp, display: 'flex', alignItems: 'center', gap: 4, wordBreak: 'break-word' }}>
                       {cell.value}
                       {cell.copy && typeof cell.copy === 'string' && <CopyBtn text={cell.copy} color={ts} />}
                     </div>
@@ -776,12 +776,12 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                           onClick={action}
                           disabled={isNote && (savingNote || !composerText.trim())}
                           style={{
-                            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                            padding: '10px 4px', borderRadius: 10, fontSize: 13, fontWeight: 500,
+                            flex: isNote ? 2 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                            padding: '11px 4px', borderRadius: 10, fontSize: 13, fontWeight: 600,
                             cursor: isNote && !composerText.trim() ? 'default' : 'pointer',
-                            border: `1px solid ${border}`,
-                            background: dk ? '#1E293B' : '#FFFFFF',
-                            color: tp,
+                            border: isNote ? '1.5px solid #16A34A' : `1px solid ${border}`,
+                            background: isNote ? '#F0FDF4' : (dk ? '#1E293B' : '#FAFAFA'),
+                            color: isNote ? '#16A34A' : tp,
                             opacity: isNote && !composerText.trim() ? 0.45 : 1,
                             transition: 'opacity 0.15s',
                             whiteSpace: 'nowrap',
