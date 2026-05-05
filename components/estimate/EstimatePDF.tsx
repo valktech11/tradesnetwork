@@ -27,6 +27,7 @@ export type PDFEstimate = {
   valid_until: string
   subtotal: number
   discount: number
+  discount_type?: '$' | '%'
   tax_rate: number
   tax_amount: number
   total: number
@@ -228,7 +229,11 @@ function EstimatePage({ estimate }: { estimate: PDFEstimate }) {
           </View>
           {estimate.discount > 0 && (
             <View style={s.totalRow}>
-              <Text style={s.totalLabel}>Discount</Text>
+              <Text style={s.totalLabel}>
+                Discount{estimate.discount_type === '%'
+                  ? ` (${Math.round(estimate.discount / Math.max(estimate.subtotal, 1) * 100 * 100) / 100}%)`
+                  : ''}
+              </Text>
               <Text style={s.totalDiscountValue}>−{fmt(estimate.discount)}</Text>
             </View>
           )}

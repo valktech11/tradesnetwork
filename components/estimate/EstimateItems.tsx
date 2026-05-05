@@ -36,8 +36,14 @@ export default function EstimateItems({
   const [editingId,   setEditingId]   = useState<string | null>(null)
   const [draft,       setDraft]       = useState<Partial<EstimateItem>>({})
   const [showDiscount,  setShowDiscount]  = useState(estimate.discount > 0)
-  const [discountType,  setDiscountType]  = useState<'$' | '%'>('$')
-  const [discountInput, setDiscountInput] = useState<number>(estimate.discount || 0)
+  const [discountType,  setDiscountType]  = useState<'$' | '%'>(estimate.discount_type || '$')
+  const [discountInput, setDiscountInput] = useState<number>(() => {
+    // Restore the input value in the correct unit
+    if ((estimate.discount_type || '$') === '%' && estimate.subtotal > 0) {
+      return Math.round((estimate.discount / estimate.subtotal) * 100 * 100) / 100
+    }
+    return estimate.discount || 0
+  })
 
   // ── Design tokens ────────────────────────────────────────────────────────
   const border   = dk ? '#334155' : '#D1D5DB'          // visible borders
@@ -218,7 +224,12 @@ export default function EstimateItems({
               <span style={{ fontSize: 14, color: colMuted }}>Discount</span>
               <div style={{ display: 'flex', border: `1.5px solid ${border}`, borderRadius: 6, overflow: 'hidden' }}>
                 {(['$', '%'] as const).map(t => (
-                  <button key={t} onClick={() => { setDiscountType(t); const flat = t === '%' ? estimate.subtotal * (discountInput / 100) : discountInput; updateDiscount(flat) }}
+                  <button key={t} onClick={() => {
+                    setDiscountType(t)
+                    const flat = t === '%' ? estimate.subtotal * (discountInput / 100) : discountInput
+                    updateDiscount(flat)
+                    setEstimate(prev => prev ? { ...prev, discount_type: t } : prev)
+                  }}
                     style={{ padding: '2px 7px', fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none', background: discountType === t ? '#0F766E' : 'transparent', color: discountType === t ? '#fff' : colMuted }}>{t}</button>
                 ))}
               </div>
@@ -424,6 +435,7 @@ export default function EstimateItems({
                     setDiscountType(t)
                     const flat = t === '%' ? estimate.subtotal * (discountInput / 100) : discountInput
                     updateDiscount(flat)
+                    setEstimate(prev => prev ? { ...prev, discount_type: t } : prev)
                   }}
                     style={{ padding: '2px 7px', fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none',
                       background: discountType === t ? '#0F766E' : 'transparent',

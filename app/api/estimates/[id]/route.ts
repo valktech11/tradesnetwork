@@ -39,14 +39,14 @@ export async function PATCH(
   const sb = getSupabaseAdmin()
 
   const {
-    items, subtotal, discount, tax_rate, tax_amount, total,
+    items, subtotal, discount, discount_type, tax_rate, tax_amount, total,
     require_deposit, deposit_percent, terms, status, notes,
     contact_phone, contact_email, sent_at,
     voided_at, void_reason, declined_at, decline_reason,
   } = body
 
   const updatePayload: Record<string, unknown> = {
-    subtotal, discount, tax_rate, tax_amount, total,
+    subtotal, discount, discount_type, tax_rate, tax_amount, total,
     require_deposit, deposit_percent, terms, status, notes,
     contact_phone: contact_phone || undefined,
     contact_email: contact_email || undefined,

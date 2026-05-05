@@ -36,6 +36,7 @@ export type Estimate = {
   valid_until: string
   subtotal: number
   discount: number
+  discount_type: '$' | '%'
   tax_rate: number
   tax_amount: number
   total: number
@@ -1050,6 +1051,7 @@ const MOCK_ESTIMATE: Estimate = {
   valid_until: '2024-05-28T10:30:00Z',
   subtotal: 1900,
   discount: 100,
+  discount_type: '$' as const,
   tax_rate: 7,
   tax_amount: 126,
   total: 1926,
