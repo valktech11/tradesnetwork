@@ -164,6 +164,7 @@ export default function ClientsPage() {
               const [bg, fg] = avatarColor(client.full_name)
               return (
                 <Link key={client.id} href={`/dashboard/clients/${client.id}`}
+                  className="active:opacity-70 active:scale-[.99]"
                   style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', borderTop: i > 0 ? `1px solid ${t.divider}` : 'none', textDecoration: 'none', transition: 'background 0.15s' }}
                   onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = dk ? '#1a2940' : '#FAF9F6')}
                   onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
