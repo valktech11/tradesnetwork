@@ -21,6 +21,7 @@ function VoidedToast({ onToast }: { onToast: (msg: string) => void }) {
 
 type EstimateSummary = {
   id: string
+  lead_id: string | null
   estimate_number: string
   status: 'draft' | 'sent' | 'viewed' | 'approved' | 'declined' | 'invoiced' | 'paid' | 'void'
   lead_name: string
