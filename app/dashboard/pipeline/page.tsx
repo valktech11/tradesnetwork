@@ -172,22 +172,27 @@ export default function PipelinePage() {
               </div>
             )}
           </div>
-          {/* Filter button */}
+          {/* Filter button — prominent on mobile */}
           <button
             onClick={() => setShowFilter(true)}
             style={{
-              display: 'flex', alignItems: 'center', gap: 8, padding: '9px 16px', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', flexShrink: 0,
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '10px 18px', borderRadius: 12, fontSize: 14, fontWeight: 700,
+              cursor: 'pointer', flexShrink: 0,
               border: `1.5px solid ${activeFilterCount > 0 ? '#0F766E' : t.inputBorder}`,
               color: activeFilterCount > 0 ? '#0F766E' : t.textBody,
-              background: activeFilterCount > 0 ? (dk ? 'rgba(15,118,110,0.12)' : '#F0FDFA') : t.cardBg,
+              background: activeFilterCount > 0
+                ? (dk ? 'rgba(15,118,110,0.15)' : '#F0FDFA')
+                : (dk ? t.cardBg : '#F9FAFB'),
+              boxShadow: activeFilterCount > 0 ? '0 0 0 3px rgba(15,118,110,0.12)' : 'none',
             }}
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
               <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
             </svg>
             Filter
             {activeFilterCount > 0 && (
-              <span style={{ width: 20, height: 20, borderRadius: '50%', background: '#0F766E', color: '#fff', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#0F766E', color: '#fff', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 8px rgba(15,118,110,0.4)' }}>
                 {activeFilterCount}
               </span>
             )}

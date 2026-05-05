@@ -70,6 +70,8 @@ function AvatarInitials({ name, size = 32 }: { name: string; size?: number }) {
 }
 
 // ── Action Center Card ─────────────────────────────────────────────────────────
+// Mobile: compact tile (icon + count + label, no CTA button)
+// Desktop: full card with CTA button
 function ActionCard({ iconPath, count, label, sub, iconBg, iconColor, ctaLabel, ctaHref, dk }: {
   iconPath: string; count: number | string; label: string; sub: string
   iconBg: string; iconColor: string; ctaLabel: string; ctaHref: string; dk: boolean
@@ -78,27 +80,40 @@ function ActionCard({ iconPath, count, label, sub, iconBg, iconColor, ctaLabel, 
   const bdr = dk ? '#334155' : '#F1F5F9'
   const txt = dk ? '#F1F5F9' : NAVY
   const sub_color = dk ? '#94A3B8' : '#4B5563'
-  const cta_bg = dk ? '#1E293B' : 'white'
   return (
-    <div className="rounded-2xl p-4 flex flex-col gap-3"
+    <Link href={ctaHref} className="block rounded-2xl transition-all active:scale-[.98]"
       style={{ backgroundColor: bg, boxShadow: '0 1px 4px rgba(0,0,0,0.07)', border: `1px solid ${bdr}` }}>
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+      {/* Mobile: compact tile */}
+      <div className="flex md:hidden items-center gap-3 p-3.5">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: iconBg }}>
-          <SvgIcon d={iconPath} s={21} sw={1.9} color={iconColor} />
+          <SvgIcon d={iconPath} s={18} sw={1.9} color={iconColor} />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-[22px] md:text-[32px] font-bold leading-none mb-0.5" style={{ color: txt }}>{count}</div>
-          <div className="text-[14px] font-semibold leading-tight" style={{ color: txt }}>{label}</div>
-          <div className="text-[13px] mt-0.5" style={{ color: sub_color }}>{sub}</div>
+          <div className="text-[24px] font-bold leading-none" style={{ color: txt }}>{count}</div>
+          <div className="text-[12px] font-semibold leading-tight mt-0.5" style={{ color: sub_color }}>{label}</div>
+        </div>
+        <SvgIcon d={ICONS.chevRight} s={14} sw={2.5} color={sub_color} />
+      </div>
+      {/* Desktop: full card with CTA */}
+      <div className="hidden md:flex flex-col gap-3 p-4">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: iconBg }}>
+            <SvgIcon d={iconPath} s={21} sw={1.9} color={iconColor} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[32px] font-bold leading-none mb-0.5" style={{ color: txt }}>{count}</div>
+            <div className="text-[14px] font-semibold leading-tight" style={{ color: txt }}>{label}</div>
+            <div className="text-[13px] mt-0.5" style={{ color: sub_color }}>{sub}</div>
+          </div>
+        </div>
+        <div className="w-full flex items-center justify-center py-2 rounded-xl text-[12px] font-semibold"
+          style={{ border: `1.5px solid ${TEAL}`, color: TEAL, backgroundColor: dk ? 'rgba(15,118,110,0.12)' : '#F0FDFA' }}>
+          {ctaLabel}
         </div>
       </div>
-      <Link href={ctaHref}
-        className="w-full flex items-center justify-center py-2 rounded-xl text-[13px] md:text-[12px] font-semibold transition-all"
-        style={{ border: `1.5px solid ${TEAL}`, color: TEAL, backgroundColor: dk ? 'rgba(15,118,110,0.12)' : '#F0FDFA' }}>
-        {ctaLabel}
-      </Link>
-    </div>
+    </Link>
   )
 }
 
@@ -236,6 +251,21 @@ export default function OverviewPage() {
 
         </div>
 
+        {/* ── Hero strip — mobile only, above Action Center ── */}
+        {pipeline > 0 && (
+          <div className="flex md:hidden items-center justify-between px-4 py-3 rounded-2xl mb-4"
+            style={{ backgroundColor: dk ? '#1E293B' : 'white', border: `1px solid ${dk ? '#334155' : '#F1F5F9'}`, boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-wider mb-0.5" style={{ color: dk ? '#94A3B8' : '#6B7280' }}>Pipeline Value</div>
+              <div className="text-[28px] font-bold leading-none" style={{ color: textMain }}>${pipeline.toLocaleString()}</div>
+            </div>
+            <div className="text-right">
+              <div className="text-[11px] font-bold uppercase tracking-wider mb-0.5" style={{ color: dk ? '#94A3B8' : '#6B7280' }}>Active Leads</div>
+              <div className="text-[28px] font-bold leading-none" style={{ color: textMain }}>{activeLeads.length}</div>
+            </div>
+          </div>
+        )}
+
         {/* ── Action Center ────────────────────────────────────────────────── */}
         <div className="mb-5">
           <div className="flex items-center justify-between mb-3">
@@ -247,7 +277,7 @@ export default function OverviewPage() {
               View all leads <SvgIcon d={ICONS.chevRight} s={14} sw={2.5} color={TEAL} />
             </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             <ActionCard
               iconPath={ICONS.flame}
               iconBg="#FEF3C7" iconColor="#F59E0B"
@@ -287,8 +317,8 @@ export default function OverviewPage() {
           </div>
         </div>
 
-        {/* ── Pipeline ─────────────────────────────────────────────────────── */}
-        <div className="rounded-2xl p-5 mb-5" style={{ backgroundColor: cardBg, border: `1px solid ${cardBdr}` }}>
+        {/* ── Pipeline — hidden on mobile (hero strip + bottom nav covers it) ── */}
+        <div className="hidden md:block rounded-2xl p-5 mb-5" style={{ backgroundColor: cardBg, border: `1px solid ${cardBdr}` }}>
           <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
             <div>
               <h2 className="text-[16px] font-bold inline mr-2" style={{ color: textMain }}>Pipeline</h2>

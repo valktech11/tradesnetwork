@@ -552,9 +552,9 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                       {overdueFU && <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: '#FCEBEB', color: '#A32D2D', fontWeight: 500 }}>Overdue</span>}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: ts, flexWrap: 'wrap' }}>
-                      {lead.lead_source && <><span>{lead.lead_source.replace(/_/g,' ')}</span><span style={{ opacity: 0.4 }}>·</span></>}
-                      {lead.quoted_amount != null && <><span>${Number(lead.quoted_amount).toLocaleString()} est. value</span><span style={{ opacity: 0.4 }}>·</span></>}
-                      <span className="hidden md:inline">Lead #{shortId(lead.id)}</span>
+                      {lead.lead_source && <span style={{ background: dk ? '#1E293B' : '#F3F4F6', padding: '2px 8px', borderRadius: 6, fontSize: 12, fontWeight: 500 }}>{lead.lead_source.replace(/_/g,' ')}</span>}
+                      {lead.quoted_amount != null && <span style={{ color: '#0F766E', fontWeight: 600, fontSize: 14 }}>${Number(lead.quoted_amount).toLocaleString()}</span>}
+                      <span className="hidden md:inline" style={{ opacity: 0.4, fontSize: 12 }}>#{shortId(lead.id)}</span>
                     </div>
                   </div>
                   {/* Last activity + Status — full width on mobile, inline right on xl+ */}
@@ -579,7 +579,8 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
               </div>
 
               {/* Stage pills */}
-              <div ref={stageBarRef} style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, padding: '12px 16px', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch' as any }}>
+              <div style={{ position: 'relative', marginBottom: 10 }}>
+                <div ref={stageBarRef} style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch' as any, scrollbarWidth: 'none' }}>
                 {STAGES.map((stage, i) => {
                   const done = i < curIdx; const active = i === curIdx
                   return (
@@ -604,6 +605,9 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                     </div>
                   )
                 })}
+                </div>
+                {/* Fade gradient — hints more content to the right */}
+                <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 48, borderRadius: '0 14px 14px 0', background: `linear-gradient(90deg, transparent, ${card})`, pointerEvents: 'none' }} />
               </div>
 
               {/* Next Action card */}
