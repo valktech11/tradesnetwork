@@ -1,16 +1,16 @@
 'use client'
 
-import { Send, Eye, CheckCircle2, FileText, CreditCard } from 'lucide-react'
 import { theme } from '@/lib/theme'
 
 type Step = { event: string; label: string; timestamp: string | null }
 
+// Inline SVGs — avoids Lucide color inheritance issues at small sizes
 const STEP_ICONS: Record<string, React.ReactNode> = {
-  sent:     <Send size={14} />,
-  viewed:   <Eye size={14} />,
-  approved: <CheckCircle2 size={14} />,
-  invoiced: <FileText size={14} />,
-  paid:     <CreditCard size={14} />,
+  sent:     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
+  viewed:   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+  approved: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  invoiced: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>,
+  paid:     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>,
 }
 
 function fmtTs(ts: string) {
@@ -55,7 +55,7 @@ export default function EstimateProgressBar({ timeline, darkMode }: {
                 color: done ? '#fff' : (darkMode ? '#475569' : '#9CA3AF'),
                 boxShadow: active ? '0 0 0 4px rgba(15,118,110,0.15)' : 'none',
               }}>
-                {STEP_ICONS[step.event] ?? <CheckCircle2 size={14} />}
+                {STEP_ICONS[step.event] ?? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
               </div>
 
               {/* Label + timestamp */}

@@ -76,7 +76,7 @@ function buildNav(nl: number): NavGroup[] {
 // ── NavLink ───────────────────────────────────────────────────────────────────
 function NavLink({ item, active, onNav }: { item: NavItem; active: boolean; onNav?: () => void }) {
   const row = (
-    <div className="relative flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all duration-100 cursor-pointer"
+    <div className="relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-100 cursor-pointer"
       style={
         active ? {
           // Strong teal background — clearly active
@@ -212,13 +212,13 @@ function MoreDrawer({ open, onClose, session, nl }: { open: boolean; onClose: ()
       <div className="absolute inset-0" onClick={onClose} style={{ background: 'rgba(5,15,30,.7)', backdropFilter: 'blur(8px)' }} />
       <div className="absolute bottom-0 left-0 right-0 rounded-t-[28px]"
         style={{ background: 'linear-gradient(175deg,#0E2142 0%,#08131F 100%)', maxHeight: '90vh', overflowY: 'auto' }}>
-        <div className="flex justify-center pt-3"><div className="w-10 h-1 rounded-full" style={{ background: 'rgba(255,255,255,.15)' }} /></div>
+        <div className="flex justify-center pt-3"><div className="w-10 h-1 rounded-full" style={{ background: 'rgba(255,255,255,.25)' }} /></div>
         {session && (
           <div className="flex items-center gap-3 mx-4 mt-4 mb-2 px-4 py-3 rounded-2xl"
-            style={{ background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.08)' }}>
+            style={{ background: 'rgba(255,255,255,.09)', border: '1px solid rgba(255,255,255,.14)' }}>
             <Av s={session} px={36} />
             <div>
-              <div className="text-[13px] font-semibold text-white">{session.name}</div>
+              <div className="text-[15px] font-bold text-white">{session.name}</div>
               <div className="text-[11px]" style={{ color: 'rgba(255,255,255,.58)' }}>{planLabel(session.plan)}</div>
             </div>
           </div>
@@ -230,7 +230,7 @@ function MoreDrawer({ open, onClose, session, nl }: { open: boolean; onClose: ()
               {g.items.map(item => <div key={item.href}><NavLink item={item} active={p === item.href} onNav={onClose} /></div>)}
             </div>
           ))}
-          <div className="pt-2 mb-2" style={{ borderTop: '1px solid rgba(255,255,255,.06)' }}>
+          <div className="pt-2 mb-2" style={{ borderTop: '1px solid rgba(255,255,255,.12)' }}>
             <div className="px-3 pt-3 pb-1 text-[11px] font-bold tracking-[.12em]" style={{ color: 'rgba(255,255,255,.5)' }}>ACCOUNT</div>
             <NavLink item={{ label: 'Profile', href: '/edit-profile', icon: icon.profile }} active={p === '/edit-profile'} onNav={onClose} />
             <NavLink item={{ label: 'Settings', href: '/dashboard/settings', icon: icon.settings, soon: true }} active={false} />

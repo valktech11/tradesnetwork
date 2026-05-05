@@ -387,7 +387,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                         )}
                         {showMoreMenu && (
                           <div
-                            style={{ position: 'absolute', top: '110%', right: 0, zIndex: 50, background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.15)', minWidth: 190, overflow: 'hidden' }}>
+                            style={{ position: 'fixed', top: 'auto', left: '50%', transform: 'translateX(-50%)', bottom: 'auto', zIndex: 50, background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.15)', minWidth: 220, width: '90vw', maxWidth: 280, overflow: 'hidden' }}>
                             {[
                               {
                                 label: 'Download PDF', icon: '↓',
@@ -493,7 +493,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                           setTimeout(() => setSaveMsg(null), 3000)
                         }}
                           className="flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 whitespace-nowrap"
-                          style={{ background: 'linear-gradient(135deg, #2563EB, #1D4ED8)' }}>
+                          style={{ background: 'linear-gradient(135deg, #0F766E, #0D9488)' }}>
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                           Send Reminder
                         </button>
