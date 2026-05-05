@@ -216,7 +216,7 @@ function LeadCard({ lead, stage, onOpen }: {
   const [bg, fg] = avatarColor(lead.contact_name)
   const days     = daysSince(lead.created_at)
   const [creatingEst, setCreatingEst] = useState(false)
-  const [existingEst, setExistingEst] = useState<{ id: string; estimate_number: string; total: number; created_at: string } | null>(null)
+  const [existingEst, setExistingEst] = useState<{ id: string; estimate_number: string; status: string; total: number; created_at: string } | null>(null)
 
   async function openEstimate(e: React.MouseEvent) {
     e.stopPropagation()
@@ -389,16 +389,16 @@ function LeadCard({ lead, stage, onOpen }: {
             className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl"
             onClick={e => { e.stopPropagation(); e.preventDefault() }}
           >
-            <h3 className="font-bold text-gray-900 text-base mb-1">Estimate already exists</h3>
+            <h3 className="font-bold text-gray-900 text-base mb-1">Active estimate exists</h3>
             <p className="text-sm text-gray-500 mb-4">
-              A draft estimate was found for <span className="font-semibold text-gray-700">{lead.contact_name}</span>.
+              An estimate already exists for <span className="font-semibold text-gray-700">{lead.contact_name}</span>. Open it or create a new version.
             </p>
 
             <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 mb-5 flex items-center justify-between">
               <div>
                 <p className="text-sm font-bold text-gray-900">#{existingEst.estimate_number}</p>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Draft · {new Date(existingEst.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                <p className="text-xs text-gray-500 mt-0.5 capitalize">
+                  {existingEst.status || 'Draft'} · {new Date(existingEst.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </p>
               </div>
               <span className="text-sm font-bold text-[#0F766E]">
