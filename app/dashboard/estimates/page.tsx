@@ -284,7 +284,7 @@ export default function EstimatesPage() {
             <button
               onClick={handleCreate}
               disabled={creating}
-              className="flex items-center gap-2 bg-gradient-to-r from-[#0F766E] to-[#0D9488] text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity disabled:opacity-60"
+              className="flex items-center gap-2 bg-gradient-to-r from-[#0F766E] to-[#0D9488] text-white px-4 py-2.5 rounded-lg text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity disabled:opacity-60 whitespace-nowrap"
             >
               <Plus size={16} />
               {creating ? 'Creating...' : 'New Estimate'}
@@ -330,11 +330,11 @@ export default function EstimatesPage() {
             </div>
 
           {/* E2: Status filter pills */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none" style={{ scrollbarWidth: "none" }}>
             {(['all','draft','sent','viewed','approved','invoiced','paid'] as const).map(s => (
               <button key={s}
                 onClick={() => setStatusFilter(s)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
+                className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors shrink-0 ${
                   statusFilter === s
                     ? 'bg-[#0F766E] border-[#0F766E] text-white'
                     : dk ? 'border-[#334155] text-slate-400 hover:border-teal-600' : 'border-[#E8E2D9] text-[#6B7280] hover:border-teal-600'
@@ -347,7 +347,7 @@ export default function EstimatesPage() {
           {/* ── Estimates table ── */}
           <div className={`rounded-xl border overflow-hidden ${card}`}>
             {/* Table header */}
-            <div className={`grid grid-cols-[1fr_140px_100px_120px_100px_40px] gap-4 px-5 py-3 border-b text-xs font-semibold uppercase tracking-wide ${muted} ${dk ? 'border-[#334155]' : 'border-[#E8E2D9]'}`}>
+            <div className={`hidden md:grid grid-cols-[1fr_140px_100px_120px_100px_40px] gap-4 px-5 py-3 border-b text-xs font-semibold uppercase tracking-wide ${muted} ${dk ? 'border-[#334155]' : 'border-[#E8E2D9]'}`}>
               {/* Client — sortable by name */}
               <button onClick={() => toggleSort('name')} className={`flex items-center gap-1 text-left hover:text-[#0F766E] transition-colors ${sortCol === 'name' ? 'text-[#0F766E]' : ''}`}>
                 Client / Estimate {sortCol === 'name' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
@@ -394,35 +394,56 @@ export default function EstimatesPage() {
                   <button
                     key={est.id}
                     onClick={() => router.push(`/dashboard/estimates/${est.id}`)}
-                    className={`w-full grid grid-cols-[1fr_140px_100px_120px_100px_40px] gap-4 px-5 py-4 text-left transition-colors border-b last:border-b-0 ${
-                      dk
-                        ? 'border-[#334155] hover:bg-[#0F172A]'
-                        : 'border-[#E8E2D9] hover:bg-[#F9FAFB]'
+                    className={`w-full text-left transition-colors border-b last:border-b-0 ${
+                      dk ? 'border-[#334155] hover:bg-[#0F172A]' : 'border-[#E8E2D9] hover:bg-[#F9FAFB]'
                     }`}
                   >
-                    <div>
-                      <p className={`text-sm font-semibold ${textMain}`}>{est.lead_name}</p>
-                      <p className={`text-xs mt-0.5 ${muted}`}>#{est.estimate_number}</p>
-                    </div>
-                    <div className={`text-sm self-center truncate ${muted}`}>{est.trade}</div>
-                    <div className="self-center">
-                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_STYLES[est.status].bg} ${STATUS_STYLES[est.status].text}`}>
+                    {/* Mobile layout */}
+                    <div className="flex items-center gap-3 px-4 py-3.5 md:hidden">
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm font-semibold truncate ${textMain}`}>{est.lead_name}</p>
+                        <p className={`text-xs mt-0.5 ${muted}`}>#{est.estimate_number}</p>
+                      </div>
+                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 ${STATUS_STYLES[est.status].bg} ${STATUS_STYLES[est.status].text}`}>
                         {STATUS_STYLES[est.status].label}
                       </span>
+                      <div className={`text-sm font-bold shrink-0 ${textMain}`}>
+                        {fmt(est.total)}
+                      </div>
+                      <button
+                        onClick={e => deleteEstimate(e, est.id)}
+                        className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors shrink-0"
+                        title="Delete estimate"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
-                    <div className={`text-sm font-semibold self-center text-right ${textMain}`}>
-                      {fmt(est.total)}
+                    {/* Desktop layout */}
+                    <div className="hidden md:grid grid-cols-[1fr_140px_100px_120px_100px_40px] gap-4 px-5 py-4">
+                      <div>
+                        <p className={`text-sm font-semibold ${textMain}`}>{est.lead_name}</p>
+                        <p className={`text-xs mt-0.5 ${muted}`}>#{est.estimate_number}</p>
+                      </div>
+                      <div className={`text-sm self-center truncate ${muted}`}>{est.trade}</div>
+                      <div className="self-center">
+                        <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_STYLES[est.status].bg} ${STATUS_STYLES[est.status].text}`}>
+                          {STATUS_STYLES[est.status].label}
+                        </span>
+                      </div>
+                      <div className={`text-sm font-semibold self-center text-right ${textMain}`}>
+                        {fmt(est.total)}
+                      </div>
+                      <div className={`text-xs self-center text-right ${muted}`}>
+                        {new Date(est.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </div>
+                      <button
+                        onClick={e => deleteEstimate(e, est.id)}
+                        className="self-center p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                        title="Delete estimate"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
-                    <div className={`text-xs self-center text-right ${muted}`}>
-                      {new Date(est.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </div>
-                    <button
-                      onClick={e => deleteEstimate(e, est.id)}
-                      className="self-center p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
-                      title="Delete estimate"
-                    >
-                      <Trash2 size={14} />
-                    </button>
                   </button>
                 ))}
               </div>
