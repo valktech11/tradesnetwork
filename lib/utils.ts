@@ -77,6 +77,15 @@ export function planLabel(plan: PlanTier): string {
   return 'Free'
 }
 
+// Capitalize each word in a contact name — fixes DB-stored lowercase names
+// e.g. "neha patel" → "Neha Patel", "JOHN DOE" → "John Doe"
+export function capName(name: string): string {
+  if (!name) return ''
+  return name.split(' ')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ')
+}
+
 export function greetingText(name: string): string {
   const hour = new Date().getHours()
   const time = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening'

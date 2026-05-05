@@ -2,7 +2,7 @@
 import { useState, useEffect, use, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Lead, Session, LeadStatus } from '@/types'
-import { avatarColor, initials, timeAgo } from '@/lib/utils'
+import { avatarColor, initials, timeAgo, capName } from '@/lib/utils'
 import DashboardShell from '@/components/layout/DashboardShell'
 
 const STAGES: LeadStatus[] = ['New', 'Contacted', 'Quoted', 'Scheduled', 'Completed', 'Paid']
@@ -409,7 +409,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
               <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${border}`, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexShrink: 0 }}>
                 <div>
                   <div style={{ fontSize: 18, fontWeight: 700, color: tp }}>Edit Lead</div>
-                  <div style={{ fontSize: 13, color: ts, marginTop: 2 }}>{(lead?.contact_name || 'Unknown').split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</div>
+                  <div style={{ fontSize: 13, color: ts, marginTop: 2 }}>{capName(lead?.contact_name || 'Unknown')}</div>
                 </div>
                 <button onClick={() => setDrawerOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: ts, fontSize: 22, lineHeight: 1, padding: 0, marginTop: 2 }}>×</button>
               </div>
@@ -546,7 +546,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 5 }}>
-                      <span style={{ fontSize: 22, fontWeight: 700, color: tp, wordBreak: 'break-word' }}>{lead.contact_name}</span>
+                      <span style={{ fontSize: 22, fontWeight: 700, color: tp, wordBreak: 'break-word' }}>{capName(lead.contact_name)}</span>
                       <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: '#EEEDFE', color: '#3C3489', fontWeight: 500 }}>{currentStage}</span>
                       <span style={{ fontSize: 14, color: ts }}>· {timeAgo(lead.created_at)}</span>
                       {overdueFU && <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: '#FCEBEB', color: '#A32D2D', fontWeight: 500 }}>Overdue</span>}

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import DashboardShell from '@/components/layout/DashboardShell'
 import { Session } from '@/types'
 import { theme } from '@/lib/theme'
-import { timeAgo } from '@/lib/utils'
+import { timeAgo, capName } from '@/lib/utils'
 
 type InvoiceSummary = {
   id: string
@@ -55,7 +55,13 @@ export default function InvoicesPage() {
     if (!session) { router.push('/login'); return }
     fetch(`/api/invoices?pro_id=${session.id}`)
       .then(r => r.json())
-      .then(d => { setInvoices(d.invoices || []); setLoading(false) })
+      .then(d => {
+        // Deduplicate by id — prevents duplicate rows from API
+        const raw: InvoiceSummary[] = d.invoices || []
+        const seen = new Set<string>()
+        setInvoices(raw.filter(inv => { if (seen.has(inv.id)) return false; seen.add(inv.id); return true }))
+        setLoading(false)
+      })
       .catch(() => setLoading(false))
   }, [session, router])
 
@@ -109,7 +115,7 @@ export default function InvoicesPage() {
               onFocus={e => (e.target.style.borderColor = '#0F766E')}
               onBlur={e => (e.target.style.borderColor = t.inputBorder)} />
             <select value={filter} onChange={e => setFilter(e.target.value)}
-              style={{ ...inputStyle, width: 'auto' }}>
+              style={{ ...inputStyle, width: 'auto', minWidth: 110, maxWidth: 130 }}>
               <option value="all">All statuses</option>
               <option value="draft">Draft</option>
               <option value="sent">Sent</option>
@@ -158,8 +164,8 @@ export default function InvoicesPage() {
                       <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: dk ? t.cardBgAlt : s.bg, color: s.text }}>{s.label}</span>
                       {isOverdue && <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: '#FEF2F2', color: '#B91C1C' }}>Overdue</span>}
                     </div>
-                    <div style={{ fontSize: 13, color: t.textMuted, marginTop: 2 }}>
-                      {inv.lead_name}
+                    <div style={{ fontSize: 13, color: t.textMuted, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {capName(inv.lead_name)}
                       {inv.due_date && <span> · Due {new Date(inv.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>}
                     </div>
                   </div>

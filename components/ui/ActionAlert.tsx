@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Lead } from '@/types'
+import { capName } from '@/lib/utils'
 
 interface ActionAlertProps {
   leads: Lead[]
@@ -90,13 +91,13 @@ export default function ActionAlert({ leads, onRespond }: ActionAlertProps) {
           <p className="text-sm flex-1" style={{ color: "#7F1D1D" }}>
             {alert.type === 'overdue' ? (
               <>
-                <span className="font-semibold">{alert.contact_name}</span>
+                <span className="font-semibold">{capName(alert.contact_name || "")}</span>
                 {' '}— no contact in{' '}
                 <span className="font-semibold text-red-600">{alert.days} days</span>
               </>
             ) : (
               <>
-                Follow-up with <span className="font-semibold">{alert.contact_name}</span> due today
+                Follow-up with <span className="font-semibold">{capName(alert.contact_name || "")}</span> due today
               </>
             )}
           </p>

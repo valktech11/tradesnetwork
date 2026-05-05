@@ -15,8 +15,9 @@ const STEP_ICONS: Record<string, React.ReactNode> = {
 
 function fmtTs(ts: string) {
   const d = new Date(ts)
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
-    ' at ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+  return `${date}, ${time}`
 }
 
 export default function EstimateProgressBar({ timeline, darkMode }: {

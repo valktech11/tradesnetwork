@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { Lead } from '@/types'
-import { initials, avatarColor, timeAgo } from '@/lib/utils'
+import { initials, avatarColor, timeAgo, capName } from '@/lib/utils'
 
 // ── Stage definitions ──────────────────────────────────────────────────────────
 export const PIPELINE_STAGES = [
@@ -295,7 +295,7 @@ function LeadCard({ lead, stage, onOpen, dk = false }: {
             {initials(lead.contact_name)}
           </div>
           <div className="min-w-0">
-            <p className="text-[14px] font-bold truncate" style={{ color: dk ? "#F1F5F9" : "#111827" }}>{lead.contact_name}</p>
+            <p className="text-[14px] font-bold truncate" style={{ color: dk ? "#F1F5F9" : "#111827" }}>{capName(lead.contact_name)}</p>
             <p className="text-[12px] text-gray-500">{timeAgo(lead.created_at)}</p>
           </div>
         </div>
@@ -616,7 +616,8 @@ export default function LeadPipeline({ leads, onStatusChange, onUpdate }: Props)
 
 
       {/* ── Mobile tab strip ── */}
-      <div className="md:hidden flex gap-1 mb-3 overflow-x-auto pb-1 px-4" style={{ scrollbarWidth: 'none' }}>
+      <div className="md:hidden relative mb-3">
+      <div className="flex gap-1 overflow-x-auto pb-1 px-4" style={{ scrollbarWidth: 'none' }}>
         {PIPELINE_STAGES.map(s => {
           const cnt = leadsForStage(s.key).length
           return (
@@ -629,6 +630,8 @@ export default function LeadPipeline({ leads, onStatusChange, onUpdate }: Props)
             </button>
           )
         })}
+      </div>
+      <div className="absolute right-0 top-0 bottom-0 w-10 pointer-events-none" style={{ background: 'linear-gradient(90deg, transparent, #F5F4F0)' }} />
       </div>
       <div className="md:hidden space-y-2 px-4">
         {leadsForStage(mobileStage).length === 0
