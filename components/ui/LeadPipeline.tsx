@@ -7,7 +7,7 @@ import { initials, avatarColor, timeAgo } from '@/lib/utils'
 
 // ── Stage definitions ──────────────────────────────────────────────────────────
 export const PIPELINE_STAGES = [
-  { key: 'New',       label: 'New',       color: '#D97706', bg: '#FFFBEB', dot: '#F59E0B', subLabel: 'Awaiting response',  nextLabel: 'Call',          nextColor: '#D97706', nextBg: '#FEF3C7' },
+  { key: 'New',       label: 'New',       color: '#D97706', bg: '#FFFBEB', dot: '#F59E0B', subLabel: 'Not yet contacted',  nextLabel: 'Call',          nextColor: '#D97706', nextBg: '#FEF3C7' },
   { key: 'Contacted', label: 'Contacted', color: '#2563EB', bg: '#EFF6FF', dot: '#3B82F6', subLabel: 'In conversation',    nextLabel: 'Follow Up',     nextColor: '#2563EB', nextBg: '#DBEAFE' },
   { key: 'Quoted',    label: 'Quoted',    color: '#7C3AED', bg: '#F5F3FF', dot: '#8B5CF6', subLabel: 'Proposal sent',      nextLabel: 'Send Estimate', nextColor: '#7C3AED', nextBg: '#EDE9FE' },
   { key: 'Scheduled', label: 'Scheduled', color: '#0F766E', bg: '#F0FDFA', dot: '#14B8A6', subLabel: 'Job confirmed',      nextLabel: 'Job Day',       nextColor: '#0F766E', nextBg: '#CCFBF1' },

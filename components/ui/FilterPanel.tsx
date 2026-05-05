@@ -338,19 +338,17 @@ export default function FilterPanel({ open, filters, onChange, onClose, onClear,
 
         </div>
 
-        {/* Footer */}
-        <div className="px-5 py-4" style={{ borderTop: `1px solid ${border}` }}>
+        {/* Footer — filters apply instantly, just show close */}
+        <div className="px-5 py-4 flex items-center justify-between" style={{ borderTop: `1px solid ${border}` }}>
+          <span className="text-[12px]" style={{ color: muted }}>
+            Filters apply instantly
+          </span>
           <button
             onClick={onClose}
-            className="w-full py-3 rounded-xl text-[14px] font-bold text-white transition-opacity hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg, #0F766E, #0D9488)' }}
+            className="text-[13px] font-semibold px-4 py-2 rounded-xl transition-all hover:opacity-80"
+            style={{ background: '#F0FDFA', color: '#0F766E' }}
           >
-            Apply Filters
-            {isFilterActive(filters) && (
-              <span className="ml-2 px-2 py-0.5 rounded-full text-[11px] font-bold" style={{ background: 'rgba(255,255,255,0.25)' }}>
-                {countActiveFilters(filters)}
-              </span>
-            )}
+            Done
           </button>
         </div>
       </div>
