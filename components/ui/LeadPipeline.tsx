@@ -464,7 +464,7 @@ function LeadCard({ lead, stage, onOpen, dk = false }: {
   )
 }
 
-// ── Slide panel for overflow leads ─────────────────────────────────────────────
+// ── Overflow modal for overflow leads ──────────────────────────────────────────
 function SlidePanel({ stage, leads, onClose, onOpen }: {
   stage: typeof PIPELINE_STAGES[number]
   leads: Lead[]
@@ -477,61 +477,71 @@ function SlidePanel({ stage, leads, onClose, onOpen }: {
     l.message.toLowerCase().includes(search.toLowerCase())
   )
   return (
-    <div className="fixed inset-0 z-40 flex" onClick={onClose}>
-      <div className="flex-1" />
-      <div className="w-80 h-full bg-white shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}
-        style={{ borderLeft: `4px solid ${stage.color}` }}>
+    <div className="fixed inset-0 z-40 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)' }}
+      onClick={onClose}>
+      <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+        style={{ maxHeight: '80vh', borderTop: `4px solid ${stage.key === 'Paid' ? '#4A7B4A' : stage.color}` }}
+        onClick={e => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100"
-          style={{ background: stage.bg }}>
+        <div className="flex items-center justify-between px-5 py-4"
+          style={{ background: stage.key === 'Paid' ? 'rgba(74,123,74,0.10)' : stage.bg, borderBottom: `1px solid ${stage.color}22` }}>
           <div>
-            <div className="text-[13px] font-bold" style={{ color: stage.key === 'Paid' ? 'white' : stage.color }}>
-              More Leads – {stage.label} ({leads.length})
+            <div className="text-[14px] font-bold" style={{ color: stage.key === 'Paid' ? '#2D5A2D' : stage.color }}>
+              {stage.label} · {leads.length} leads
             </div>
-            <div className="text-[11px] text-gray-500">Additional leads in this stage</div>
+            <div className="text-[11px] mt-0.5" style={{ color: '#6B7280' }}>Tap a lead to open</div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors text-gray-400 text-xl">×</button>
+          <button onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full transition-colors text-gray-400 hover:text-gray-700 hover:bg-black/5 text-xl">×</button>
         </div>
         {/* Search */}
-        <div className="px-4 py-3 border-b border-gray-100">
+        <div className="px-4 py-3" style={{ borderBottom: '1px solid #F3F4F6' }}>
           <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 border border-gray-200">
             <Ic d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0" s={14} c="#9CA3AF" />
             <input value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search leads..."
-              className="flex-1 bg-transparent text-[13px] outline-none text-gray-700" />
+              className="flex-1 bg-transparent text-[13px] outline-none text-gray-700"
+              autoFocus />
           </div>
         </div>
         {/* Lead list */}
-        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
-          {filtered.map(lead => {
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1.5">
+          {filtered.length === 0 ? (
+            <p className="text-center py-6 text-[13px] text-gray-400">No leads match</p>
+          ) : filtered.map((lead, i) => {
             const [bg, fg] = avatarColor(lead.contact_name)
+            const days = daysSince(lead.created_at)
             return (
               <div key={lead.id} onClick={() => { onClose(); onOpen(lead) }}
-                className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors border border-gray-100">
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-colors"
+                style={{ background: i % 2 === 1 ? '#F9F8F6' : 'transparent' }}
+                onMouseEnter={e => (e.currentTarget.style.background = '#F0FAFA')}
+                onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 1 ? '#F9F8F6' : 'transparent')}>
                 <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
                   style={{ background: bg, color: fg }}>
                   {initials(lead.contact_name)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-semibold text-gray-900 truncate">{lead.contact_name}</div>
+                  <div className="text-[13px] font-semibold text-gray-900 truncate">{capName(lead.contact_name)}</div>
                   <div className="text-[11px] text-gray-400">{timeAgo(lead.created_at)}</div>
                 </div>
-                {lead.quoted_amount && (
-                  <span className="text-[12px] font-bold flex-shrink-0" style={{ color: stage.color }}>
-                    ${lead.quoted_amount.toLocaleString()}
-                  </span>
-                )}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {lead.quoted_amount ? (
+                    <span className="text-[12px] font-bold" style={{ color: stage.key === 'Paid' ? '#2D5A2D' : stage.color }}>
+                      ${lead.quoted_amount.toLocaleString()}
+                    </span>
+                  ) : (
+                    <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-md"
+                      style={{ background: days > 3 ? '#FEE2E2' : '#FEF3C7', color: days > 3 ? '#DC2626' : '#B45309' }}>
+                      {days}d
+                    </span>
+                  )}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
               </div>
             )
           })}
-        </div>
-        {/* Footer */}
-        <div className="px-4 py-3 border-t border-gray-100">
-          <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-semibold"
-            style={{ background: stage.bg, color: stage.color }}>
-            <Ic d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" s={14} c={stage.color} />
-            View all leads
-          </button>
         </div>
       </div>
     </div>
