@@ -279,7 +279,7 @@ function LeadCard({ lead, stage, onOpen, dk = false }: {
 
   return (
     <div onClick={onOpen}
-      className="bg-white rounded-xl cursor-pointer hover:shadow-md active:scale-[0.98] transition-all"
+      className="group bg-white rounded-xl cursor-pointer hover:shadow-md active:scale-[0.98] transition-all"
       style={{
         border: `1px solid ${stage.color}22`,
         borderLeft: `4px solid ${stage.color}`,
@@ -312,10 +312,7 @@ function LeadCard({ lead, stage, onOpen, dk = false }: {
         )}
       </div>
 
-      {/* Row 2: message */}
-      <p className="text-[13px] text-gray-500 line-clamp-2 mb-2.5 leading-relaxed">{lead.message}</p>
-
-      {/* Row 3: Next action pill */}
+      {/* Row 2: Next action pill + icons */}
       <div className="flex items-center justify-between gap-2">
         {stage.key === 'Paid' ? (
           <span className="text-[12px] font-semibold px-2 py-1 rounded-lg flex items-center gap-1 flex-shrink-0"
@@ -346,8 +343,8 @@ function LeadCard({ lead, stage, onOpen, dk = false }: {
           </span>
         )}
 
-        {/* Bottom icons */}
-        <div className="flex items-center gap-1">
+        {/* Bottom icons — always visible on mobile, hover-reveal on desktop */}
+        <div className="flex md:hidden items-center gap-1">
           {lead.contact_phone && (
             <a href={`tel:${lead.contact_phone}`} onClick={e => e.stopPropagation()}
               className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
@@ -358,7 +355,6 @@ function LeadCard({ lead, stage, onOpen, dk = false }: {
             className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
             <Ic d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" s={16} c="#6B7280" />
           </button>
-          {/* Stage-aware 3rd icon */}
           {(stage.key === 'Scheduled' || stage.key === 'Paid') ? (
             <button onClick={e => { e.stopPropagation(); onOpen() }}
               className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
@@ -374,6 +370,37 @@ function LeadCard({ lead, stage, onOpen, dk = false }: {
             <button onClick={e => { e.stopPropagation(); onOpen() }}
               className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
               <Ic d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" s={16} c="#6B7280" />
+            </button>
+          )}
+        </div>
+
+        {/* Desktop: hover-reveal icon row */}
+        <div className="hidden md:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+          {lead.contact_phone && (
+            <a href={`tel:${lead.contact_phone}`} onClick={e => e.stopPropagation()}
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+              <Ic d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.45-.45a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z" s={15} c="#6B7280" />
+            </a>
+          )}
+          <button onClick={e => { e.stopPropagation(); onOpen() }}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+            <Ic d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" s={15} c="#6B7280" />
+          </button>
+          {(stage.key === 'Scheduled' || stage.key === 'Paid') ? (
+            <button onClick={e => { e.stopPropagation(); onOpen() }}
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+              <Ic d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" s={15} c="#6B7280" />
+            </button>
+          ) : stage.key === 'Quoted' ? (
+            <button onClick={openEstimate} disabled={creatingEst}
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-purple-100 transition-colors disabled:opacity-40"
+              title="Open Estimate">
+              <Ic d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" s={15} c="#7C3AED" />
+            </button>
+          ) : (
+            <button onClick={e => { e.stopPropagation(); onOpen() }}
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+              <Ic d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" s={15} c="#6B7280" />
             </button>
           )}
         </div>
@@ -535,24 +562,26 @@ function PipelineColumn({ stage, leads, onOpen }: {
       )}
       <div className="flex flex-col min-w-0" style={{ minWidth: 220 }}>
         {/* Column header */}
-        <div className="rounded-xl px-3 py-2.5 mb-2" style={{ background: stage.bg, borderTop: `3px solid ${stage.key === 'Paid' ? 'rgba(255,255,255,0.35)' : stage.key === 'Completed' ? '#9CA3AF' : stage.color}` }}>
-          <div className="flex items-center justify-between mb-0.5">
+        <div className="rounded-xl px-3 py-2.5 mb-2" style={{
+          background: stage.key === 'Paid' ? 'rgba(74,123,74,0.12)' : stage.bg,
+          borderTop: `3px solid ${stage.key === 'Paid' ? '#4A7B4A' : stage.key === 'Completed' ? '#9CA3AF' : stage.color}`
+        }}>
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <span className="text-[13px] font-bold" style={{ color: stage.color }}>
+              <span className="text-[13px] font-bold" style={{ color: stage.key === 'Paid' ? '#2D5A2D' : stage.color }}>
                 {stage.label}
               </span>
               <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-full"
-                style={{ background: stage.key === 'Paid' ? 'rgba(255,255,255,0.25)' : stage.color, color: stage.key === 'Paid' ? 'white' : 'white' }}>
+                style={{ background: stage.key === 'Paid' ? '#4A7B4A' : stage.color, color: 'white' }}>
                 {leads.length}
               </span>
             </div>
             {colValue > 0 && (
-              <span className="text-[12px] font-bold" style={{ color: stage.color }}>
+              <span className="text-[12px] font-bold" style={{ color: stage.key === 'Paid' ? '#2D5A2D' : stage.color }}>
                 ${colValue.toLocaleString()}
               </span>
             )}
           </div>
-          <div className="text-[11px]" style={{ color: stage.key === 'Paid' ? 'rgba(255,255,255,0.8)' : stage.color, opacity: stage.key === 'Paid' ? 1 : 0.8 }}>{stage.subLabel}</div>
         </div>
 
         {/* Cards */}

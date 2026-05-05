@@ -15,6 +15,7 @@ function daysSince(dateStr: string): number {
 
 export default function ActionAlert({ leads, onRespond }: ActionAlertProps) {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
+  const [expanded, setExpanded] = useState(false)
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -63,8 +64,12 @@ export default function ActionAlert({ leads, onRespond }: ActionAlertProps) {
 
   return (
     <div className="mb-5 rounded-2xl overflow-hidden" style={{ border: "1px solid #FECACA", background: "#FFF5F5" }}>
-      {/* Header row */}
-      <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: "1px solid #FECACA" }}>
+      {/* Header row — always visible, click to expand */}
+      <button
+        className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-red-50"
+        onClick={() => setExpanded(v => !v)}
+        style={{ borderBottom: expanded ? "1px solid #FECACA" : "none" }}
+      >
         <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "#EF4444" }}>
           <span className="text-white text-xs font-bold">{visible.length}</span>
         </div>
@@ -73,13 +78,22 @@ export default function ActionAlert({ leads, onRespond }: ActionAlertProps) {
             ? '1 lead needs your attention'
             : `${visible.length} leads need your attention`}
         </p>
-      </div>
+        {/* Chevron */}
+        <svg
+          width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="#EF4444" strokeWidth="2.5" strokeLinecap="round"
+          style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', flexShrink: 0 }}
+        >
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
 
-      {/* Individual alerts */}
-      {visible.map((alert, i) => (
+      {/* Individual alerts — only shown when expanded */}
+      {expanded && visible.map((alert, i) => (
         <div
           key={alert.id}
-          className={`flex items-center gap-3 px-4 py-3`} style={i > 0 ? { borderTop: '1px solid #FEE2E2' } : {}}
+          className="flex items-center gap-3 px-4 py-3"
+          style={i > 0 ? { borderTop: '1px solid #FEE2E2' } : {}}
         >
           <div className="w-2 h-2 rounded-full flex-shrink-0" style={{
             background: alert.type === 'overdue'
