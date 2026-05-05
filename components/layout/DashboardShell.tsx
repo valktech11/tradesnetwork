@@ -273,8 +273,8 @@ function MoreDrawer({ open, onClose, session, nl }: { open: boolean; onClose: ()
             <div key={g.title} className={gi > 0 ? 'mt-8' : 'mt-2'}>
               {/* Section header with line */}
               <div className="flex items-center gap-3 px-2 mb-2">
-                <span className="text-[11px] font-black tracking-[.18em] uppercase flex-shrink-0"
-                  style={{ color: 'rgba(45,212,191,0.7)' }}>{g.title}</span>
+                <span className="text-[12px] font-black tracking-[.15em] uppercase flex-shrink-0"
+                  style={{ color: 'rgba(45,212,191,0.8)' }}>{g.title}</span>
                 <div className="flex-1 h-[1px]" style={{ background: 'linear-gradient(90deg, rgba(45,212,191,0.4) 0%, rgba(45,212,191,0.08) 100%)' }} />
               </div>
               {/* Items */}
@@ -290,7 +290,7 @@ function MoreDrawer({ open, onClose, session, nl }: { open: boolean; onClose: ()
           <div className="mt-7">
             <div className="flex items-center gap-3 px-2 mb-2">
               <span className="text-[12px] font-bold tracking-[.12em] uppercase flex-shrink-0"
-                style={{ color: 'rgba(45,212,191,0.7)' }}>ACCOUNT</span>
+                style={{ color: 'rgba(45,212,191,0.8)' }}>ACCOUNT</span>
               <div className="flex-1 h-[1px]" style={{ background: 'linear-gradient(90deg, rgba(45,212,191,0.4) 0%, rgba(45,212,191,0.08) 100%)' }} />
             </div>
             <DrawerNavLink item={{ label: 'Profile', href: '/edit-profile', icon: icon.profile }} active={p === '/edit-profile'} onNav={onClose} />
@@ -333,7 +333,7 @@ function DrawerNavLink({ item, active, onNav }: { item: NavItem; active: boolean
       {/* Label — 16px bold, full white active, 85% available, 30% soon */}
       <span className="flex-1 font-bold"
         style={{
-          fontSize: 16,
+          fontSize: 17,
           color: active ? '#ffffff' : item.soon ? 'rgba(255,255,255,.28)' : 'rgba(255,255,255,.92)',
           letterSpacing: '-0.01em',
         }}>
