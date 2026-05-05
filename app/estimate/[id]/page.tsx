@@ -58,8 +58,12 @@ export default function PublicEstimatePage({ params }: { params: Promise<{ id: s
         if (!d) return
         setEstimate(d.estimate)
         setLoading(false)
-        // Mark as viewed
-        fetch(`/api/estimates/public/${id}/view`, { method: 'POST' }).catch(() => {})
+        // B12 FIX: session dedup — only fire view once per browser session
+        const viewKey = `est_viewed_${id}`
+        if (!sessionStorage.getItem(viewKey)) {
+          fetch(`/api/estimates/public/${id}/view`, { method: 'POST' }).catch(() => {})
+          sessionStorage.setItem(viewKey, '1')
+        }
       })
       .catch(() => { setNotFound(true); setLoading(false) })
   }, [id])

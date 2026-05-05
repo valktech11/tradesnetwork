@@ -341,7 +341,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
         }),
       })
       const d = await r.json()
-      if (d.estimate?.id) router.push(`/dashboard/estimates/${d.estimate.id}`)
+      if (d.estimate?.id) router.push(`/dashboard/estimates/${d.estimate.id}?from=pipeline&lead_id=${id}`)
     } catch { setCreatingEst(false) }
   }
 
@@ -454,7 +454,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                         <div style={{ ...inputStyle, background: dk ? '#0f172a' : '#f9fafb', color: '#0F766E', fontWeight: 600, cursor: 'default' }}>
                           ${leadEstimate.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                         </div>
-                        <button onClick={() => router.push(`/dashboard/estimates/${leadEstimate.id}`)}
+                        <button onClick={() => router.push(`/dashboard/estimates/${leadEstimate.id}?from=pipeline&lead_id=${id}`)}
                           style={{ fontSize: 11, color: '#0F766E', background: 'none', border: 'none', cursor: 'pointer', padding: '3px 0', textDecoration: 'underline' }}>
                           From estimate #{leadEstimate.estimate_number} →
                         </button>
@@ -621,7 +621,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', width: '100%' }}>
                   {(currentStage === 'Contacted' || currentStage === 'Quoted') ? (
                     leadEstimate ? (
-                      <button onClick={() => router.push(`/dashboard/estimates/${leadEstimate.id}`)}
+                      <button onClick={() => router.push(`/dashboard/estimates/${leadEstimate.id}?from=pipeline&lead_id=${id}`)}
                         style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 18px', background: '#0F766E', color: 'white', border: 'none', borderRadius: 9, fontSize: 14, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
                         <Ic color="white" size={14}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6"/></Ic>
                         View Estimate #{leadEstimate.estimate_number}

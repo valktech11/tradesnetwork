@@ -140,6 +140,7 @@ export default function EstimateItems({
                     </span>
                   </div>
                   <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                    {!locked && (<>
                     <button onClick={() => isEditing ? cancelEdit() : startEdit(item)} title="Edit"
                       style={{ width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1.5px solid ${isEditing ? '#0F766E' : border}`, borderRadius: 7, background: isEditing ? '#0F766E' : bgInput, color: isEditing ? '#fff' : colBody, cursor: 'pointer' }}>
                       <Pencil size={13} />
@@ -148,6 +149,7 @@ export default function EstimateItems({
                       style={{ width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1.5px solid ${border}`, borderRadius: 7, background: bgInput, color: colBody, cursor: 'pointer' }}>
                       <Trash2 size={13} />
                     </button>
+                    </>)}
                   </div>
                 </div>
                 {/* Card detail row */}
@@ -179,6 +181,7 @@ export default function EstimateItems({
                         <label style={labelStyle}>Quantity</label>
                         <input type="number" min={1} value={draft.qty ?? 1}
                           onChange={e => setDraft(d => ({ ...d, qty: Math.max(1, Number(e.target.value)) }))}
+                          onFocus={e => e.currentTarget.select()}
                           style={inputStyle()} onKeyDown={e => e.key === 'Enter' && commitEdit(item.id)} />
                       </div>
                       <div>
@@ -187,6 +190,7 @@ export default function EstimateItems({
                           <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: colMuted, fontSize: 14 }}>$</span>
                           <input type="number" min={0} step={0.01} value={draft.unit_price ?? ''} placeholder="0.00"
                             onChange={e => setDraft(d => ({ ...d, unit_price: Number(e.target.value) }))}
+                            onFocus={e => e.currentTarget.select()}
                             style={inputStyle({ paddingLeft: 24 })} onKeyDown={e => e.key === 'Enter' && commitEdit(item.id)} />
                         </div>
                       </div>
@@ -221,6 +225,7 @@ export default function EstimateItems({
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <input type="number" min={0} value={discountInput || ''} onChange={e => { const v = Number(e.target.value); setDiscountInput(v); updateDiscount(discountType === '%' ? estimate.subtotal * (v / 100) : v) }}
+                onFocus={e => e.currentTarget.select()}
                 placeholder="0" style={{ width: 80, padding: '5px 8px', fontSize: 13, borderRadius: 7, border: `1.5px solid ${border}`, background: bgInput, color: col, outline: 'none', textAlign: 'right' }} />
               <span style={{ fontSize: 13, fontWeight: 600, color: '#16a34a' }}>{estimate.discount > 0 ? `− ${money(estimate.discount)}` : '—'}</span>
               <button onClick={() => { setShowDiscount(false); setDiscountInput(0); updateDiscount(0) }} style={{ fontSize: 12, color: colMuted, background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
@@ -237,7 +242,7 @@ export default function EstimateItems({
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ position: 'relative' }}>
-              <input type="number" min={0} max={30} step={0.25} value={estimate.tax_rate || ''} onChange={e => updateTaxRate(Number(e.target.value))} placeholder="0"
+              <input type="number" min={0} max={30} step={0.25} value={estimate.tax_rate || ''} onChange={e => updateTaxRate(Number(e.target.value))} onFocus={e => e.currentTarget.select()} placeholder="0"
                 style={{ width: 72, padding: '5px 24px 5px 8px', fontSize: 13, borderRadius: 7, border: `1.5px solid ${border}`, background: bgInput, color: col, outline: 'none', textAlign: 'right' }} />
               <span style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: colMuted, fontSize: 12, pointerEvents: 'none' }}>%</span>
             </div>
@@ -371,6 +376,7 @@ export default function EstimateItems({
                       <label style={labelStyle}>Quantity</label>
                       <input type="number" min={1} value={draft.qty ?? 1}
                         onChange={e => setDraft(d => ({ ...d, qty: Math.max(1, Number(e.target.value)) }))}
+                        onFocus={e => e.currentTarget.select()}
                         style={inputStyle()} onKeyDown={e => e.key === 'Enter' && commitEdit(item.id)} />
                     </div>
                     <div>
@@ -379,6 +385,7 @@ export default function EstimateItems({
                         <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: colMuted, fontSize: 14 }}>$</span>
                         <input type="number" min={0} step={0.01} value={draft.unit_price ?? ''} placeholder="0.00"
                           onChange={e => setDraft(d => ({ ...d, unit_price: Number(e.target.value) }))}
+                          onFocus={e => e.currentTarget.select()}
                           style={inputStyle({ paddingLeft: 24 })} onKeyDown={e => e.key === 'Enter' && commitEdit(item.id)} />
                       </div>
                     </div>
@@ -436,6 +443,7 @@ export default function EstimateItems({
                   const flat = discountType === '%' ? estimate.subtotal * (v / 100) : v
                   updateDiscount(flat)
                 }}
+                onFocus={e => e.currentTarget.select()}
                 placeholder={discountType === '%' ? '0' : '0.00'}
                 style={{ width: '100%', padding: `5px ${discountType === '%' ? '22px' : '8px'} 5px 8px`, fontSize: 13, borderRadius: 7,
                   border: `1.5px solid ${border}`, background: bgInput, color: col, outline: 'none', boxSizing: 'border-box' as const, textAlign: 'right' }} />
@@ -469,6 +477,7 @@ export default function EstimateItems({
           <div style={{ position: 'relative', textAlign: 'right' }}>
             <input type="number" min={0} max={30} step={0.25} value={estimate.tax_rate || ''}
               onChange={e => updateTaxRate(Number(e.target.value))}
+              onFocus={e => e.currentTarget.select()}
               placeholder="0"
               style={{ width: '100%', padding: '5px 28px 5px 8px', fontSize: 13, borderRadius: 7, border: `1.5px solid ${border}`, background: bgInput, color: col, outline: 'none', boxSizing: 'border-box', textAlign: 'right' }} />
             <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', color: colMuted, fontSize: 12, pointerEvents: 'none' }}>%</span>

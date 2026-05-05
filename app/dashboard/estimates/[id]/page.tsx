@@ -1,7 +1,7 @@
 'use client'
 
 import React, { use, useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Send, Save, Check } from 'lucide-react'
 import DashboardShell from '@/components/layout/DashboardShell'
 import EstimateItems from '@/components/estimate/EstimateItems'
@@ -76,7 +76,10 @@ function isTerminal(status: Estimate['status']) {
 
 export default function EstimateDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const router = useRouter()
+  const router      = useRouter()
+  const searchParams = useSearchParams()
+  const fromPipeline = searchParams.get('from') === 'pipeline'
+  const fromLeadId   = searchParams.get('lead_id')
 
   // Read session synchronously to avoid flicker
   const [session] = useState<Session | null>(() => {
@@ -98,6 +101,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
   const [creatingInvoice, setCreatingInvoice] = useState(false)
   const [showMoreMenu,    setShowMoreMenu]    = useState(false)
   const [showVoidConfirm, setShowVoidConfirm] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [voidReason,      setVoidReason]      = useState('')
   const [voiding,         setVoiding]         = useState(false)
   const [duplicating,     setDuplicating]     = useState(false)
@@ -296,11 +300,13 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
           {/* ── Top action bar ── */}
           <div className="flex items-center justify-between">
             <button
-              onClick={() => router.back()}
+              onClick={() => fromPipeline && fromLeadId
+                ? router.push(`/dashboard/pipeline/${fromLeadId}`)
+                : router.push('/dashboard/estimates')}
               className={`flex items-center gap-1.5 text-sm font-medium ${muted} hover:text-[#0F766E] transition-colors`}
             >
               <ArrowLeft size={16} />
-              Back to Estimates
+              {fromPipeline ? 'Back to Pipeline' : 'Back to Estimates'}
             </button>
 
             <div className="flex items-center gap-3">
@@ -372,10 +378,13 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                           onMouseLeave={e => { e.currentTarget.style.borderColor = t.inputBorder }}>
                           ···
                         </button>
+                        {/* D4: backdrop for outside-click close */}
+                        {showMoreMenu && (
+                          <div style={{ position: 'fixed', inset: 0, zIndex: 49 }} onClick={() => setShowMoreMenu(false)} />
+                        )}
                         {showMoreMenu && (
                           <div
-                            style={{ position: 'absolute', top: '110%', right: 0, zIndex: 50, background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.15)', minWidth: 180, overflow: 'hidden' }}
-                            onMouseLeave={() => setShowMoreMenu(false)}>
+                            style={{ position: 'absolute', top: '110%', right: 0, zIndex: 50, background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.15)', minWidth: 190, overflow: 'hidden' }}>
                             {[
                               {
                                 label: 'Download PDF', icon: '↓',
@@ -384,7 +393,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                                   if (!estimate || estimate.id === 'mock-1') { setSaveMsg('Save estimate to DB first'); setTimeout(() => setSaveMsg(null), 3000); return }
                                   setSaveMsg('Generating PDF...')
                                   try {
-                                    const r = await fetch(`/api/estimates/pdf?id=${id}`)
+                                    const r = await fetch(`/api/estimates/pdf?id=${id}&pro_id=${session?.id}`)
                                     if (!r.ok) throw new Error('fail')
                                     const blob = await r.blob()
                                     const url = URL.createObjectURL(blob)
@@ -396,9 +405,24 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                                 },
                               },
                               {
+                                // D6: copy estimate link
+                                label: 'Copy Estimate Link', icon: '🔗',
+                                action: () => {
+                                  setShowMoreMenu(false)
+                                  navigator.clipboard.writeText(`${window.location.origin}/estimate/${id}`)
+                                    .then(() => { setSaveMsg('Link copied ✓'); setTimeout(() => setSaveMsg(null), 2500) })
+                                    .catch(() => { setSaveMsg('Copy failed'); setTimeout(() => setSaveMsg(null), 2500) })
+                                },
+                              },
+                              {
                                 label: duplicating ? 'Duplicating...' : 'Duplicate Estimate', icon: '⎘',
                                 action: () => { setShowMoreMenu(false); handleDuplicate() },
                               },
+                              // D5: delete only for draft estimates
+                              ...(estimate.status === 'draft' ? [{
+                                label: 'Delete Estimate', icon: '🗑', danger: true,
+                                action: () => { setShowMoreMenu(false); setShowDeleteConfirm(true) },
+                              }] : []),
                               ...(!isTerminal(estimate.status) && estimate.status !== 'void' && estimate.status !== 'declined' ? [{
                                 label: 'Void Estimate', icon: '✕', danger: true,
                                 action: () => { setShowMoreMenu(false); setShowVoidConfirm(true) },
@@ -431,7 +455,6 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                       {/* Primary CTA — per status */}
                       {estimate.status === 'draft' && (
                         <button onClick={async () => {
-                          // D20 FIX: validate before sending
                           if (estimate.items.length === 0) { setSaveMsg('Add items before sending'); setTimeout(() => setSaveMsg(null), 3000); return }
                           if (estimate.total <= 0) { setSaveMsg('Total must be greater than $0'); setTimeout(() => setSaveMsg(null), 3000); return }
                           if (!estimate.contact_email) { setSaveMsg('Add client email to this lead to send estimate'); setTimeout(() => setSaveMsg(null), 4000); return }
@@ -439,18 +462,16 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                           const sentAt = new Date().toISOString()
                           await handleSave()
 
-                          // D1 FIX: update status AND send actual email
-                          await fetch(`/api/estimates/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...estimate, status: 'sent', sent_at: sentAt }) })
+                          // Call proper initial-send route (not reminder)
+                          const [, sendResult] = await Promise.all([
+                            fetch(`/api/estimates/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...estimate, status: 'sent', sent_at: sentAt }) }),
+                            fetch('/api/estimates/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ estimateId: id, pro_id: session?.id }) }),
+                          ])
 
-                          // Send email to client
-                          await fetch('/api/estimates/send-reminder', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ estimateId: id, contactEmail: estimate.contact_email, pro_id: session?.id }),
-                          })
-
+                          const sendOk = sendResult.ok
                           setEstimate(prev => prev ? { ...prev, status: 'sent', timeline: prev.timeline.map(tl => tl.event === 'sent' ? { ...tl, timestamp: sentAt } : tl) } : prev)
-                          setSaveMsg('Estimate sent to client ✓'); setTimeout(() => setSaveMsg(null), 3000)
+                          setSaveMsg(sendOk ? 'Estimate sent to client ✓' : 'Status updated — email failed (check Resend)')
+                          setTimeout(() => setSaveMsg(null), 4000)
                         }} disabled={saving}
                           className="flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 disabled:opacity-60 whitespace-nowrap"
                           style={{ background: 'linear-gradient(135deg, #0F766E, #0D9488)' }}>
@@ -607,7 +628,10 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                             setEstimate={setEstimateDirty}
                             darkMode={dk}
                             onOpenTemplatePicker={openTemplatePicker}
-                            onSaveTemplate={() => setShowSaveTemplate(true)}
+                            onSaveTemplate={() => {
+                              if (estimate.items.length === 0) { setSaveMsg('Add items before saving a template'); setTimeout(() => setSaveMsg(null), 3000); return }
+                              setShowSaveTemplate(true)
+                            }}
                             locked={isLocked(estimate.status)}
                           />
                         </>
@@ -630,7 +654,8 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <button onClick={async () => {
-                          if (isDirty) await handleSave()  // C10 FIX: save current state first
+                          if (estimate.items.length === 0) { setSaveMsg('Add items before saving a template'); setTimeout(() => setSaveMsg(null), 3000); return }
+                          if (isDirty) await handleSave()
                           setShowSaveTemplate(true)
                         }}
                           style={{ fontSize: 12, color: dk ? '#94A3B8' : '#6B7280', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textDecorationColor: 'transparent' }}
@@ -659,7 +684,10 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                   {/* ── Save as template — slim text link ── */}
                   {activeTab === 'items' && !isDirty && (
                     <div style={{ textAlign: 'center', padding: '2px 0 4px' }}>
-                      <button onClick={() => setShowSaveTemplate(true)}
+                      <button onClick={() => {
+                          if (estimate.items.length === 0) { setSaveMsg('Add items before saving a template'); setTimeout(() => setSaveMsg(null), 3000); return }
+                          setShowSaveTemplate(true)
+                        }}
                         style={{ fontSize: 12, color: t.textSubtle, background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}
                         onMouseEnter={e => (e.currentTarget.style.color = '#0F766E')}
                         onMouseLeave={e => (e.currentTarget.style.color = t.textSubtle)}>
@@ -780,6 +808,36 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
           )}
         </div>
       </div>
+    {/* ── D5: Delete confirm modal (draft only) ── */}
+      {showDeleteConfirm && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.6)' }}
+          onClick={() => setShowDeleteConfirm(false)}>
+          <div style={{ background: t.cardBg, borderRadius: 20, width: '100%', maxWidth: 380, padding: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}
+            onClick={e => e.stopPropagation()}>
+            <h3 style={{ fontSize: 18, fontWeight: 700, color: '#EF4444', marginBottom: 6 }}>
+              Delete {estimate?.estimate_number}?
+            </h3>
+            <p style={{ fontSize: 13, color: t.textMuted, marginBottom: 20 }}>
+              This will permanently remove the estimate and all its line items. This cannot be undone.
+            </p>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setShowDeleteConfirm(false)}
+                style={{ flex: 1, padding: 12, borderRadius: 12, border: `2px solid ${t.cardBorder}`, background: 'transparent', color: t.textMuted, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+                Cancel
+              </button>
+              <button onClick={async () => {
+                setShowDeleteConfirm(false)
+                await fetch(`/api/estimates/${id}`, { method: 'DELETE' })
+                router.push('/dashboard/estimates')
+              }}
+                style={{ flex: 1, padding: 12, borderRadius: 12, border: 'none', background: '#EF4444', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+                Delete Estimate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     {/* ── Void confirm modal ── */}
       {showVoidConfirm && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.6)' }}
@@ -826,11 +884,24 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                   <p className={`text-xs mt-1 ${muted}`}>Build an estimate and click "Save as Template" to reuse it.</p>
                 </div>
               ) : templates.map(tpl => (
-                <button key={tpl.id} onClick={() => applyTemplate(tpl)}
-                  className={`w-full text-left px-5 py-3.5 border-b last:border-b-0 transition-colors ${dk ? 'border-[#334155] hover:bg-[#0F172A]' : 'border-[#E8E2D9] hover:bg-[#F9FAFB]'}`}>
-                  <p className={`text-sm font-semibold ${dk ? 'text-white' : 'text-gray-900'}`}>{tpl.name}</p>
-                  <p className={`text-xs mt-0.5 ${muted}`}>{tpl.items.length} item{tpl.items.length !== 1 ? 's' : ''}</p>
-                </button>
+                <div key={tpl.id} className={`flex items-center border-b last:border-b-0 ${dk ? 'border-[#334155]' : 'border-[#E8E2D9]'}`}>
+                  <button onClick={() => applyTemplate(tpl)}
+                    className={`flex-1 text-left px-5 py-3.5 transition-colors ${dk ? 'hover:bg-[#0F172A]' : 'hover:bg-[#F9FAFB]'}`}>
+                    <p className={`text-sm font-semibold ${dk ? 'text-white' : 'text-gray-900'}`}>{tpl.name}</p>
+                    <p className={`text-xs mt-0.5 ${muted}`}>{tpl.items.length} item{tpl.items.length !== 1 ? 's' : ''}</p>
+                  </button>
+                  {/* D7: delete template */}
+                  <button onClick={async e => {
+                    e.stopPropagation()
+                    if (!confirm(`Delete template "${tpl.name}"?`)) return
+                    await fetch(`/api/estimate-templates?id=${tpl.id}`, { method: 'DELETE' })
+                    setTemplates(prev => prev.filter(t => t.id !== tpl.id))
+                  }}
+                    title="Delete template"
+                    className="px-4 py-3.5 shrink-0 text-gray-400 hover:text-red-500 transition-colors">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                  </button>
+                </div>
               ))}
             </div>
           </div>

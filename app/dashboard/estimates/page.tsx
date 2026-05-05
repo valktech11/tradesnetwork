@@ -51,6 +51,12 @@ export default function EstimatesPage() {
   const [leads,        setLeads]        = useState<any[]>([])
   const [leadSearch,   setLeadSearch]   = useState('')
   const [loadingLeads, setLoadingLeads] = useState(false)
+  // E1: sorting
+  const [sortBy, setSortBy] = useState<'date' | 'total_asc' | 'total_desc' | 'name' | 'status'>('date')
+  // E2: status filter
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  // E3: show archived (void/declined)
+  const [showArchived, setShowArchived] = useState(false)
 
   useEffect(() => {
     if (!session) { router.push('/login'); return }
@@ -166,10 +172,32 @@ export default function EstimatesPage() {
   const muted   = dk ? 'text-slate-400' : 'text-[#6B7280]'
   const pageBg  = dk ? 'bg-[#0A1628]' : 'bg-[#F5F4F0]'
 
-  const filtered = estimates.filter(e =>
-    e.lead_name.toLowerCase().includes(search.toLowerCase()) ||
-    e.estimate_number.toLowerCase().includes(search.toLowerCase())
-  )
+  // E1+E2+E3: filter, sort, archive
+  const archivedStatuses = ['void', 'declined']
+  const filtered = estimates
+    .filter(e => {
+      // E3: hide archived by default
+      if (!showArchived && archivedStatuses.includes(e.status)) return false
+      // E2: status filter
+      if (statusFilter !== 'all' && e.status !== statusFilter) return false
+      // search
+      return e.lead_name.toLowerCase().includes(search.toLowerCase()) ||
+             e.estimate_number.toLowerCase().includes(search.toLowerCase())
+    })
+    .sort((a, b) => {
+      // E1: sort
+      if (sortBy === 'date')       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      if (sortBy === 'total_asc')  return a.total - b.total
+      if (sortBy === 'total_desc') return b.total - a.total
+      if (sortBy === 'name')       return a.lead_name.localeCompare(b.lead_name)
+      if (sortBy === 'status') {
+        const order = ['draft','sent','viewed','approved','invoiced','paid','declined','void']
+        return order.indexOf(a.status) - order.indexOf(b.status)
+      }
+      return 0
+    })
+
+  const archivedCount = estimates.filter(e => archivedStatuses.includes(e.status)).length
 
   // Stats
   // A7 FIX: only count active estimates in pipeline value
@@ -229,15 +257,47 @@ export default function EstimatesPage() {
             </div>
           )}
 
-          {/* ── Search ── */}
-          <div className={`flex items-center gap-3 rounded-xl border px-4 py-2.5 ${card}`}>
-            <Search size={16} className={muted} />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search by client name or estimate number..."
-              className={`flex-1 bg-transparent text-sm focus:outline-none ${textMain} placeholder:text-[#9CA3AF]`}
-            />
+          {/* ── Search + Sort ── */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className={`flex items-center gap-3 rounded-xl border px-4 py-2.5 flex-1 ${card}`}>
+              <Search size={16} className={muted} />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search by client name or estimate number..."
+                className={`flex-1 bg-transparent text-sm focus:outline-none ${textMain} placeholder:text-[#9CA3AF]`}
+              />
+              {search && (
+                <button onClick={() => setSearch('')} className={`text-xs ${muted} hover:text-red-400`}>✕</button>
+              )}
+            </div>
+            {/* E1: Sort */}
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as typeof sortBy)}
+              className={`rounded-xl border px-3 py-2.5 text-sm font-medium focus:outline-none ${card} ${textMain}`}
+              style={{ minWidth: 150, cursor: 'pointer' }}>
+              <option value="date">Newest First</option>
+              <option value="total_desc">Highest Value</option>
+              <option value="total_asc">Lowest Value</option>
+              <option value="name">Client A–Z</option>
+              <option value="status">By Status</option>
+            </select>
+          </div>
+
+          {/* E2: Status filter pills */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {(['all','draft','sent','viewed','approved','invoiced','paid'] as const).map(s => (
+              <button key={s}
+                onClick={() => setStatusFilter(s)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
+                  statusFilter === s
+                    ? 'bg-[#0F766E] border-[#0F766E] text-white'
+                    : dk ? 'border-[#334155] text-slate-400 hover:border-teal-600' : 'border-[#E8E2D9] text-[#6B7280] hover:border-teal-600'
+                }`}>
+                {s === 'all' ? 'All Active' : s.charAt(0).toUpperCase() + s.slice(1)}
+              </button>
+            ))}
           </div>
 
           {/* ── Estimates table ── */}
@@ -299,6 +359,16 @@ export default function EstimatesPage() {
               </div>
             )}
           </div>
+
+          {/* E3: archive toggle */}
+          {archivedCount > 0 && (
+            <div className="text-center py-2">
+              <button onClick={() => setShowArchived(v => !v)}
+                className={`text-xs font-medium transition-colors ${muted} hover:text-[#0F766E]`}>
+                {showArchived ? `Hide archived (${archivedCount})` : `Show archived — void & declined (${archivedCount})`}
+              </button>
+            </div>
+          )}
 
         </div>
       </div>

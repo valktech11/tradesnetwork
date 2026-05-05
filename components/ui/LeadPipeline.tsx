@@ -242,7 +242,7 @@ function LeadCard({ lead, stage, onOpen }: {
         setExistingEst(d.estimate)
         setCreatingEst(false)
       } else if (d.estimate?.id) {
-        router.push(`/dashboard/estimates/${d.estimate.id}`)
+        router.push(`/dashboard/estimates/${d.estimate.id}?from=pipeline&lead_id=${lead.id}`)
       }
     } catch {
       setCreatingEst(false)
@@ -270,7 +270,7 @@ function LeadCard({ lead, stage, onOpen }: {
         }),
       })
       const d = await r.json()
-      if (d.estimate?.id) router.push(`/dashboard/estimates/${d.estimate.id}`)
+      if (d.estimate?.id) router.push(`/dashboard/estimates/${d.estimate.id}?from=pipeline&lead_id=${lead.id}`)
     } catch {
       setCreatingEst(false)
     }
@@ -408,7 +408,7 @@ function LeadCard({ lead, stage, onOpen }: {
 
             <div className="flex gap-3">
               <button
-                onClick={e => { e.stopPropagation(); e.preventDefault(); router.push(`/dashboard/estimates/${existingEst.id}`) }}
+                onClick={e => { e.stopPropagation(); e.preventDefault(); router.push(`/dashboard/estimates/${existingEst.id}?from=pipeline&lead_id=${lead.id}`) }}
                 className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-[#0F766E] to-[#0D9488] text-white hover:opacity-90 transition-opacity"
               >
                 Open Existing
