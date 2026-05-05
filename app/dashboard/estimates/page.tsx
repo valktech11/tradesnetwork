@@ -227,9 +227,23 @@ export default function EstimatesPage() {
   const archivedCount = estimates.filter(e => archivedStatuses.includes(e.status)).length
 
   // Stats
-  // A7 FIX: only count active estimates in pipeline value
+  // Best-per-lead: one lead can never contribute more than once to Active Estimates Value
+  // Priority: invoiced > approved > viewed > sent (highest commitment wins)
+  const STATUS_PRIORITY: Record<string, number> = { invoiced: 1, approved: 2, viewed: 3, sent: 4 }
   const activeStatuses = ['sent', 'viewed', 'approved', 'invoiced']
-  const totalValue    = estimates.filter(e => activeStatuses.includes(e.status)).reduce((s, e) => s + e.total, 0)
+  const bestPerLead = Object.values(
+    estimates
+      .filter(e => activeStatuses.includes(e.status))
+      .reduce((acc, e) => {
+        const key = e.lead_id || e.id // fallback to id if no lead_id (standalone estimates)
+        const existing = acc[key]
+        if (!existing || (STATUS_PRIORITY[e.status] || 99) < (STATUS_PRIORITY[existing.status] || 99)) {
+          acc[key] = e
+        }
+        return acc
+      }, {} as Record<string, typeof estimates[0]>)
+  )
+  const totalValue = (bestPerLead as typeof estimates).reduce((s, e) => s + e.total, 0)
   const approvedCount = estimates.filter(e => e.status === 'approved' || e.status === 'paid').length
   const sentCount     = estimates.filter(e => e.status === 'sent' || e.status === 'viewed').length
 

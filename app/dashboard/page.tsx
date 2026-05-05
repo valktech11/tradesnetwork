@@ -163,6 +163,7 @@ export default function OverviewPage() {
 
   const [leads,       setLeads]       = useState<Lead[]>([])
   const [reviews,     setReviews]     = useState<Review[]>([])
+  const [draftCount,  setDraftCount]  = useState(0)
   const [dataLoading, setDataLoading] = useState(true)
   const [showAddLead, setShowAddLead] = useState(false)
 
@@ -171,9 +172,12 @@ export default function OverviewPage() {
     Promise.all([
       fetch(`/api/leads?pro_id=${session.id}`).then(r => r.json()),
       fetch(`/api/reviews?pro_id=${session.id}`).then(r => r.json()),
-    ]).then(([leadsData, reviewsData]) => {
+      fetch(`/api/estimates?pro_id=${session.id}`).then(r => r.json()),
+    ]).then(([leadsData, reviewsData, estimatesData]) => {
       setLeads(leadsData.leads || [])
       setReviews((reviewsData.reviews || []).filter((r: Review) => r.is_approved))
+      const allEstimates: { status: string }[] = estimatesData.estimates || []
+      setDraftCount(allEstimates.filter(e => e.status === 'draft').length)
       setDataLoading(false)
     }).catch(() => setDataLoading(false))
   }, [session, router])
@@ -272,27 +276,14 @@ export default function OverviewPage() {
               ctaLabel="View Calendar" ctaHref="/dashboard/pipeline"
               dk={dk}
             />
-            {/* Draft Estimates — v75 placeholder */}
-            <div className="flex-shrink-0 rounded-2xl p-4 flex flex-col gap-3 relative opacity-70 md:p-5 md:gap-4"
-              style={{ backgroundColor: dk ? '#1E293B' : 'white', border: `1px solid ${cardBdr}` }}>
-              <span className="absolute top-3 right-3 text-[9px] font-bold px-1.5 py-0.5 rounded-md"
-                style={{ backgroundColor: '#EDE9FE', color: '#7C3AED' }}>v75</span>
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: '#EDE9FE' }}>
-                  <SvgIcon d={ICONS.fileText} s={22} sw={1.8} color="#7C3AED" />
-                </div>
-                <div>
-                  <div className="text-[28px] font-bold leading-none mb-1" style={{ color: textMain }}>0</div>
-                  <div className="text-[13px] font-semibold" style={{ color: textMain }}>Draft Estimates</div>
-                  <div className="text-[12px] mt-0.5" style={{ color: dk ? '#94A3B8' : MUTED }}>Need your review</div>
-                </div>
-              </div>
-              <div className="w-full flex items-center justify-center py-2 rounded-xl text-[12px] font-semibold cursor-not-allowed"
-                style={{ border: `1px solid ${TEAL}`, color: TEAL, backgroundColor: 'white' }}>
-                View Estimates
-              </div>
-            </div>
+            {/* Draft Estimates — wired to real data */}
+            <ActionCard
+              iconPath={ICONS.fileText}
+              iconBg="#EDE9FE" iconColor="#7C3AED"
+              count={draftCount} label="Draft Estimates" sub="Need your review"
+              ctaLabel="View Estimates" ctaHref="/dashboard/estimates"
+              dk={dk}
+            />
           </div>
         </div>
 

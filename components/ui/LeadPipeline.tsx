@@ -12,7 +12,7 @@ export const PIPELINE_STAGES = [
   { key: 'Quoted',    label: 'Quoted',    color: '#7C3AED', bg: '#F5F3FF', dot: '#8B5CF6', subLabel: 'Proposal sent',      nextLabel: 'Send Estimate', nextColor: '#7C3AED', nextBg: '#EDE9FE' },
   { key: 'Scheduled', label: 'Scheduled', color: '#0F766E', bg: '#F0FDFA', dot: '#14B8A6', subLabel: 'Job confirmed',      nextLabel: 'Job Day',       nextColor: '#0F766E', nextBg: '#CCFBF1' },
   { key: 'Completed', label: 'Completed', color: '#374151', bg: '#F9FAFB', dot: '#6B7280', subLabel: 'Job completed',      nextLabel: 'Generate Invoice', nextColor: '#059669', nextBg: '#D1FAE5' },
-  { key: 'Paid',      label: 'Paid',      color: 'white',   bg: '#4A7B4A', dot: 'white',   subLabel: 'Payment received',   nextLabel: 'Paid',          nextColor: '#059669', nextBg: '#DCFCE7' },
+  { key: 'Paid',      label: 'Job Won',   color: 'white',   bg: '#4A7B4A', dot: 'white',   subLabel: 'Payment received',   nextLabel: '✓ Job Won',     nextColor: '#059669', nextBg: '#DCFCE7' },
 ] as const
 
 type StageKey = typeof PIPELINE_STAGES[number]['key']
@@ -57,7 +57,7 @@ function BackwardConfirm({ fromStage, toStage, isPaidMove, onConfirm, onCancel }
         </p>
         {isPaidMove && (
           <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-center mb-3">
-            ⚠️ Moving a <strong>Paid</strong> lead back will affect your revenue stats.
+            ⚠️ Moving a <strong>Job Won</strong> lead back will affect your revenue stats.
           </p>
         )}
         <div className="flex gap-3 mt-4">
@@ -320,7 +320,7 @@ function LeadCard({ lead, stage, onOpen }: {
           <span className="text-[11px] font-semibold px-2 py-1 rounded-lg flex items-center gap-1 flex-shrink-0"
             style={{ background: '#DCFCE7', color: '#15803D', border: '1px solid #86EFAC' }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#15803D" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6L9 17l-5-5"/></svg>
-            Paid
+            Job Won
           </span>
         ) : stage.key === 'Completed' ? (
           <span className="text-[11px] font-semibold px-2 py-1 rounded-lg flex items-center gap-1 flex-shrink-0"
