@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Plus, FileText, Search, Trash2, X, User } from 'lucide-react'
 import { Session } from '@/types'
 import DashboardShell from '@/components/layout/DashboardShell'
@@ -51,12 +51,30 @@ export default function EstimatesPage() {
   const [leads,        setLeads]        = useState<any[]>([])
   const [leadSearch,   setLeadSearch]   = useState('')
   const [loadingLeads, setLoadingLeads] = useState(false)
-  // E1: sorting
-  const [sortBy, setSortBy] = useState<'date' | 'total_asc' | 'total_desc' | 'name' | 'status'>('date')
+  // E1: column header sort
+  const [sortCol, setSortCol] = useState<'date' | 'total' | 'name' | 'status'>('date')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+
+  function toggleSort(col: typeof sortCol) {
+    if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortCol(col); setSortDir(col === 'name' || col === 'status' ? 'asc' : 'desc') }
+  }
   // E2: status filter
   const [statusFilter, setStatusFilter] = useState<string>('all')
   // E3: show archived (void/declined)
   const [showArchived, setShowArchived] = useState(false)
+
+  const searchParams  = useSearchParams()
+  const [voidedToast, setVoidedToast] = useState<string | null>(null)
+
+  useEffect(() => {
+    const voided = searchParams.get('voided')
+    if (voided) {
+      setVoidedToast(`${voided} has been voided`)
+      setTimeout(() => setVoidedToast(null), 4000)
+      window.history.replaceState({}, '', '/dashboard/estimates')
+    }
+  }, [searchParams])
 
   useEffect(() => {
     if (!session) { router.push('/login'); return }
@@ -185,14 +203,13 @@ export default function EstimatesPage() {
              e.estimate_number.toLowerCase().includes(search.toLowerCase())
     })
     .sort((a, b) => {
-      // E1: sort
-      if (sortBy === 'date')       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      if (sortBy === 'total_asc')  return a.total - b.total
-      if (sortBy === 'total_desc') return b.total - a.total
-      if (sortBy === 'name')       return a.lead_name.localeCompare(b.lead_name)
-      if (sortBy === 'status') {
+      const dir = sortDir === 'asc' ? 1 : -1
+      if (sortCol === 'date')   return dir * (new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+      if (sortCol === 'total')  return dir * (a.total - b.total)
+      if (sortCol === 'name')   return dir * a.lead_name.localeCompare(b.lead_name)
+      if (sortCol === 'status') {
         const order = ['draft','sent','viewed','approved','invoiced','paid','declined','void']
-        return order.indexOf(a.status) - order.indexOf(b.status)
+        return dir * (order.indexOf(a.status) - order.indexOf(b.status))
       }
       return 0
     })
@@ -219,6 +236,15 @@ export default function EstimatesPage() {
       <div className={`min-h-screen pb-12 ${pageBg}`}>
         <div className="max-w-[1200px] mx-auto px-4 py-6 space-y-6">
 
+          {/* Voided confirmation toast */}
+          {voidedToast && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 12, background: dk ? 'rgba(100,116,139,0.15)' : '#F1F5F9', border: '1px solid #CBD5E1' }}>
+              <span style={{ fontSize: 14 }}>🗂</span>
+              <span style={{ fontSize: 13, color: dk ? '#94A3B8' : '#475569' }}>{voidedToast}</span>
+              <button onClick={() => setVoidedToast(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: dk ? '#64748B' : '#94A3B8', fontSize: 16 }}>×</button>
+            </div>
+          )}
+
           {/* ── Header ── */}
           <div className="flex items-center justify-between">
             <div>
@@ -240,7 +266,7 @@ export default function EstimatesPage() {
             {[
               { label: 'Total Estimates', value: estimates.length.toString() },
               { label: 'Sent / In Review', value: sentCount.toString() },
-              { label: 'Pipeline Value', value: fmt(totalValue) },
+              { label: 'Active Estimates Value', value: fmt(totalValue) },
             ].map(stat => (
               <div key={stat.label} className={`rounded-xl border p-4 ${card}`}>
                 <p className={`text-xs font-medium uppercase tracking-wide ${muted}`}>{stat.label}</p>
@@ -271,19 +297,7 @@ export default function EstimatesPage() {
                 <button onClick={() => setSearch('')} className={`text-xs ${muted} hover:text-red-400`}>✕</button>
               )}
             </div>
-            {/* E1: Sort */}
-            <select
-              value={sortBy}
-              onChange={e => setSortBy(e.target.value as typeof sortBy)}
-              className={`rounded-xl border px-3 py-2.5 text-sm font-medium focus:outline-none ${card} ${textMain}`}
-              style={{ minWidth: 150, cursor: 'pointer' }}>
-              <option value="date">Newest First</option>
-              <option value="total_desc">Highest Value</option>
-              <option value="total_asc">Lowest Value</option>
-              <option value="name">Client A–Z</option>
-              <option value="status">By Status</option>
-            </select>
-          </div>
+            </div>
 
           {/* E2: Status filter pills */}
           <div className="flex items-center gap-2 flex-wrap">
@@ -304,11 +318,24 @@ export default function EstimatesPage() {
           <div className={`rounded-xl border overflow-hidden ${card}`}>
             {/* Table header */}
             <div className={`grid grid-cols-[1fr_140px_100px_120px_100px_40px] gap-4 px-5 py-3 border-b text-xs font-semibold uppercase tracking-wide ${muted} ${dk ? 'border-[#334155]' : 'border-[#E8E2D9]'}`}>
-              <span>Client / Estimate</span>
+              {/* Client — sortable by name */}
+              <button onClick={() => toggleSort('name')} className={`flex items-center gap-1 text-left hover:text-[#0F766E] transition-colors ${sortCol === 'name' ? 'text-[#0F766E]' : ''}`}>
+                Client / Estimate {sortCol === 'name' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+              </button>
               <span>Trade</span>
-              <span>Status</span>
-              <span className="text-right">Total</span>
-              <span className="text-right">Date</span>
+              {/* Status — sortable */}
+              <button onClick={() => toggleSort('status')} className={`flex items-center gap-1 hover:text-[#0F766E] transition-colors ${sortCol === 'status' ? 'text-[#0F766E]' : ''}`}>
+                Status {sortCol === 'status' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+              </button>
+              {/* Total — sortable */}
+              <button onClick={() => toggleSort('total')} className={`flex items-center gap-1 justify-end w-full hover:text-[#0F766E] transition-colors ${sortCol === 'total' ? 'text-[#0F766E]' : ''}`}>
+                {sortCol === 'total' ? (sortDir === 'asc' ? '↑' : '↓') : ''} Total
+              </button>
+              {/* Date — sortable */}
+              <button onClick={() => toggleSort('date')} className={`flex items-center gap-1 justify-end w-full hover:text-[#0F766E] transition-colors ${sortCol === 'date' ? 'text-[#0F766E]' : ''}`}>
+                {sortCol === 'date' ? (sortDir === 'asc' ? '↑' : '↓') : ''} Date
+              </button>
+              <span />
             </div>
 
             {loading ? (
@@ -318,7 +345,19 @@ export default function EstimatesPage() {
                 ))}
               </div>
             ) : filtered.length === 0 ? (
-              <EmptyState dk={dk} onCreate={handleCreate} creating={creating} />
+              estimates.length === 0
+                ? <EmptyState dk={dk} onCreate={handleCreate} creating={creating} />
+                : (
+                  <div className="flex flex-col items-center justify-center py-14 px-4 text-center">
+                    <p className={`font-semibold text-sm ${dk ? 'text-white' : 'text-gray-700'}`}>
+                      No {statusFilter !== 'all' ? statusFilter : ''} estimates match your search
+                    </p>
+                    <button onClick={() => { setSearch(''); setStatusFilter('all') }}
+                      className="mt-3 text-xs text-[#0F766E] hover:underline">
+                      Clear filters
+                    </button>
+                  </div>
+                )
             ) : (
               <div>
                 {filtered.map((est, i) => (

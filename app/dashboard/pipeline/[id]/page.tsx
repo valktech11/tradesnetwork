@@ -408,8 +408,8 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
               {/* Drawer header */}
               <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${border}`, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexShrink: 0 }}>
                 <div>
-                  <div style={{ fontSize: 18, fontWeight: 500, color: tp }}>Edit Lead</div>
-                  <div style={{ fontSize: 13, color: ts, marginTop: 2 }}>Update lead information</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: tp }}>Edit Lead</div>
+                  <div style={{ fontSize: 13, color: ts, marginTop: 2 }}>{lead.contact_name || 'Unknown'}</div>
                 </div>
                 <button onClick={() => setDrawerOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: ts, fontSize: 22, lineHeight: 1, padding: 0, marginTop: 2 }}>×</button>
               </div>
@@ -523,9 +523,12 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                     Call
                   </a>
                 ) : (
-                  <button disabled style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, border: `1px solid ${border}`, background: card, color: ts, fontSize: 14, opacity: 0.45, cursor: 'not-allowed' }}>
-                    <Ic color={ts}><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></Ic>
-                    Call
+                  <button
+                    onClick={openDrawer}
+                    title="Add contact info"
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, border: `1px dashed ${border}`, background: 'transparent', color: '#0F766E', fontSize: 14, cursor: 'pointer' }}>
+                    <Ic color="#0F766E"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></Ic>
+                    Add contact
                   </button>
                 )}
                 <button onClick={handleSaveDrawer} disabled={savingDrawer}
@@ -713,13 +716,8 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
 
               {/* Conversation */}
               <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, padding: '20px 24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <div style={{ marginBottom: 16 }}>
                   <span style={{ fontSize: 17, fontWeight: 500, color: tp }}>Conversation</span>
-                  <button style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: ts, background: 'none', border: 'none', cursor: 'pointer' }}>
-                    <Ic color={ts} size={14}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></Ic>
-                    Filter
-                    <Ic color={ts} size={12}><polyline points="6 9 12 15 18 9"/></Ic>
-                  </button>
                 </div>
 
                 {/* Activity feed */}

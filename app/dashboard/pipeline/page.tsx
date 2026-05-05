@@ -140,7 +140,7 @@ export default function PipelinePage() {
               </div>
             </div>
             <div style={{ paddingLeft: 24, borderLeft: `1px solid ${t.cardBorder}` }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 2 }}>Pipeline Value</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 2 }}>Lead Pipeline Value</div>
               <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.1, color: textMain }}>
                 ${filteredLeads.filter(l => l.quoted_amount && !['Lost','Archived','Paid','Completed'].includes(l.lead_status)).reduce((s, l) => s + (l.quoted_amount || 0), 0).toLocaleString()}
               </div>

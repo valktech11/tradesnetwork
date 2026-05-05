@@ -187,6 +187,8 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
       setEstimate(prev => prev ? { ...prev, status: 'void', voided_at: new Date().toISOString() } : prev)
       setShowVoidConfirm(false)
       setVoidReason('')
+      // Navigate back to list with voided flag so list can show confirmation toast
+      router.push(`/dashboard/estimates?voided=${estimate?.estimate_number}`)
     } catch { setSaveMsg('Failed to void estimate') }
     finally { setVoiding(false) }
   }
