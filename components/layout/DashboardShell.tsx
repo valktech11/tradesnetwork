@@ -87,7 +87,7 @@ function NavLink({ item, active, onNav }: { item: NavItem; active: boolean; onNa
           color: 'rgba(255,255,255,0.45)',
           cursor: 'default',
         } : {
-          color: 'rgba(255,255,255,0.75)',
+          color: 'rgba(255,255,255,0.92)',
         }
       }
     >
@@ -98,7 +98,7 @@ function NavLink({ item, active, onNav }: { item: NavItem; active: boolean; onNa
       )}
 
       {/* Icon — bright teal when active, dim when inactive */}
-      <span style={{ color: active ? '#2DD4BF' : item.soon ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.55)' }}
+      <span style={{ color: active ? '#2DD4BF' : item.soon ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.70)' }}
         className="flex-shrink-0">
         {item.icon(active)}
       </span>
@@ -114,10 +114,10 @@ function NavLink({ item, active, onNav }: { item: NavItem; active: boolean; onNa
         </span>
       )}
 
-      {/* Soon tag */}
+      {/* Soon tag — indigo pill matching mobile drawer */}
       {item.soon && (
-        <span className="text-[8.5px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0"
-          style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.04em', fontSize: 10 }}>v75</span>
+        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0"
+          style={{ background: '#4F46E5', color: '#fff', letterSpacing: '0.04em' }}>SOON</span>
       )}
     </div>
   )
@@ -621,7 +621,7 @@ export default function DashboardShell({ children, session, newLeads = 0, onAddL
         <div className="hidden md:flex h-screen overflow-hidden">
 
           <aside className="flex-shrink-0 flex flex-col h-full overflow-hidden"
-            style={{ width: 220, background: 'linear-gradient(175deg,#0C1D38 0%,#07111C 100%)', borderRight: '1px solid rgba(255,255,255,.04)' }}>
+            style={{ width: 220, background: 'linear-gradient(180deg,#0F2847 0%,#091525 60%,#060D18 100%)', borderRight: '1px solid rgba(255,255,255,.04)' }}>
 
             {/* Logo */}
             <Link href="/dashboard" className="flex items-center gap-2.5 px-5 pt-5 pb-5 flex-shrink-0 hover:opacity-80 transition-opacity">
@@ -645,13 +645,14 @@ export default function DashboardShell({ children, session, newLeads = 0, onAddL
             </div>
 
             {/* Nav */}
-            <div className="flex-1 px-3 pb-4 overflow-y-auto" style={{ scrollbarWidth: "none" }}>
+            <div className="flex-1 px-3 pb-4 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
               {nav.map((g, gi) => (
                 <div key={g.title} className={gi > 0 ? 'mt-5' : ''}>
-                  {/* Section header — clear separator */}
+                  {/* Section header — teal label + gradient rule line (matches mobile drawer) */}
                   <div className="flex items-center gap-2 px-2 pb-2">
-                    <span className="text-[9.5px] font-bold tracking-[.16em] uppercase" style={{ color: 'rgba(255,255,255,.30)' }}>{g.title}</span>
-                    <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,.05)' }} />
+                    <span className="text-[10px] font-bold tracking-[.15em] uppercase flex-shrink-0"
+                      style={{ color: 'rgba(45,212,191,0.80)' }}>{g.title}</span>
+                    <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg,rgba(45,212,191,0.35),rgba(45,212,191,0.04))' }} />
                   </div>
                   {g.items.map(item => (
                     <div key={item.href} className="mb-0.5">
@@ -664,8 +665,9 @@ export default function DashboardShell({ children, session, newLeads = 0, onAddL
               {/* Account */}
               <div className="mt-5 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,.06)' }}>
                 <div className="flex items-center gap-2 px-2 pb-2">
-                  <span className="text-[9.5px] font-bold tracking-[.16em] uppercase" style={{ color: 'rgba(255,255,255,.22)' }}>ACCOUNT</span>
-                  <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,.05)' }} />
+                  <span className="text-[10px] font-bold tracking-[.15em] uppercase flex-shrink-0"
+                    style={{ color: 'rgba(45,212,191,0.80)' }}>ACCOUNT</span>
+                  <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg,rgba(45,212,191,0.35),rgba(45,212,191,0.04))' }} />
                 </div>
                 <div className="mb-0.5"><NavLink item={{ label: 'Profile', href: '/edit-profile', icon: icon.profile }} active={p === '/edit-profile'} /></div>
                 <div className="mb-0.5"><NavLink item={{ label: 'Settings', href: '/dashboard/settings', icon: icon.settings, soon: true }} active={false} /></div>
@@ -674,12 +676,26 @@ export default function DashboardShell({ children, session, newLeads = 0, onAddL
 
             {/* Pro identity bottom */}
             {session && (
-              <div className="flex-shrink-0 px-4 py-3.5" style={{ borderTop: '1px solid rgba(255,255,255,.06)' }}>
+              <div className="flex-shrink-0 px-4 py-4" style={{ borderTop: '1px solid rgba(255,255,255,.07)' }}>
+                {/* Upgrade CTA */}
+                {(!session.plan || session.plan === 'Free') && (
+                  <button className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-[12px] font-bold mb-3 transition-all hover:brightness-110 active:scale-[.98]"
+                    style={{ background: 'linear-gradient(135deg,#D97706 0%,#B45309 100%)', color: '#fff', boxShadow: '0 3px 10px rgba(217,119,6,.35)' }}>
+                    Upgrade to Pro
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+                  </button>
+                )}
+                {/* Avatar + name */}
                 <div className="flex items-center gap-2.5">
-                  <Av s={session} px={30} />
+                  {/* Avatar with teal gradient ring */}
+                  <div style={{ padding: 2, borderRadius: '50%', background: 'linear-gradient(135deg,#2DD4BF,#0F766E)', flexShrink: 0 }}>
+                    <Av s={session} px={28} />
+                  </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[12.5px] font-semibold text-white truncate">{session.name}</div>
-                    <div className="text-[11px] mt-px truncate" style={{ color: 'rgba(255,255,255,.32)' }}>{session.trade || planLabel(session.plan)}{session.city ? ` · ${session.city}` : ''}</div>
+                    <div className="text-[13px] font-bold text-white truncate">{session.name}</div>
+                    <div className="text-[11px] mt-px truncate" style={{ color: 'rgba(255,255,255,.45)' }}>
+                      {session.trade || planLabel(session.plan)}{session.city ? ` · ${session.city}` : ''}
+                    </div>
                   </div>
                 </div>
               </div>
