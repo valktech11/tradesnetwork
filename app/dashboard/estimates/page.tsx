@@ -1,10 +1,23 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Plus, FileText, Search, Trash2, X, User } from 'lucide-react'
 import { Session } from '@/types'
 import DashboardShell from '@/components/layout/DashboardShell'
+
+// Separated out because useSearchParams() requires Suspense boundary in App Router
+function VoidedToast({ onToast }: { onToast: (msg: string) => void }) {
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    const voided = searchParams.get('voided')
+    if (voided) {
+      onToast(`${voided} has been voided`)
+      window.history.replaceState({}, '', '/dashboard/estimates')
+    }
+  }, [searchParams, onToast])
+  return null
+}
 
 type EstimateSummary = {
   id: string
@@ -64,17 +77,14 @@ export default function EstimatesPage() {
   // E3: show archived (void/declined)
   const [showArchived, setShowArchived] = useState(false)
 
-  const searchParams  = useSearchParams()
   const [voidedToast, setVoidedToast] = useState<string | null>(null)
 
   useEffect(() => {
-    const voided = searchParams.get('voided')
-    if (voided) {
-      setVoidedToast(`${voided} has been voided`)
-      setTimeout(() => setVoidedToast(null), 4000)
-      window.history.replaceState({}, '', '/dashboard/estimates')
+    if (voidedToast) {
+      const t = setTimeout(() => setVoidedToast(null), 4000)
+      return () => clearTimeout(t)
     }
-  }, [searchParams])
+  }, [voidedToast])
 
   useEffect(() => {
     if (!session) { router.push('/login'); return }
@@ -235,6 +245,11 @@ export default function EstimatesPage() {
     >
       <div className={`min-h-screen pb-12 ${pageBg}`}>
         <div className="max-w-[1200px] mx-auto px-4 py-6 space-y-6">
+
+          {/* Reads ?voided= param — must be in Suspense per Next.js App Router rules */}
+          <Suspense fallback={null}>
+            <VoidedToast onToast={msg => setVoidedToast(msg)} />
+          </Suspense>
 
           {/* Voided confirmation toast */}
           {voidedToast && (
