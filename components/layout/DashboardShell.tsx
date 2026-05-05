@@ -233,36 +233,44 @@ function MoreDrawer({ open, onClose, session, nl }: { open: boolean; onClose: ()
         {/* User identity card */}
         {session && (
           <div className="mx-4 mt-3 mb-1 flex-shrink-0">
-            <div className="flex items-center gap-4 px-4 py-5 rounded-2xl"
+            <div className="px-4 py-4 rounded-2xl"
               style={{
                 background: 'linear-gradient(135deg, rgba(20,184,166,.22) 0%, rgba(15,39,80,.8) 100%)',
                 border: '1.5px solid rgba(45,212,191,.45)',
                 boxShadow: '0 0 20px rgba(20,184,166,.12), inset 0 1px 0 rgba(255,255,255,.08)',
               }}>
-              {/* Avatar with teal ring */}
-              <div className="flex-shrink-0 rounded-full p-[3px]"
-                style={{ background: 'linear-gradient(135deg, #2DD4BF, #0F766E)' }}>
-                <Av s={session} px={46} />
-              </div>
-              {/* Identity */}
-              <div className="flex-1 min-w-0">
-                <div className="font-bold text-white leading-tight truncate" style={{ fontSize: 18 }}>{session.name}</div>
-                {tradeCity && (
-                  <div className="mt-1 truncate" style={{ fontSize: 13, color: 'rgba(255,255,255,.68)' }}>{tradeCity}</div>
-                )}
-                <div className="flex items-center gap-2 mt-2.5">
-                  <span className="font-semibold rounded-full"
-                    style={{ fontSize: 10, padding: '2px 8px', background: 'rgba(255,255,255,.08)', color: 'rgba(255,255,255,.45)', border: '1px solid rgba(255,255,255,.12)', letterSpacing: '0.04em' }}>
-                    {planLabel(session.plan).toUpperCase()}
-                  </span>
-                  {!isPaidPlan(session.plan) && (
-                    <span className="font-bold rounded-xl cursor-pointer"
-                      style={{ fontSize: 12, padding: '5px 14px', background: 'linear-gradient(135deg, #D97706, #B45309)', color: '#FFFFFF', border: 'none', boxShadow: '0 2px 10px rgba(217,119,6,.4)', letterSpacing: '0.02em' }}>
-                      Upgrade ↗
-                    </span>
+              {/* Top row: avatar + name + trade/city */}
+              <div className="flex items-center gap-3 mb-3">
+                <div className="flex-shrink-0 rounded-full p-[3px]"
+                  style={{ background: 'linear-gradient(135deg, #2DD4BF, #0F766E)' }}>
+                  <Av s={session} px={42} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-white leading-tight truncate" style={{ fontSize: 17 }}>{session.name}</div>
+                  {tradeCity && (
+                    <div className="mt-0.5 truncate" style={{ fontSize: 12, color: 'rgba(255,255,255,.62)' }}>{tradeCity}</div>
                   )}
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,.38)', marginTop: 2, letterSpacing: '0.03em' }}>
+                    {planLabel(session.plan)} Plan
+                  </div>
                 </div>
               </div>
+              {/* Upgrade button — full width, clearly a CTA */}
+              {!isPaidPlan(session.plan) && (
+                <button className="w-full font-bold rounded-xl active:scale-[.98] transition-all"
+                  style={{
+                    fontSize: 14,
+                    padding: '10px 16px',
+                    background: 'linear-gradient(135deg, #D97706, #B45309)',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    boxShadow: '0 3px 12px rgba(217,119,6,.45)',
+                    letterSpacing: '0.01em',
+                    cursor: 'pointer',
+                  }}>
+                  Upgrade to Pro ↗
+                </button>
+              )}
             </div>
           </div>
         )}
