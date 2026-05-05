@@ -464,7 +464,172 @@ function LeadCard({ lead, stage, onOpen, dk = false }: {
   )
 }
 
-// ── Overflow modal for overflow leads ──────────────────────────────────────────
+// ── Lead Quick View drawer ─────────────────────────────────────────────────────
+function LeadQuickView({ leadId, onClose, onFullDetail }: {
+  leadId: string
+  onClose: () => void
+  onFullDetail: () => void
+}) {
+  const [lead, setLead] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [note, setNote] = useState('')
+  const [savingNote, setSavingNote] = useState(false)
+  const [noteSaved, setNoteSaved] = useState(false)
+
+  useEffect(() => {
+    const raw = typeof window !== 'undefined' ? sessionStorage.getItem('pg_pro') : null
+    const session = raw ? JSON.parse(raw) : null
+    if (!session) return
+    fetch(`/api/leads/${leadId}?pro_id=${session.id}`)
+      .then(r => r.json())
+      .then(d => { setLead(d.lead); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [leadId])
+
+  async function saveNote() {
+    if (!note.trim()) return
+    const raw = typeof window !== 'undefined' ? sessionStorage.getItem('pg_pro') : null
+    const session = raw ? JSON.parse(raw) : null
+    if (!session) return
+    setSavingNote(true)
+    try {
+      await fetch(`/api/leads/${leadId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pro_id: session.id, notes: (lead?.notes ? lead.notes + '\n' : '') + note }),
+      })
+      setNote('')
+      setNoteSaved(true)
+      setTimeout(() => setNoteSaved(false), 2000)
+    } finally { setSavingNote(false) }
+  }
+
+  const stage = lead ? PIPELINE_STAGES.find(s => s.key === lead.lead_status) || PIPELINE_STAGES[0] : PIPELINE_STAGES[0]
+  const [avBg, avFg] = lead ? avatarColor(lead.contact_name) : ['#E5E7EB', '#6B7280']
+  const days = lead ? Math.floor((Date.now() - new Date(lead.created_at).getTime()) / 86400000) : 0
+
+  return (
+    <div className="fixed inset-0 z-50 flex" style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)' }} onClick={onClose}>
+      <div className="flex-1" />
+      <div
+        className="flex flex-col h-full bg-white shadow-2xl overflow-y-auto"
+        style={{ width: '100%', maxWidth: 380, borderLeft: `4px solid ${stage.color}` }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div style={{ padding: '18px 20px 14px', borderBottom: '1px solid #F3F4F6', background: stage.key === 'Paid' ? 'rgba(74,123,74,0.08)' : stage.bg, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 40, height: 40, borderRadius: '50%', background: avBg, color: avFg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
+                {lead ? initials(lead.contact_name) : '…'}
+              </div>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: '#111827' }}>{lead ? capName(lead.contact_name) : '…'}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: stage.key === 'Paid' ? '#4A7B4A' : stage.color, color: 'white' }}>{stage.label}</span>
+                  <span style={{ fontSize: 11, color: '#6B7280' }}>{days}d ago</span>
+                </div>
+              </div>
+            </div>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', fontSize: 22, lineHeight: 1, padding: 0, marginTop: 2 }}>×</button>
+          </div>
+          {/* Quick action buttons */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {lead?.contact_phone && (
+              <a href={`tel:${lead.contact_phone}`} onClick={e => e.stopPropagation()}
+                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 0', borderRadius: 10, background: 'white', border: '1.5px solid #E5E7EB', fontSize: 12, fontWeight: 600, color: '#374151', textDecoration: 'none', cursor: 'pointer' }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2.2" strokeLinecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6"/></svg>
+                Call
+              </a>
+            )}
+            <button onClick={onFullDetail}
+              style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 0', borderRadius: 10, background: 'linear-gradient(135deg,#0F766E,#0D9488)', border: 'none', fontSize: 12, fontWeight: 700, color: 'white', cursor: 'pointer' }}>
+              Open Full Detail
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+            </button>
+          </div>
+        </div>
+
+        {loading ? (
+          <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[1,2,3].map(i => <div key={i} style={{ height: 48, borderRadius: 10, background: '#F3F4F6', animation: 'pulse 1.5s infinite' }} />)}
+          </div>
+        ) : lead ? (
+          <div style={{ padding: '16px 20px', flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+            {/* Contact info */}
+            <div style={{ background: '#F9FAFB', borderRadius: 12, padding: '14px 16px' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Contact</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {lead.contact_phone && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                    <span style={{ color: '#6B7280' }}>Phone</span>
+                    <a href={`tel:${lead.contact_phone}`} style={{ color: '#0F766E', fontWeight: 600, textDecoration: 'none' }}>{lead.contact_phone}</a>
+                  </div>
+                )}
+                {lead.contact_email && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                    <span style={{ color: '#6B7280' }}>Email</span>
+                    <span style={{ color: '#111827', fontWeight: 500 }}>{lead.contact_email}</span>
+                  </div>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                  <span style={{ color: '#6B7280' }}>Source</span>
+                  <span style={{ color: '#111827', fontWeight: 500 }}>{(lead.lead_source || 'Unknown').replace(/_/g,' ')}</span>
+                </div>
+                {lead.quoted_amount > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                    <span style={{ color: '#6B7280' }}>Quote</span>
+                    <span style={{ color: '#0F766E', fontWeight: 700 }}>${lead.quoted_amount.toLocaleString()}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Message */}
+            {lead.message && (
+              <div style={{ background: '#FFFBEB', borderRadius: 12, padding: '14px 16px', border: '1px solid #FDE68A' }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#92400E', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Message</div>
+                <p style={{ fontSize: 13, color: '#374151', lineHeight: 1.6, margin: 0 }}>{lead.message}</p>
+              </div>
+            )}
+
+            {/* Notes */}
+            {lead.notes && (
+              <div style={{ background: '#F0FDFA', borderRadius: 12, padding: '14px 16px', border: '1px solid #CCFBF1' }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#0F766E', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Notes</div>
+                <p style={{ fontSize: 13, color: '#374151', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>{lead.notes}</p>
+              </div>
+            )}
+
+            {/* Quick note */}
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Add Note</div>
+              <textarea
+                value={note}
+                onChange={e => setNote(e.target.value)}
+                placeholder="Type a quick note…"
+                rows={3}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid #E5E7EB', fontSize: 13, color: '#111827', background: 'white', outline: 'none', resize: 'none', lineHeight: 1.5, boxSizing: 'border-box' }}
+              />
+              <button
+                onClick={saveNote}
+                disabled={!note.trim() || savingNote}
+                style={{ marginTop: 8, width: '100%', padding: '10px', borderRadius: 10, border: 'none', background: note.trim() ? 'linear-gradient(135deg,#0F766E,#0D9488)' : '#E5E7EB', color: note.trim() ? 'white' : '#9CA3AF', fontSize: 13, fontWeight: 700, cursor: note.trim() ? 'pointer' : 'default', transition: 'all 0.15s' }}>
+                {noteSaved ? '✓ Saved' : savingNote ? 'Saving…' : 'Save Note'}
+              </button>
+            </div>
+
+          </div>
+        ) : (
+          <div style={{ padding: 24, textAlign: 'center', color: '#9CA3AF', fontSize: 13 }}>Failed to load lead</div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+
 function SlidePanel({ stage, leads, onClose, onOpen }: {
   stage: typeof PIPELINE_STAGES[number]
   leads: Lead[]
@@ -642,7 +807,20 @@ export default function LeadPipeline({ leads, onStatusChange, onUpdate }: Props)
   const router = useRouter()
   const [mobileStage, setMobileStage] = useState<StageKey>('New')
   const [showLost, setShowLost] = useState(false)
-  function openLead(lead: Lead) { router.push('/dashboard/pipeline/' + lead.id) }
+  const [quickViewId, setQuickViewId] = useState<string | null>(null)
+
+  function openLead(lead: Lead) {
+    // Mobile: navigate directly. Desktop: open quick view drawer.
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      router.push('/dashboard/pipeline/' + lead.id)
+    } else {
+      setQuickViewId(lead.id)
+    }
+  }
+
+  function goFullDetail(id: string) {
+    router.push('/dashboard/pipeline/' + id)
+  }
 
   function leadsForStage(key: string) {
     return leads.filter(l => l.lead_status === key)
@@ -652,6 +830,15 @@ export default function LeadPipeline({ leads, onStatusChange, onUpdate }: Props)
 
   return (
     <>
+    {/* Quick view drawer — desktop only */}
+    {quickViewId && (
+      <LeadQuickView
+        leadId={quickViewId}
+        onClose={() => setQuickViewId(null)}
+        onFullDetail={() => { setQuickViewId(null); goFullDetail(quickViewId) }}
+      />
+    )}
+
 
 
       {/* ── Mobile tab strip ── */}
