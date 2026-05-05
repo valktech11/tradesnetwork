@@ -206,23 +206,50 @@ function MobileNav({ nl, onAdd, onMore }: { nl: number; onAdd: () => void; onMor
 // ── More drawer ───────────────────────────────────────────────────────────────
 function MoreDrawer({ open, onClose, session, nl }: { open: boolean; onClose: () => void; session: Session | null; nl: number }) {
   const p = usePathname()
-  if (!open) return null
+  const [visible, setVisible] = React.useState(false)
+  const [closing, setClosing] = React.useState(false)
+
+  React.useEffect(() => {
+    if (open) {
+      setClosing(false)
+      // small delay so CSS transition fires
+      requestAnimationFrame(() => setVisible(true))
+    } else {
+      setVisible(false)
+    }
+  }, [open])
+
+  function handleClose() {
+    setClosing(true)
+    setVisible(false)
+    setTimeout(onClose, 320)
+  }
+
+  if (!open && !closing) return null
 
   const tradeCity = [session?.trade, session?.city].filter(Boolean).join(' · ')
 
   return (
     <div className="md:hidden fixed inset-0 z-[60]">
-      {/* Backdrop */}
-      <div className="absolute inset-0" onClick={onClose}
-        style={{ background: 'rgba(4,12,24,.82)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }} />
+      {/* Backdrop — fades in/out */}
+      <div className="absolute inset-0" onClick={handleClose}
+        style={{
+          background: 'rgba(4,12,24,.82)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          opacity: visible ? 1 : 0,
+          transition: 'opacity 0.28s ease',
+        }} />
 
-      {/* Sheet */}
+      {/* Sheet — slides up/down */}
       <div className="absolute bottom-0 left-0 right-0 rounded-t-[32px] flex flex-col"
         style={{
           background: 'linear-gradient(180deg, #0F2847 0%, #091525 60%, #060D18 100%)',
           maxHeight: '92vh',
           boxShadow: '0 -8px 40px rgba(0,0,0,.6)',
           paddingBottom: 'env(safe-area-inset-bottom)',
+          transform: visible ? 'translateY(0)' : 'translateY(100%)',
+          transition: 'transform 0.32s cubic-bezier(0.32, 0.72, 0, 1)',
         }}>
 
         {/* Drag handle */}
@@ -288,7 +315,7 @@ function MoreDrawer({ open, onClose, session, nl }: { open: boolean; onClose: ()
               {/* Items */}
               {g.items.map(item => (
                 <div key={item.href}>
-                  <DrawerNavLink item={item} active={p === item.href} onNav={onClose} />
+                  <DrawerNavLink item={item} active={p === item.href} onNav={handleClose} />
                 </div>
               ))}
             </div>
@@ -301,8 +328,8 @@ function MoreDrawer({ open, onClose, session, nl }: { open: boolean; onClose: ()
                 style={{ color: 'rgba(45,212,191,0.8)' }}>ACCOUNT</span>
               <div className="flex-1 h-[1px]" style={{ background: 'linear-gradient(90deg, rgba(45,212,191,0.4) 0%, rgba(45,212,191,0.08) 100%)' }} />
             </div>
-            <DrawerNavLink item={{ label: 'Profile', href: '/edit-profile', icon: icon.profile }} active={p === '/edit-profile'} onNav={onClose} />
-            <DrawerNavLink item={{ label: 'Settings', href: '/dashboard/settings', icon: icon.settings, soon: true }} active={false} />
+            <DrawerNavLink item={{ label: 'Profile', href: '/edit-profile', icon: icon.profile }} active={p === '/edit-profile'} onNav={handleClose} />
+            <DrawerNavLink item={{ label: 'Settings', href: '/dashboard/settings', icon: icon.settings, soon: true }} active={false} onNav={handleClose} />
           </div>
         </div>
       </div>
