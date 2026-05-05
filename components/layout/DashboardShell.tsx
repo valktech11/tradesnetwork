@@ -9,7 +9,7 @@ type NavItem  = { label: string; href: string; icon: (a: boolean) => React.React
 type NavGroup = { title: string; items: NavItem[] }
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
-function I({ d, s = 17, sw = 1.7 }: { d: string; s?: number; sw?: number }) {
+function I({ d, s = 20, sw = 1.9 }: { d: string; s?: number; sw?: number }) {
   return (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor"
       strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
@@ -19,14 +19,14 @@ function I({ d, s = 17, sw = 1.7 }: { d: string; s?: number; sw?: number }) {
 }
 
 const icon = {
-  overview:   (a: boolean) => <I sw={a?2.2:1.6} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />,
-  pipeline:   (a: boolean) => <I sw={a?2.2:1.6} d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />,
+  overview:   (a: boolean) => <I s={22} sw={a?2.5:1.9} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />,
+  pipeline:   (a: boolean) => <I s={22} sw={a?2.5:1.9} d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />,
   calendar:   (a: boolean) => <I sw={a?2.2:1.6} d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" />,
   messages:   (a: boolean) => <I sw={a?2.2:1.6} d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />,
   estimates:  (a: boolean) => <I sw={a?2.2:1.6} d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M16 13H8M16 17H8" />,
   invoices:   (a: boolean) => <I sw={a?2.2:1.6} d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM12 2v6h6M9 15l2 2 4-4" />,
   revenue:    (a: boolean) => <I sw={a?2.2:1.6} d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />,
-  clients:    (a: boolean) => <I sw={a?2.2:1.6} d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />,
+  clients:    (a: boolean) => <I s={22} sw={a?2.5:1.9} d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />,
   photos:     (a: boolean) => <I sw={a?2.2:1.6} d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2zM12 17a4 4 0 100-8 4 4 0 000 8" />,
   compliance: (a: boolean) => <I sw={a?2.2:1.6} d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
   ai:         (a: boolean) => <I sw={a?2.2:1.6} d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />,
@@ -117,7 +117,7 @@ function NavLink({ item, active, onNav }: { item: NavItem; active: boolean; onNa
       {/* Soon tag */}
       {item.soon && (
         <span className="text-[8.5px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0"
-          style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.30)', letterSpacing: '0.05em' }}>v75</span>
+          style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.04em', fontSize: 10 }}>v75</span>
       )}
     </div>
   )
@@ -161,23 +161,23 @@ function MobileNav({ nl, onAdd, onMore }: { nl: number; onAdd: () => void; onMor
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50"
-      style={{ background: 'rgba(255,255,255,.98)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid rgba(0,0,0,.07)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
-      <div className="flex items-center justify-around h-[58px] px-1">
+      style={{ background: 'rgba(255,255,255,.98)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid rgba(0,0,0,.08)', boxShadow: '0 -4px 12px rgba(0,0,0,.06)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <div className="flex items-center justify-around h-[60px] px-1">
         {left.map(t => {
           const a = t.exact ? p === t.href : p === t.href
           return (
-            <Link key={t.href} href={t.href} className="flex flex-col items-center gap-0.5 flex-1 py-1.5 relative">
-              <span style={{ color: a ? '#0F766E' : '#BAB1A6' }}>{t.icon(a)}</span>
-              <span className="text-[10px] font-semibold" style={{ color: a ? '#0F766E' : '#BAB1A6' }}>{t.label}</span>
-              {t.badge > 0 && <span className="absolute top-1 right-3 w-[14px] h-[14px] rounded-full flex items-center justify-center" style={{ background: '#0F766E', color: '#fff', fontSize: 8, fontWeight: 700 }}>{t.badge}</span>}
+            <Link key={t.href} href={t.href} className="flex flex-col items-center gap-[3px] flex-1 py-2 relative">
+              <span style={{ color: a ? '#0F766E' : '#7C756E' }}>{t.icon(a)}</span>
+              <span className="text-[11.5px] font-semibold" style={{ color: a ? '#0F766E' : '#7C756E' }}>{t.label}</span>
+              {t.badge > 0 && <span className="absolute top-1.5 right-3 w-[15px] h-[15px] rounded-full flex items-center justify-center" style={{ background: '#0F766E', color: '#fff', fontSize: 8.5, fontWeight: 700 }}>{t.badge}</span>}
             </Link>
           )
         })}
 
         {/* FAB */}
-        <button onClick={onAdd} className="w-[52px] h-[52px] rounded-[14px] flex items-center justify-center -mt-3 active:scale-95 transition-all"
+        <button onClick={onAdd} className="w-[54px] h-[54px] rounded-[16px] flex items-center justify-center -mt-4 active:scale-95 transition-all"
           style={{ background: 'linear-gradient(145deg,#14B8A6,#0A6460)', boxShadow: '0 6px 20px rgba(15,118,110,.45)' }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
         </button>
@@ -185,18 +185,18 @@ function MobileNav({ nl, onAdd, onMore }: { nl: number; onAdd: () => void; onMor
         {right.map(t => {
           const a = p === t.href
           return (
-            <Link key={t.href} href={t.href} className="flex flex-col items-center gap-0.5 flex-1 py-1.5">
-              <span style={{ color: a ? '#0F766E' : '#BAB1A6' }}>{t.icon(a)}</span>
-              <span className="text-[10px] font-semibold" style={{ color: a ? '#0F766E' : '#BAB1A6' }}>{t.label}</span>
+            <Link key={t.href} href={t.href} className="flex flex-col items-center gap-[3px] flex-1 py-2">
+              <span style={{ color: a ? '#0F766E' : '#7C756E' }}>{t.icon(a)}</span>
+              <span className="text-[11.5px] font-semibold" style={{ color: a ? '#0F766E' : '#7C756E' }}>{t.label}</span>
             </Link>
           )
         })}
 
-        <button onClick={onMore} className="flex flex-col items-center gap-0.5 flex-1 py-1.5">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#BAB1A6" strokeWidth="1.8" strokeLinecap="round">
+        <button onClick={onMore} className="flex flex-col items-center gap-[3px] flex-1 py-2">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7C756E" strokeWidth="2.2" strokeLinecap="round">
             <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
           </svg>
-          <span className="text-[10px] font-semibold" style={{ color: '#BAB1A6' }}>More</span>
+          <span className="text-[11.5px] font-semibold" style={{ color: '#7C756E' }}>More</span>
         </button>
       </div>
     </nav>
@@ -226,12 +226,12 @@ function MoreDrawer({ open, onClose, session, nl }: { open: boolean; onClose: ()
         <div className="px-3 pb-8">
           {buildNav(nl).map(g => (
             <div key={g.title} className="mb-2">
-              <div className="px-3 pt-3 pb-1 text-[9.5px] font-bold tracking-[.14em]" style={{ color: 'rgba(255,255,255,.2)' }}>{g.title}</div>
+              <div className="px-3 pt-3 pb-1 text-[11px] font-bold tracking-[.12em]" style={{ color: 'rgba(255,255,255,.3)' }}>{g.title}</div>
               {g.items.map(item => <div key={item.href}><NavLink item={item} active={p === item.href} onNav={onClose} /></div>)}
             </div>
           ))}
           <div className="pt-2 mb-2" style={{ borderTop: '1px solid rgba(255,255,255,.06)' }}>
-            <div className="px-3 pt-3 pb-1 text-[9.5px] font-bold tracking-[.14em]" style={{ color: 'rgba(255,255,255,.2)' }}>ACCOUNT</div>
+            <div className="px-3 pt-3 pb-1 text-[11px] font-bold tracking-[.12em]" style={{ color: 'rgba(255,255,255,.3)' }}>ACCOUNT</div>
             <NavLink item={{ label: 'Profile', href: '/edit-profile', icon: icon.profile }} active={p === '/edit-profile'} onNav={onClose} />
             <NavLink item={{ label: 'Settings', href: '/dashboard/settings', icon: icon.settings, soon: true }} active={false} />
           </div>
@@ -537,7 +537,7 @@ export default function DashboardShell({ children, session, newLeads = 0, onAddL
 
         {/* ── MOBILE ───────────────────────────────────────────────────────── */}
         <div className="md:hidden">
-          <main className="pb-[68px] min-h-screen" style={{ backgroundColor: '#ECEAE5' }}>
+          <main className="pb-[68px] min-h-screen" style={{ backgroundColor: '#F5F4F0' }}>
             {children}
           </main>
           <MobileNav nl={newLeads} onAdd={() => setSheetOpen(true)} onMore={() => setMoreOpen(true)} />

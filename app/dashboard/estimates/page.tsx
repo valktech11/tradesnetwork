@@ -279,7 +279,7 @@ export default function EstimatesPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className={`text-2xl font-bold tracking-tight ${textMain}`}>Estimates</h1>
-              <p className={`text-sm mt-0.5 ${muted}`}>Create and send professional estimates to your leads</p>
+              <p className={`text-sm mt-0.5 hidden md:block ${muted}`}>Create and send professional estimates to your leads</p>
             </div>
             <button
               onClick={handleCreate}

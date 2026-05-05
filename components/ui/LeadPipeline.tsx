@@ -289,7 +289,7 @@ function LeadCard({ lead, stage, onOpen }: {
       {/* Row 1: avatar + name + amount */}
       <div className="flex items-start justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+          <div className="w-10 h-10 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0"
             style={{ background: bg, color: fg }}>
             {initials(lead.contact_name)}
           </div>
@@ -349,30 +349,30 @@ function LeadCard({ lead, stage, onOpen }: {
         <div className="flex items-center gap-1">
           {lead.contact_phone && (
             <a href={`tel:${lead.contact_phone}`} onClick={e => e.stopPropagation()}
-              className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
-              <Ic d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.45-.45a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z" s={14} c="#6B7280" />
+              className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+              <Ic d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.45-.45a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z" s={16} c="#6B7280" />
             </a>
           )}
           <button onClick={e => { e.stopPropagation(); onOpen() }}
-            className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
-            <Ic d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" s={14} c="#6B7280" />
+            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+            <Ic d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" s={16} c="#6B7280" />
           </button>
           {/* Stage-aware 3rd icon */}
           {(stage.key === 'Scheduled' || stage.key === 'Paid') ? (
             <button onClick={e => { e.stopPropagation(); onOpen() }}
-              className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
-              <Ic d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" s={14} c="#6B7280" />
+              className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+              <Ic d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" s={16} c="#6B7280" />
             </button>
           ) : stage.key === 'Quoted' ? (
             <button onClick={openEstimate} disabled={creatingEst}
-              className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-purple-100 transition-colors disabled:opacity-40"
+              className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-purple-100 transition-colors disabled:opacity-40"
               title="Open Estimate">
-              <Ic d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" s={14} c="#7C3AED" />
+              <Ic d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" s={16} c="#7C3AED" />
             </button>
           ) : (
             <button onClick={e => { e.stopPropagation(); onOpen() }}
-              className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
-              <Ic d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" s={14} c="#6B7280" />
+              className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+              <Ic d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" s={16} c="#6B7280" />
             </button>
           )}
         </div>
@@ -619,10 +619,10 @@ export default function LeadPipeline({ leads, onStatusChange, onUpdate }: Props)
           const cnt = leadsForStage(s.key).length
           return (
             <button key={s.key} onClick={() => setMobileStage(s.key as StageKey)}
-              className="flex-shrink-0 px-3 py-2 rounded-full text-xs font-bold border transition-all"
+              className="flex-shrink-0 px-4 py-2.5 rounded-full text-[13px] font-bold border transition-all"
               style={mobileStage === s.key
                 ? { background: s.bg, color: s.color, borderColor: s.color }
-                : { background: 'white', color: '#6B7280', borderColor: '#E8E2D9' }}>
+                : { background: 'white', color: '#374151', borderColor: '#C8C3BC' }}>
               {s.label} {cnt > 0 && `(${cnt})`}
             </button>
           )
@@ -630,7 +630,7 @@ export default function LeadPipeline({ leads, onStatusChange, onUpdate }: Props)
       </div>
       <div className="md:hidden space-y-2 px-4">
         {leadsForStage(mobileStage).length === 0
-          ? <p className="text-center py-8 text-sm text-gray-400">No leads in {mobileStage}</p>
+          ? <p className="text-center py-8 text-sm text-gray-500">No leads in {mobileStage}</p>
           : leadsForStage(mobileStage).map(lead => {
               const stage = PIPELINE_STAGES.find(s => s.key === lead.lead_status) || PIPELINE_STAGES[0]
               return <div key={lead.id}><LeadCard lead={lead} stage={stage} onOpen={() => openLead(lead)} /></div>

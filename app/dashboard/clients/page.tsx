@@ -100,7 +100,7 @@ export default function ClientsPage() {
 
   return (
     <DashboardShell session={session} newLeads={0} onAddLead={() => {}} darkMode={dk} onToggleDark={toggleDark}>
-      <div style={{ background: t.pageBg, minHeight: '100vh', padding: '28px 16px' }}>
+      <div style={{ background: t.pageBg, minHeight: '100vh', padding: '16px 16px 28px' }}>
         <div style={{ maxWidth: 896, margin: '0 auto' }}>
 
           {/* Header */}
@@ -173,7 +173,7 @@ export default function ClientsPage() {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: 14, fontWeight: 600, color: t.textPri }}>{client.full_name}</span>
+                      <span style={{ fontSize: 15, fontWeight: 700, color: t.textPri }}>{client.full_name}</span>
                       {(client.tags || []).map((tag: string) => {
                         const tc = TAG_COLORS[tag] || { bg: t.cardBgAlt, text: t.textMuted }
                         return (
