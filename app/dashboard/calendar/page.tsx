@@ -130,7 +130,7 @@ function EventCard({ ev, onClick, dk }: { ev: CalEvent; onClick: () => void; dk:
               <path d="M1 1l22 22"/>
             </svg>
           )}
-          <span style={{ fontSize:13, fontWeight:700, color: dk ? t.textPri : '#111827', truncate:true, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+          <span style={{ fontSize:13, fontWeight:700, color: dk ? t.textPri : '#111827', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
             {capName(ev.contact_name)}
           </span>
         </div>
@@ -671,7 +671,9 @@ export default function CalendarPage() {
               {todayEvents.length} event{todayEvents.length!==1?'s':''} · {isToday(selectedDate) ? 'Today' : `${DAYS[selectedDate.getDay()]} ${SHORT_MONTHS[selectedDate.getMonth()]} ${selectedDate.getDate()}`}
             </div>
             {(todayEvents as CalEvent[]).map((ev: CalEvent) => (
-              <EventCard key={ev.id+ev._type} ev={ev} onClick={() => { setSelectedEvent(ev) }} dk={dk as boolean} />
+              <div key={ev.id+ev._type}>
+                <EventCard ev={ev} onClick={() => { setSelectedEvent(ev) }} dk={dk as boolean} />
+              </div>
             ))}
           </>
         )}
