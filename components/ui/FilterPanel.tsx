@@ -38,7 +38,11 @@ export function applyFilters(leads: Lead[], f: FilterState): Lead[] {
   let result = leads
 
   if (f.stages.length > 0) {
-    result = result.filter(l => f.stages.includes(l.lead_status))
+    result = result.filter(l => {
+      // 'Job Won' in filter UI maps to 'Paid' in DB
+      const mappedStages = f.stages.map(s => s === 'Job Won' ? 'Paid' : s)
+      return mappedStages.includes(l.lead_status)
+    })
   }
 
   if (f.sources.length > 0) {
@@ -94,14 +98,14 @@ export function applyFilters(leads: Lead[], f: FilterState): Lead[] {
   return result
 }
 
-const STAGES = ['New', 'Contacted', 'Quoted', 'Scheduled', 'Completed', 'Paid']
+const STAGES = ['New', 'Contacted', 'Quoted', 'Scheduled', 'Completed', 'Job Won']
 const STAGE_COLORS: Record<string, string> = {
   New: '#D97706', Contacted: '#2563EB', Quoted: '#7C3AED',
-  Scheduled: '#0F766E', Completed: '#374151', Paid: '#4A7B4A',
+  Scheduled: '#0F766E', Completed: '#374151', 'Job Won': '#4A7B4A',
 }
 const STAGE_BGS: Record<string, string> = {
   New: '#FFFBEB', Contacted: '#EFF6FF', Quoted: '#F5F3FF',
-  Scheduled: '#F0FDFA', Completed: '#F9FAFB', Paid: '#F0FDF4',
+  Scheduled: '#F0FDFA', Completed: '#F9FAFB', 'Job Won': '#F0FDF4',
 }
 
 const SOURCES = [
@@ -212,7 +216,7 @@ export default function FilterPanel({ open, filters, onChange, onClose, onClear,
                   >
                     <span
                       className="w-2 h-2 rounded-full"
-                      style={{ background: active ? STAGE_COLORS[s] : (dk ? '#475569' : '#D1D5DB') }}
+                      style={{ background: active ? STAGE_COLORS[s] : (STAGE_COLORS[s] + '66') }}
                     />
                     {s}
                   </button>
@@ -223,14 +227,14 @@ export default function FilterPanel({ open, filters, onChange, onClose, onClear,
 
           {/* Lead Source */}
           <Section label="Lead Source" color={text}>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {SOURCES.map(({ key, label }) => {
                 const active = filters.sources.includes(key)
                 return (
                   <button
                     key={key}
                     onClick={() => onChange({ ...filters, sources: toggleArr(filters.sources, key) })}
-                    className="px-3 py-1.5 rounded-full text-[12px] font-semibold transition-all"
+                    className="px-2 py-1.5 rounded-full text-[12px] font-semibold transition-all text-center truncate"
                     style={{
                       background: active ? '#F0FDFA' : (dk ? '#1E293B' : '#F3F4F6'),
                       color: active ? '#0F766E' : muted,
@@ -257,7 +261,7 @@ export default function FilterPanel({ open, filters, onChange, onClose, onClear,
             >
               <span className="text-base">🔥</span>
               <span>Needs attention</span>
-              <span className="ml-auto text-[11px] font-normal" style={{ color: dk ? '#64748B' : '#9CA3AF' }}>
+              <span className="ml-auto text-[12px] font-normal" style={{ color: dk ? '#64748B' : '#6B7280' }}>
                 New or Quoted &gt; 3 days
               </span>
               {filters.needsAttention && (
@@ -359,7 +363,7 @@ export default function FilterPanel({ open, filters, onChange, onClose, onClear,
 function Section({ label, color, children }: { label: string; color: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="text-[11px] font-bold uppercase tracking-wider mb-2.5" style={{ color: '#9CA3AF' }}>
+      <div className="text-[12px] font-bold uppercase tracking-wider mb-2.5" style={{ color: '#6B7280' }}>
         {label}
       </div>
       {children}

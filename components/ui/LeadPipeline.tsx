@@ -33,7 +33,7 @@ function daysSince(dateStr: string): number {
 }
 
 // ── SVG icon helper ────────────────────────────────────────────────────────────
-function Ic({ d, s = 14, sw = 1.6, c = 'currentColor' }: { d: string; s?: number; sw?: number; c?: string }) {
+function Ic({ d, s = 14, sw = 2.0, c = 'currentColor' }: { d: string; s?: number; sw?: number; c?: string }) {
   return (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
       <path d={d} />
@@ -304,9 +304,9 @@ function LeadCard({ lead, stage, onOpen, dk = false }: {
             ${lead.quoted_amount.toLocaleString()}
           </span>
         ) : (
-          <span className="text-[11px] px-1.5 py-0.5 rounded font-semibold flex-shrink-0"
+          <span className="text-[12px] px-2 py-0.5 rounded-lg font-bold flex-shrink-0"
             style={{ background: days > 3 ? '#FEE2E2' : days >= 2 ? '#FEF3C7' : '#D1FAE5',
-                     color: days > 3 ? '#B91C1C' : days >= 2 ? '#B45309' : '#065F46' }}>
+                     color: days > 3 ? '#DC2626' : days >= 2 ? '#B45309' : '#065F46' }}>
             {days}d
           </span>
         )}
@@ -338,8 +338,8 @@ function LeadCard({ lead, stage, onOpen, dk = false }: {
             {creatingEst ? 'Opening...' : 'Next: Send Estimate'}
           </button>
         ) : (
-          <span className="text-[12px] font-semibold px-2 py-1 rounded-lg flex-shrink-0"
-            style={{ background: stage.nextBg, color: stage.nextColor }}>
+          <span className="text-[12px] font-semibold px-3 py-1 rounded-lg flex-shrink-0"
+            style={{ background: stage.nextBg, color: stage.nextColor, border: `1px solid ${stage.nextColor}33` }}>
             Next: {stage.nextLabel}
             {stage.key === 'Scheduled' && lead.scheduled_date &&
               ` · ${new Date(lead.scheduled_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}

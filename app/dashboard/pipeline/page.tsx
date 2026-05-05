@@ -121,7 +121,7 @@ export default function PipelinePage() {
         <div className="flex items-start justify-between mb-5">
           <div>
             <h1 className="text-2xl font-bold" style={{ color: textMain }}>Pipeline</h1>
-            <p className="text-sm mt-0.5" style={{ color: '#6B7280' }}>
+            <p className="hidden md:block text-sm mt-0.5" style={{ color: '#6B7280' }}>
               Track and manage your leads from first contact to payment.
             </p>
           </div>
@@ -131,7 +131,7 @@ export default function PipelinePage() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, padding: '16px 20px', borderRadius: 16, background: t.cardBg, border: `1px solid ${t.cardBorder}`, boxShadow: dk ? 'none' : '0 1px 3px rgba(0,0,0,0.06)', flexWrap: 'wrap', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexWrap: 'wrap' }}>
             <div style={{ paddingRight: 24 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 2 }}>Total Leads</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 2 }}>Total Leads</div>
               <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.1, color: textMain }}>
                 {filteredLeads.length}
                 {activeFilterCount > 0 && (
@@ -140,7 +140,7 @@ export default function PipelinePage() {
               </div>
             </div>
             <div style={{ paddingLeft: 24, borderLeft: `1px solid ${t.cardBorder}` }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 2 }}>Lead Pipeline Value</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 2 }}>Lead Pipeline Value</div>
               <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.1, color: textMain }}>
                 ${filteredLeads.filter(l => l.quoted_amount && !['Lost','Archived','Paid','Completed'].includes(l.lead_status)).reduce((s, l) => s + (l.quoted_amount || 0), 0).toLocaleString()}
               </div>
@@ -166,7 +166,7 @@ export default function PipelinePage() {
                 {filters.followUpDue && (
                   <Chip label={`Follow-up: ${{ overdue: 'Overdue', today: 'Today', week: 'This week' }[filters.followUpDue] || ''}`} onRemove={() => setFilters(f => ({ ...f, followUpDue: '' }))} />
                 )}
-                <button onClick={() => setFilters(DEFAULT_FILTERS)} style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: 'none', border: 'none', color: t.textMuted, cursor: 'pointer' }}>
+                <button onClick={() => setFilters(DEFAULT_FILTERS)} style={{ fontSize: 12, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: 'none', border: 'none', color: t.textMuted, cursor: 'pointer' }}>
                   Clear all
                 </button>
               </div>
@@ -187,7 +187,7 @@ export default function PipelinePage() {
             </svg>
             Filter
             {activeFilterCount > 0 && (
-              <span style={{ width: 20, height: 20, borderRadius: '50%', background: '#0F766E', color: '#fff', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ width: 20, height: 20, borderRadius: '50%', background: '#0F766E', color: '#fff', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {activeFilterCount}
               </span>
             )}

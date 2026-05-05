@@ -95,7 +95,7 @@ function ActionCard({ iconPath, count, label, sub, iconBg, iconColor, ctaLabel, 
       </div>
       <Link href={ctaHref}
         className="w-full flex items-center justify-center py-2 rounded-xl text-[13px] md:text-[12px] font-semibold transition-all"
-        style={{ border: `1.5px solid ${TEAL}`, color: TEAL, backgroundColor: cta_bg }}>
+        style={{ border: `1.5px solid ${TEAL}`, color: TEAL, backgroundColor: dk ? 'rgba(15,118,110,0.12)' : '#F0FDFA' }}>
         {ctaLabel}
       </Link>
     </div>
@@ -324,7 +324,7 @@ export default function OverviewPage() {
 
         {/* ── Reviews & Growth ─────────────────────────────────────────────── */}
         <div className="rounded-2xl p-5 mb-5" style={{ backgroundColor: cardBg, border: `1px solid ${cardBdr}` }}>
-          <div className="flex items-center gap-2 mb-5">
+          <div className="flex items-center gap-2 mb-6">
             <span className="text-lg">⭐</span>
             <h2 className="text-[16px] font-bold" style={{ color: textMain }}>Reviews &amp; Growth</h2>
           </div>
@@ -355,7 +355,7 @@ export default function OverviewPage() {
                       style={{ backgroundColor: '#FEF3C7' }}>🥇</div>
                   </div>
                   <div className="mt-3">
-                    <div className="flex justify-between text-[11px] mb-1" style={{ color: dk ? '#94A3B8' : MUTED }}>
+                    <div className="flex justify-between text-[12px] mb-1" style={{ color: dk ? '#94A3B8' : '#6B7280' }}>
                       <span>Progress</span><span>{reviews.length || 5} / 10 reviews</span>
                     </div>
                     <div className="h-1.5 rounded-full" style={{ backgroundColor: '#E8E2D9' }}>
@@ -393,7 +393,7 @@ export default function OverviewPage() {
                             <div className="text-[13px] font-semibold" style={{ color: textMain }}>{review.reviewer_name}</div>
                             <Stars rating={review.rating} size={13} />
                           </div>
-                          <div className="ml-auto text-[12px]" style={{ color: dk ? '#64748B' : '#6B7280' }}>{timeAgo(review.reviewed_at)}</div>
+                          <div className="ml-auto text-[12px]" style={{ color: dk ? '#64748B' : '#6B7280' }}>{new Date(review.reviewed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
                         </div>
                         {review.comment && <p className="text-[13px] line-clamp-2 mb-2 leading-snug" style={{ color: dk ? '#CBD5E1' : '#374151' }}>{review.comment}</p>}
                         <span className="inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
@@ -539,9 +539,9 @@ export default function OverviewPage() {
             ].map((item, i) => (
               <Link key={i} href="/community" className="rounded-xl p-4 flex gap-3 transition-all hover:shadow-sm"
                 style={{ border: `1px solid ${cardBdr}`, backgroundColor: cardBg }}>
-                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
                   style={{ backgroundColor: item.iconBg }}>
-                  <SvgIcon d={item.icon} s={18} sw={1.8} color={item.iconColor} />
+                  <SvgIcon d={item.icon} s={16} sw={1.8} color={item.iconColor} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-semibold mb-1 leading-snug" style={{ color: textMain }}>{item.q}</p>
