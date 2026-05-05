@@ -409,7 +409,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
               <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${border}`, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexShrink: 0 }}>
                 <div>
                   <div style={{ fontSize: 18, fontWeight: 700, color: tp }}>Edit Lead</div>
-                  <div style={{ fontSize: 13, color: ts, marginTop: 2 }}>{lead.contact_name || 'Unknown'}</div>
+                  <div style={{ fontSize: 13, color: ts, marginTop: 2 }}>{lead?.contact_name || 'Unknown'}</div>
                 </div>
                 <button onClick={() => setDrawerOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: ts, fontSize: 22, lineHeight: 1, padding: 0, marginTop: 2 }}>×</button>
               </div>
