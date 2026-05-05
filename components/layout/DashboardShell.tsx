@@ -46,7 +46,7 @@ function buildNav(nl: number): NavGroup[] {
     { title: 'TODAY', items: [
       { label: 'Overview',    href: '/dashboard',          icon: icon.overview,   exact: true },
       { label: 'Pipeline',    href: '/dashboard/pipeline', icon: icon.pipeline,   badge: nl },
-      { label: 'Calendar',    href: '/dashboard/calendar', icon: icon.calendar,   soon: true },
+      { label: 'Calendar',    href: '/dashboard/calendar', icon: icon.calendar },
       { label: 'Messages',    href: '/messages',           icon: icon.messages },
     ]},
     { title: 'MONEY', items: [
