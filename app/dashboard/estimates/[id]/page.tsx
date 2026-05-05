@@ -98,6 +98,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState<string | null>(null)
+  const [confirmDeleteTpl, setConfirmDeleteTpl] = useState<{ id: string; name: string } | null>(null)
   const [isDirty, setIsDirty] = useState(false)
   const [creatingInvoice, setCreatingInvoice] = useState(false)
   const [showMoreMenu,    setShowMoreMenu]    = useState(false)
@@ -894,11 +895,9 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                     <p className={`text-xs mt-0.5 ${muted}`}>{tpl.items.length} item{tpl.items.length !== 1 ? 's' : ''}</p>
                   </button>
                   {/* D7: delete template */}
-                  <button onClick={async e => {
+                  <button onClick={e => {
                     e.stopPropagation()
-                    if (!confirm(`Delete template "${tpl.name}"?`)) return
-                    await fetch(`/api/estimate-templates?id=${tpl.id}`, { method: 'DELETE' })
-                    setTemplates(prev => prev.filter(t => t.id !== tpl.id))
+                    setConfirmDeleteTpl({ id: tpl.id, name: tpl.name })
                   }}
                     title="Delete template"
                     className="px-4 py-3.5 shrink-0 text-gray-400 hover:text-red-500 transition-colors">
@@ -931,6 +930,41 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
               <button onClick={saveTemplate} disabled={savingTemplate || !templateName.trim()}
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#0F766E] to-[#0D9488] text-white hover:opacity-90 disabled:opacity-50">
                 {savingTemplate ? 'Saving...' : 'Save Template'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ── Delete template confirmation modal ── */}
+      {confirmDeleteTpl && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.5)' }}
+          onClick={() => setConfirmDeleteTpl(null)}>
+          <div className={`w-full max-w-sm rounded-2xl shadow-2xl p-6 ${dk ? 'bg-[#1E293B]' : 'bg-white'}`}
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#FEE2E2' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2.2" strokeLinecap="round">
+                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                  <path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                </svg>
+              </div>
+              <div>
+                <h3 className={`font-bold text-base ${dk ? 'text-white' : 'text-gray-900'}`}>Delete template?</h3>
+                <p className={`text-sm mt-0.5 ${dk ? 'text-slate-400' : 'text-gray-500'}`}>"{confirmDeleteTpl.name}" will be permanently removed.</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmDeleteTpl(null)}
+                className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border-2 ${dk ? 'border-[#334155] text-slate-300' : 'border-gray-200 text-gray-700'}`}>
+                Cancel
+              </button>
+              <button onClick={async () => {
+                await fetch(`/api/estimate-templates?id=${confirmDeleteTpl.id}`, { method: 'DELETE' })
+                setTemplates(prev => prev.filter(t => t.id !== confirmDeleteTpl!.id))
+                setConfirmDeleteTpl(null)
+              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: '#DC2626' }}>
+                Delete
               </button>
             </div>
           </div>

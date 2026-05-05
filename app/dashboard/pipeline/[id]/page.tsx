@@ -96,7 +96,10 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
 
   const [currentStage, setCurrentStage] = useState<LeadStatus>('New')
   const [stageSaving, setStageSaving] = useState(false)
-  const [confirmBack, setConfirmBack] = useState<LeadStatus | null>(null)
+  const [confirmBack,        setConfirmBack]        = useState<LeadStatus | null>(null)
+  const [warnScheduled,      setWarnScheduled]      = useState(false)   // P2-1
+  const [warnCompleted,      setWarnCompleted]       = useState(false)   // P2-2
+  const [warnNewEstimate,    setWarnNewEstimate]     = useState(false)   // P2-3
 
   // drawer state
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -214,6 +217,13 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
   async function handleStageClick(stage: LeadStatus) {
     if (stage === currentStage || stageSaving) return
     if (STAGE_ORDER[stage] < STAGE_ORDER[currentStage]) { setConfirmBack(stage); return }
+    // P2-1: Warn moving to Scheduled with no approved/invoiced/paid estimate
+    if (stage === 'Scheduled' && !leadEstimate?.id) {
+      const hasApproved = leadEstimate && ['approved','invoiced','paid'].includes((leadEstimate as any).status || '')
+      if (!hasApproved) { setWarnScheduled(true); return }
+    }
+    // P2-2: Warn moving to Completed with no invoice
+    if (stage === 'Completed' && !leadInvoice) { setWarnCompleted(true); return }
     const prev = currentStage
     setCurrentStage(stage)
     setStageSaving(true)
@@ -324,6 +334,8 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
 
   const createEstimate = async () => {
     if (!lead || !session || creatingEst) return
+    // P2-3: Warn creating estimate for New lead (not yet contacted)
+    if (lead.lead_status === 'New') { setWarnNewEstimate(true); return }
     setCreatingEst(true)
     try {
       const r = await fetch('/api/estimates', {
@@ -337,6 +349,44 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
           trade:         session.trade || '',
           state:         session.state || '',
           contact_phone: lead.contact_phone || '',
+          contact_email: lead.contact_email || '',
+        }),
+      })
+      const d = await r.json()
+      if (d.estimate?.id) router.push(`/dashboard/estimates/${d.estimate.id}?from=pipeline&lead_id=${id}`)
+    } catch { setCreatingEst(false) }
+  }
+
+  // P2 proceed functions
+  async function proceedToScheduled() {
+    setWarnScheduled(false)
+    const prev = currentStage; setCurrentStage('Scheduled'); setStageSaving(true)
+    const ok = await patchLead({ lead_status: 'Scheduled' })
+    setStageSaving(false)
+    if (ok) { setLead(l => l ? { ...l, lead_status: 'Scheduled' } : l); addToast('Moved to Scheduled', 'success', prev) }
+    else { setCurrentStage(prev); addToast('Failed to update stage', 'error') }
+  }
+
+  async function proceedToCompleted() {
+    setWarnCompleted(false)
+    const prev = currentStage; setCurrentStage('Completed'); setStageSaving(true)
+    const ok = await patchLead({ lead_status: 'Completed' })
+    setStageSaving(false)
+    if (ok) { setLead(l => l ? { ...l, lead_status: 'Completed' } : l); addToast('Moved to Completed', 'success', prev) }
+    else { setCurrentStage(prev); addToast('Failed to update stage', 'error') }
+  }
+
+  async function proceedCreateEstimate() {
+    setWarnNewEstimate(false)
+    if (!lead || !session) return
+    setCreatingEst(true)
+    try {
+      const r = await fetch('/api/estimates', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pro_id: session.id, lead_id: lead.id, lead_name: lead.contact_name,
+          lead_source: lead.lead_source || '', trade: session.trade || '',
+          state: session.state || '', contact_phone: lead.contact_phone || '',
           contact_email: lead.contact_email || '',
         }),
       })
@@ -387,6 +437,69 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
         </div>
 
         {/* Backward confirm modal */}
+        {/* ── P2-1: Warn Scheduled without approved estimate ── */}
+        {warnScheduled && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setWarnScheduled(false)}>
+            <div style={{ background: card, borderRadius: 16, padding: 24, maxWidth: 360, width: '100%', border: `1px solid ${border}` }} onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2.2" strokeLinecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: tp }}>No approved estimate</div>
+                  <div style={{ fontSize: 13, color: ts, marginTop: 2 }}>This lead hasn't been quoted yet.</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
+                <button onClick={() => { setWarnScheduled(false); createEstimate() }} style={{ padding: '9px 16px', borderRadius: 10, border: 'none', background: '#0F766E', color: 'white', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>Create Estimate First</button>
+                <button onClick={proceedToScheduled} style={{ padding: '9px 16px', borderRadius: 10, border: `1.5px solid ${border}`, background: 'none', color: ts, cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>Schedule Anyway</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── P2-2: Warn Completed without invoice ── */}
+        {warnCompleted && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setWarnCompleted(false)}>
+            <div style={{ background: card, borderRadius: 16, padding: 24, maxWidth: 360, width: '100%', border: `1px solid ${border}` }} onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2.2" strokeLinecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                </div>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: tp }}>No invoice created</div>
+                  <div style={{ fontSize: 13, color: ts, marginTop: 2 }}>Create an invoice before marking complete.</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
+                <button onClick={() => { setWarnCompleted(false); createInvoice() }} style={{ padding: '9px 16px', borderRadius: 10, border: 'none', background: '#0F766E', color: 'white', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>Create Invoice First</button>
+                <button onClick={proceedToCompleted} style={{ padding: '9px 16px', borderRadius: 10, border: `1.5px solid ${border}`, background: 'none', color: ts, cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>Mark Complete Anyway</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── P2-3: Warn creating estimate for New lead ── */}
+        {warnNewEstimate && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setWarnNewEstimate(false)}>
+            <div style={{ background: card, borderRadius: 16, padding: 24, maxWidth: 360, width: '100%', border: `1px solid ${border}` }} onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6"/></svg>
+                </div>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: tp }}>Lead not yet contacted</div>
+                  <div style={{ fontSize: 13, color: ts, marginTop: 2 }}>Sending an estimate before making contact has lower acceptance rates.</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
+                <button onClick={() => { setWarnNewEstimate(false); handleStageClick('Contacted') }} style={{ padding: '9px 16px', borderRadius: 10, border: 'none', background: '#0F766E', color: 'white', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>Contact First</button>
+                <button onClick={proceedCreateEstimate} style={{ padding: '9px 16px', borderRadius: 10, border: `1.5px solid ${border}`, background: 'none', color: ts, cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>Send Anyway</button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {confirmBack && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setConfirmBack(null)}>
             <div style={{ background: card, borderRadius: 16, padding: 24, maxWidth: 360, width: '100%', border: `1px solid ${border}` }} onClick={e => e.stopPropagation()}>
