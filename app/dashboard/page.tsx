@@ -353,7 +353,7 @@ export default function OverviewPage() {
         </div>
 
         {/* ── Reviews & Growth ─────────────────────────────────────────────── */}
-        <div className="rounded-2xl p-5 mb-5" style={{ backgroundColor: cardBg, border: `1px solid ${cardBdr}` }}>
+        <div className="rounded-2xl p-4 md:p-5 mb-5" style={{ backgroundColor: cardBg, border: `1px solid ${cardBdr}` }}>
           <div className="flex items-center gap-2 mb-6">
             <span className="text-lg">⭐</span>
             <h2 className="text-[16px] font-bold" style={{ color: textMain }}>Reviews &amp; Growth</h2>

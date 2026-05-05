@@ -156,7 +156,7 @@ function Logo() {
 // ── Mobile bottom nav ─────────────────────────────────────────────────────────
 function MobileNav({ nl, onAdd, onMore }: { nl: number; onAdd: () => void; onMore: () => void }) {
   const p = usePathname()
-  const left  = [{ label: 'Today', href: '/dashboard', icon: icon.overview, exact: true, badge: 0 }, { label: 'Pipeline', href: '/dashboard/pipeline', icon: icon.pipeline, badge: nl }]
+  const left  = [{ label: 'Home', href: '/dashboard', icon: icon.overview, exact: true, badge: 0 }, { label: 'Pipeline', href: '/dashboard/pipeline', icon: icon.pipeline, badge: nl }]
   const right = [{ label: 'Clients', href: '/dashboard/clients', icon: icon.clients, badge: 0 }]
 
   return (
@@ -408,7 +408,7 @@ function QuickSheet({ open, onClose, onAddLead }: { open: boolean; onClose: () =
     { label: 'New Lead',   sub: 'Add to pipeline',    icon: icon.pipeline,  fn: () => { onClose(); onAddLead() },                                        soon: false },
     { label: 'New Client', sub: 'Add to address book', icon: icon.clients,   fn: () => { onClose(); window.location.href = '/dashboard/clients' }, soon: false },
     { label: 'Estimate',   sub: 'Create a new estimate', icon: icon.estimates, fn: () => { onClose(); window.location.href = '/dashboard/estimates/new' }, soon: false },
-    { label: 'Invoice',    sub: 'Coming in v76',        icon: icon.invoices,  fn: () => {},                                                                 soon: true  },
+    { label: 'Invoice',    sub: 'Create a new invoice',  icon: icon.invoices,  fn: () => { onClose(); window.location.href = '/dashboard/invoices' }, soon: false },
   ]
   return (
     <div className="md:hidden fixed inset-0 z-[60]">

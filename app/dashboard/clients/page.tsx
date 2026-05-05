@@ -131,7 +131,7 @@ export default function ClientsPage() {
               onFocus={e => (e.target.style.borderColor = '#0F766E')}
               onBlur={e => (e.target.style.borderColor = t.inputBorder)} />
             <select value={sort} onChange={e => setSort(e.target.value as any)}
-              style={{ ...inputStyle, width: 'auto', paddingRight: 28 }}>
+              style={{ ...inputStyle, width: 'auto', paddingRight: 32, appearance: 'none', WebkitAppearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center', cursor: 'pointer', fontWeight: 500 }}>
               <option value="recent">Recent</option>
               <option value="value">Top value</option>
               <option value="name">Name A–Z</option>

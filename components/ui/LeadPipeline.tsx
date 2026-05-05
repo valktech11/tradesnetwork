@@ -602,6 +602,7 @@ function PipelineColumn({ stage, leads, onOpen }: {
 export default function LeadPipeline({ leads, onStatusChange, onUpdate }: Props) {
   const router = useRouter()
   const [mobileStage, setMobileStage] = useState<StageKey>('New')
+  const [showLost, setShowLost] = useState(false)
   function openLead(lead: Lead) { router.push('/dashboard/pipeline/' + lead.id) }
 
   function leadsForStage(key: string) {
@@ -648,12 +649,48 @@ export default function LeadPipeline({ leads, onStatusChange, onUpdate }: Props)
         </div>
       </div>
 
-      {/* Lost leads */}
+      {/* Lost leads — expandable */}
       {lostLeads.length > 0 && (
-        <div className="mt-3 text-center px-4">
-          <span className="text-xs text-gray-400">
-            {lostLeads.length} lead{lostLeads.length !== 1 ? 's' : ''} didn't proceed
-          </span>
+        <div className="mt-3 px-4">
+          <button
+            onClick={() => setShowLost(v => !v)}
+            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-[13px] font-medium transition-all"
+            style={{ background: 'rgba(0,0,0,0.04)', color: '#6B7280', border: '1px solid #E5E7EB' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              {showLost
+                ? <polyline points="18 15 12 9 6 15"/>
+                : <polyline points="6 9 12 15 18 9"/>}
+            </svg>
+            {showLost ? 'Hide' : `${lostLeads.length} lost lead${lostLeads.length !== 1 ? 's' : ''}`}
+          </button>
+          {showLost && (
+            <div className="mt-2 space-y-2">
+              {lostLeads.map(lead => {
+                const stage = PIPELINE_STAGES.find(s => s.key === 'New') || PIPELINE_STAGES[0]
+                return (
+                  <div key={lead.id} className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl"
+                    style={{ background: 'white', border: '1px solid #E5E7EB', opacity: 0.75 }}>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0"
+                        style={{ background: '#F3F4F6', color: '#6B7280' }}>
+                        {lead.contact_name?.split(' ').map((n: string) => n[0]).join('').slice(0,2).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[13px] font-semibold text-gray-700 truncate">{lead.contact_name}</p>
+                        <p className="text-[11px] text-gray-400">{timeAgo(lead.created_at)}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => openLead(lead)}
+                      className="text-[12px] font-semibold px-3 py-1.5 rounded-lg flex-shrink-0"
+                      style={{ background: '#F0FDFA', color: '#0F766E', border: '1px solid #99F6E4' }}>
+                      Reopen
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       )}
     </>

@@ -730,7 +730,7 @@ export default function EstimateDetailPage({ params }: { params: Promise<{ id: s
                             Cancel
                           </button>
                           <button
-                            onClick={() => { setEstimate(prev => prev ? { ...prev, terms: termsValue } : prev); setEditingTerms(false) }}
+                            onClick={() => { setEstimate(prev => prev ? { ...prev, terms: termsValue } : prev); setEditingTerms(false); setIsDirty(true) }}
                             style={{ padding: '6px 14px', fontSize: 13, fontWeight: 500, borderRadius: 8, border: 'none', background: '#0F766E', color: '#fff', cursor: 'pointer' }}>
                             Save Terms
                           </button>
