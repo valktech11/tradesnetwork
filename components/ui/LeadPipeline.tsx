@@ -207,10 +207,11 @@ function LeadModal({ lead, onClose, onStatusChange, onUpdate }: {
 }
 
 // ── Lead card ──────────────────────────────────────────────────────────────────
-function LeadCard({ lead, stage, onOpen }: {
+function LeadCard({ lead, stage, onOpen, dk = false }: {
   lead: Lead
   stage: typeof PIPELINE_STAGES[number]
   onOpen: () => void
+  dk?: boolean
 }) {
   const router = useRouter()
   const [bg, fg] = avatarColor(lead.contact_name)
@@ -294,8 +295,8 @@ function LeadCard({ lead, stage, onOpen }: {
             {initials(lead.contact_name)}
           </div>
           <div className="min-w-0">
-            <p className="text-[13px] font-bold text-gray-900 truncate">{lead.contact_name}</p>
-            <p className="text-[11px] text-gray-400">{timeAgo(lead.created_at)}</p>
+            <p className="text-[14px] font-bold truncate" style={{ color: dk ? "#F1F5F9" : "#111827" }}>{lead.contact_name}</p>
+            <p className="text-[12px] text-gray-500">{timeAgo(lead.created_at)}</p>
           </div>
         </div>
         {lead.quoted_amount ? (
@@ -312,18 +313,18 @@ function LeadCard({ lead, stage, onOpen }: {
       </div>
 
       {/* Row 2: message */}
-      <p className="text-[12px] text-gray-500 line-clamp-2 mb-2.5 leading-relaxed">{lead.message}</p>
+      <p className="text-[13px] text-gray-500 line-clamp-2 mb-2.5 leading-relaxed">{lead.message}</p>
 
       {/* Row 3: Next action pill */}
       <div className="flex items-center justify-between gap-2">
         {stage.key === 'Paid' ? (
-          <span className="text-[11px] font-semibold px-2 py-1 rounded-lg flex items-center gap-1 flex-shrink-0"
+          <span className="text-[12px] font-semibold px-2 py-1 rounded-lg flex items-center gap-1 flex-shrink-0"
             style={{ background: '#DCFCE7', color: '#15803D', border: '1px solid #86EFAC' }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#15803D" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6L9 17l-5-5"/></svg>
             Job Won
           </span>
         ) : stage.key === 'Completed' ? (
-          <span className="text-[11px] font-semibold px-2 py-1 rounded-lg flex items-center gap-1 flex-shrink-0"
+          <span className="text-[12px] font-semibold px-2 py-1 rounded-lg flex items-center gap-1 flex-shrink-0"
             style={{ background: 'white', color: '#374151', border: '1px solid #E5E7EB' }}>
             <Ic d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" s={12} c="#374151" />
             Generate Invoice
@@ -337,7 +338,7 @@ function LeadCard({ lead, stage, onOpen }: {
             {creatingEst ? 'Opening...' : 'Next: Send Estimate'}
           </button>
         ) : (
-          <span className="text-[11px] font-semibold px-2 py-1 rounded-lg flex-shrink-0"
+          <span className="text-[12px] font-semibold px-2 py-1 rounded-lg flex-shrink-0"
             style={{ background: stage.nextBg, color: stage.nextColor }}>
             Next: {stage.nextLabel}
             {stage.key === 'Scheduled' && lead.scheduled_date &&

@@ -80,14 +80,14 @@ function NavLink({ item, active, onNav }: { item: NavItem; active: boolean; onNa
       style={
         active ? {
           // Strong teal background — clearly active
-          background: 'rgba(20,184,166,0.18)',
-          boxShadow: 'inset 0 0 0 1px rgba(20,184,166,0.35)',
+          background: 'rgba(20,184,166,0.24)',
+          boxShadow: 'inset 0 0 0 1px rgba(20,184,166,0.45)',
           color: '#FFFFFF',
         } : item.soon ? {
           color: 'rgba(255,255,255,0.45)',
           cursor: 'default',
         } : {
-          color: 'rgba(255,255,255,0.55)',
+          color: 'rgba(255,255,255,0.75)',
         }
       }
     >
@@ -98,7 +98,7 @@ function NavLink({ item, active, onNav }: { item: NavItem; active: boolean; onNa
       )}
 
       {/* Icon — bright teal when active, dim when inactive */}
-      <span style={{ color: active ? '#2DD4BF' : item.soon ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.35)' }}
+      <span style={{ color: active ? '#2DD4BF' : item.soon ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.55)' }}
         className="flex-shrink-0">
         {item.icon(active)}
       </span>
@@ -219,19 +219,19 @@ function MoreDrawer({ open, onClose, session, nl }: { open: boolean; onClose: ()
             <Av s={session} px={36} />
             <div>
               <div className="text-[13px] font-semibold text-white">{session.name}</div>
-              <div className="text-[11px]" style={{ color: 'rgba(255,255,255,.35)' }}>{planLabel(session.plan)}</div>
+              <div className="text-[11px]" style={{ color: 'rgba(255,255,255,.58)' }}>{planLabel(session.plan)}</div>
             </div>
           </div>
         )}
         <div className="px-3 pb-8">
           {buildNav(nl).map(g => (
             <div key={g.title} className="mb-2">
-              <div className="px-3 pt-3 pb-1 text-[11px] font-bold tracking-[.12em]" style={{ color: 'rgba(255,255,255,.3)' }}>{g.title}</div>
+              <div className="px-3 pt-3 pb-1 text-[11px] font-bold tracking-[.12em]" style={{ color: 'rgba(255,255,255,.5)' }}>{g.title}</div>
               {g.items.map(item => <div key={item.href}><NavLink item={item} active={p === item.href} onNav={onClose} /></div>)}
             </div>
           ))}
           <div className="pt-2 mb-2" style={{ borderTop: '1px solid rgba(255,255,255,.06)' }}>
-            <div className="px-3 pt-3 pb-1 text-[11px] font-bold tracking-[.12em]" style={{ color: 'rgba(255,255,255,.3)' }}>ACCOUNT</div>
+            <div className="px-3 pt-3 pb-1 text-[11px] font-bold tracking-[.12em]" style={{ color: 'rgba(255,255,255,.5)' }}>ACCOUNT</div>
             <NavLink item={{ label: 'Profile', href: '/edit-profile', icon: icon.profile }} active={p === '/edit-profile'} onNav={onClose} />
             <NavLink item={{ label: 'Settings', href: '/dashboard/settings', icon: icon.settings, soon: true }} active={false} />
           </div>
@@ -256,7 +256,7 @@ function QuickSheet({ open, onClose, onAddLead }: { open: boolean; onClose: () =
       <div className="absolute bottom-0 left-0 right-0 rounded-t-[28px] bg-white" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="flex justify-center pt-3"><div className="w-10 h-1 rounded-full bg-gray-200" /></div>
         <div className="px-5 pt-3 pb-2">
-          <p className="text-[11px] font-bold tracking-[.1em] uppercase mb-4" style={{ color: '#C0B8B0' }}>What would you like to add?</p>
+          <p className="text-[11px] font-bold tracking-[.1em] uppercase mb-4" style={{ color: '#7A746E' }}>What would you like to add?</p>
           <div className="grid grid-cols-2 gap-3 mb-4">
             {opts.map(o => (
               <button key={o.label} onClick={o.fn} disabled={o.soon}
@@ -265,7 +265,7 @@ function QuickSheet({ open, onClose, onAddLead }: { open: boolean; onClose: () =
                 <span style={{ color: '#0F766E' }}>{o.icon(false)}</span>
                 <div>
                   <div className="text-[13px] font-semibold" style={{ color: '#0A1628' }}>{o.label}</div>
-                  <div className="text-[11px] mt-0.5" style={{ color: '#9CA3AF' }}>{o.sub}</div>
+                  <div className="text-[12px] mt-0.5" style={{ color: '#7A746E' }}>{o.sub}</div>
                 </div>
               </button>
             ))}

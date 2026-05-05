@@ -77,7 +77,7 @@ function ActionCard({ iconPath, count, label, sub, iconBg, iconColor, ctaLabel, 
   const bg  = dk ? '#1E293B' : 'white'
   const bdr = dk ? '#334155' : '#F1F5F9'
   const txt = dk ? '#F1F5F9' : NAVY
-  const sub_color = dk ? '#94A3B8' : '#6B7280'
+  const sub_color = dk ? '#94A3B8' : '#4B5563'
   const cta_bg = dk ? '#1E293B' : 'white'
   return (
     <div className="rounded-2xl p-4 flex flex-col gap-3"
@@ -85,17 +85,17 @@ function ActionCard({ iconPath, count, label, sub, iconBg, iconColor, ctaLabel, 
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: iconBg }}>
-          <SvgIcon d={iconPath} s={20} sw={1.8} color={iconColor} />
+          <SvgIcon d={iconPath} s={21} sw={1.9} color={iconColor} />
         </div>
         <div className="min-w-0 flex-1">
           <div className="text-[22px] md:text-[32px] font-bold leading-none mb-0.5" style={{ color: txt }}>{count}</div>
-          <div className="text-[13px] font-semibold leading-tight" style={{ color: txt }}>{label}</div>
-          <div className="text-[12px] mt-0.5" style={{ color: sub_color }}>{sub}</div>
+          <div className="text-[14px] font-semibold leading-tight" style={{ color: txt }}>{label}</div>
+          <div className="text-[13px] mt-0.5" style={{ color: sub_color }}>{sub}</div>
         </div>
       </div>
       <Link href={ctaHref}
-        className="w-full flex items-center justify-center py-2 rounded-xl text-[12px] font-semibold transition-all"
-        style={{ border: `1px solid ${TEAL}`, color: TEAL, backgroundColor: cta_bg }}>
+        className="w-full flex items-center justify-center py-2 rounded-xl text-[13px] md:text-[12px] font-semibold transition-all"
+        style={{ border: `1.5px solid ${TEAL}`, color: TEAL, backgroundColor: cta_bg }}>
         {ctaLabel}
       </Link>
     </div>
@@ -120,7 +120,7 @@ function PipeStage({ iconPath, iconBg, iconColor, label, count, sub, dk, showDas
       <div>
         <div className="text-[13px] font-semibold" style={{ color: txt }}>{label}</div>
         <div className="text-[22px] font-bold leading-tight" style={{ color: countColor }}>{displayCount}</div>
-        <div className="text-[11px]" style={{ color: sub_c }}>{sub}</div>
+        <div className="text-[12px]" style={{ color: sub_c }}>{sub}</div>
       </div>
     </Link>
   )
@@ -214,7 +214,7 @@ export default function OverviewPage() {
 
   if (!session || dataLoading) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center" style={{ backgroundColor: '#ECEAE5' }}>
+      <div className="fixed inset-0 flex items-center justify-center" style={{ backgroundColor: '#F5F4F0' }}>
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 rounded-full animate-spin" style={{ borderColor: TEAL, borderTopColor: 'transparent' }} />
           <span className="text-sm font-medium" style={{ color: MUTED }}>Loading...</span>
@@ -225,13 +225,13 @@ export default function OverviewPage() {
 
   return (
     <DashboardShell session={session} newLeads={newLeads.length} onAddLead={() => setShowAddLead(true)} darkMode={dk} onToggleDark={toggleDark}>
-      <div className="px-8 py-6 pr-10">
+      <div className="px-4 md:px-8 py-4 md:py-6 md:pr-10">
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold" style={{ color: textMain }}>{greeting}, {firstName}! 👋</h1>
-            <p className="text-[13px] mt-0.5" style={{ color: BODY }}>Here&apos;s what&apos;s happening with your business today.</p>
+            <p className="hidden md:block text-[13px] mt-0.5" style={{ color: BODY }}>Here&apos;s what&apos;s happening with your business today.</p>
           </div>
 
         </div>
@@ -241,7 +241,7 @@ export default function OverviewPage() {
           <div className="flex items-center justify-between mb-3">
             <div>
               <h2 className="text-[16px] font-bold" style={{ color: textMain }}>Action Center</h2>
-              <p className="text-[12px]" style={{ color: BODY }}>Top items that need your attention</p>
+              <p className="hidden md:block text-[12px]" style={{ color: BODY }}>Top items that need your attention</p>
             </div>
             <Link href="/dashboard/pipeline" className="text-[13px] font-semibold flex items-center gap-1" style={{ color: TEAL }}>
               View all leads <SvgIcon d={ICONS.chevRight} s={14} sw={2.5} color={TEAL} />
@@ -313,9 +313,9 @@ export default function OverviewPage() {
               <PipeStage iconPath={ICONS.checkCirc} iconBg="#DCFCE7" iconColor="#16A34A" label="Job Won"   count={completedLeads.length + paidLeads.length} sub="Converted" dk={dk} showDash />
               {pipeline > 0 && (
                 <div className="text-right border-l pl-6 flex-shrink-0 min-w-[160px]" style={{ borderColor: cardBdr }}>
-                  <div className="text-[11px] font-medium mb-0.5" style={{ color: BODY }}>Total Pipeline Value</div>
+                  <div className="text-[12px] font-medium mb-0.5" style={{ color: BODY }}>Total Pipeline Value</div>
                   <div className="text-[28px] font-bold" style={{ color: textMain }}>${pipeline.toLocaleString()}</div>
-                  <div className="text-[11px]" style={{ color: BODY }}>Potential Revenue</div>
+                  <div className="text-[12px]" style={{ color: BODY }}>Potential Revenue</div>
                 </div>
               )}
             </div>
@@ -349,13 +349,13 @@ export default function OverviewPage() {
                       <div className="text-[12px] font-bold mb-1" style={{ color: textMain }}>
                         🏆 Get 2 more 5⭐ reviews
                       </div>
-                      <div className="text-[11px]" style={{ color: dk ? '#94A3B8' : '#374151' }}>to unlock Top Pro badge and win 30% more jobs</div>
+                      <div className="text-[12px]" style={{ color: dk ? '#94A3B8' : '#374151' }}>to unlock Top Pro badge and win 30% more jobs</div>
                     </div>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-lg"
                       style={{ backgroundColor: '#FEF3C7' }}>🥇</div>
                   </div>
                   <div className="mt-3">
-                    <div className="flex justify-between text-[10px] mb-1" style={{ color: dk ? '#94A3B8' : MUTED }}>
+                    <div className="flex justify-between text-[11px] mb-1" style={{ color: dk ? '#94A3B8' : MUTED }}>
                       <span>Progress</span><span>{reviews.length || 5} / 10 reviews</span>
                     </div>
                     <div className="h-1.5 rounded-full" style={{ backgroundColor: '#E8E2D9' }}>
@@ -393,7 +393,7 @@ export default function OverviewPage() {
                             <div className="text-[13px] font-semibold" style={{ color: textMain }}>{review.reviewer_name}</div>
                             <Stars rating={review.rating} size={13} />
                           </div>
-                          <div className="ml-auto text-[11px]" style={{ color: dk ? '#64748B' : '#9CA3AF' }}>{timeAgo(review.reviewed_at)}</div>
+                          <div className="ml-auto text-[12px]" style={{ color: dk ? '#64748B' : '#6B7280' }}>{timeAgo(review.reviewed_at)}</div>
                         </div>
                         {review.comment && <p className="text-[13px] line-clamp-2 mb-2 leading-snug" style={{ color: dk ? '#CBD5E1' : '#374151' }}>{review.comment}</p>}
                         <span className="inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
@@ -425,7 +425,7 @@ export default function OverviewPage() {
                       style={{ backgroundColor: c.color }}>{c.initials}</div>
                     <div className="flex-1 min-w-0">
                       <div className="text-[12px] font-semibold" style={{ color: textMain }}>{c.name}</div>
-                      <div className="text-[10px]" style={{ color: dk ? '#94A3B8' : '#6B7280' }}>{c.sub}</div>
+                      <div className="text-[12px]" style={{ color: dk ? '#94A3B8' : '#4B5563' }}>{c.sub}</div>
                     </div>
                     <button className="text-[11px] font-semibold px-3 py-1 rounded-lg"
                       style={{ border: `1px solid ${cardBdr}`, color: textMain, backgroundColor: cardBg }}>Request</button>
@@ -454,7 +454,7 @@ export default function OverviewPage() {
                     </div>
                     <div>
                       <div className="text-[11px] font-bold" style={{ color: '#DC2626' }}>Negative Review Assistant</div>
-                      <div className="text-[10px]" style={{ color: MUTED }}>AI-generated reply for Jessica Lee</div>
+                      <div className="text-[12px]" style={{ color: MUTED }}>AI-generated reply for Jessica Lee</div>
                     </div>
                   </div>
                   <p className="text-[12px] italic mb-2" style={{ color: dk ? '#CBD5E1' : '#374151' }}>
@@ -476,7 +476,7 @@ export default function OverviewPage() {
                     </div>
                     <div>
                       <div className="text-[11px] font-bold" style={{ color: '#B45309' }}>Positive Review Booster</div>
-                      <div className="text-[10px]" style={{ color: MUTED }}>AI-generated review request message</div>
+                      <div className="text-[12px]" style={{ color: MUTED }}>AI-generated review request message</div>
                     </div>
                   </div>
                   <p className="text-[12px] italic mb-2" style={{ color: dk ? '#CBD5E1' : '#374151' }}>
@@ -546,14 +546,14 @@ export default function OverviewPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-semibold mb-1 leading-snug" style={{ color: textMain }}>{item.q}</p>
                   {item.price && <p className="text-[13px] font-bold mb-0.5" style={{ color: TEAL }}>{item.price}</p>}
-                  {item.sub && <p className="text-[11px]" style={{ color: MUTED }}>{item.sub}</p>}
+                  {item.sub && <p className="text-[12px]" style={{ color: MUTED }}>{item.sub}</p>}
                   <div className="flex items-center gap-2 mt-2">
                     <div className="flex -space-x-1">
                       {['#7C3AED','#0EA5E9','#F97316','#16A34A'].map((c, j) => (
                         <div key={j} className="w-5 h-5 rounded-full border-2 border-white" style={{ backgroundColor: c }} />
                       ))}
                     </div>
-                    <span className="text-[11px]" style={{ color: MUTED }}>{item.answers} {item.label}</span>
+                    <span className="text-[12px]" style={{ color: MUTED }}>{item.answers} {item.label}</span>
                   </div>
                 </div>
               </Link>
