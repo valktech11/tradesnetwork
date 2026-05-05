@@ -260,7 +260,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                   ))}
                 </div>
                 {invoice.items.map((item, i) => (
-                  <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px 100px', gap: 12, padding: '14px 24px', borderBottom: i < invoice.items.length - 1 ? `1px solid ${t.divider}` : 'none' }}>
+                  <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px 100px', gap: 12, padding: '14px 24px', borderBottom: i < invoice.items.length - 1 ? `1px solid ${t.divider}` : 'none', background: i % 2 === 1 ? t.tableRowAlt : 'transparent' }}>
                     <div>
                       <div style={{ fontSize: 14, fontWeight: 500, color: t.textPri }}>{item.name}</div>
                       {item.description && <div style={{ fontSize: 12, color: t.textMuted, marginTop: 2 }}>{item.description}</div>}

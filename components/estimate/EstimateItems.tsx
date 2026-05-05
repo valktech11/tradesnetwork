@@ -305,7 +305,7 @@ export default function EstimateItems({
               <div style={{
                 display: 'grid', gridTemplateColumns: GRID, gap: '0 12px',
                 alignItems: 'center', padding: '14px 8px',
-                background: isEditing ? bgEdit : bgCard,
+                background: isEditing ? bgEdit : (idx % 2 === 1 ? (dk ? '#1a2535' : '#F9F8F6') : bgCard),
               }}>
                 <GripVertical size={13} style={{ color: colMuted, opacity: 0.4, cursor: 'grab' }} />
                 <span style={{ fontSize: 13, color: colMuted, fontWeight: 500 }}>{idx + 1}</span>

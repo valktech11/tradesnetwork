@@ -146,9 +146,9 @@ export default function InvoicesPage() {
               const isOverdue = inv.due_date && new Date(inv.due_date) < new Date() && !['paid','void'].includes(inv.status)
               return (
                 <Link key={inv.id} href={`/dashboard/invoices/${inv.id}`}
-                  style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', borderTop: i > 0 ? `1px solid ${t.divider}` : 'none', textDecoration: 'none' }}
-                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = dk ? '#1a2940' : '#FAF9F6')}
-                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+                  style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', borderTop: i > 0 ? `1px solid ${t.divider}` : 'none', textDecoration: 'none', background: i % 2 === 1 ? t.tableRowAlt : 'transparent' }}
+                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = t.tableRowHover)}
+                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = i % 2 === 1 ? t.tableRowAlt : 'transparent')}
                 >
                   {/* Invoice icon */}
                   <div style={{ width: 40, height: 40, borderRadius: 10, background: dk ? '#1E293B' : s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

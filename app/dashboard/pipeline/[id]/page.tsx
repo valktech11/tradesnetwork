@@ -845,7 +845,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                     const iconColor = item.type === 'note' ? '#854F0B' : item.type === 'quote' ? '#3C3489' : item.type === 'scheduled' ? '#0F766E' : '#0F766E'
                     const iconBg = item.type === 'note' ? '#FAEEDA' : item.type === 'quote' ? '#EEEDFE' : '#E1F5EE'
                     return (
-                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '14px 0', borderBottom: i < activity.length - 1 ? `1px solid ${border}` : 'none' }}>
+                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '14px 0', borderBottom: i < activity.length - 1 ? `1px solid ${border}` : 'none', background: i % 2 === 1 ? (dk ? '#1a2535' : '#F9F8F6') : 'transparent', paddingLeft: 4, paddingRight: 4 }}>
                         <div style={{ width: 36, height: 36, borderRadius: '50%', background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           <Ic color={iconColor} size={16}>
                             {item.type === 'note'      && <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></>}

@@ -30,6 +30,10 @@ export function theme(dk: boolean) {
     // Inputs
     inputBg:      dk ? '#0F172A' : '#ffffff',
 
+    // Table alternating rows
+    tableRowAlt:  dk ? '#1a2535' : '#F9F8F6',   // odd rows — warm off-white / dark blue-gray
+    tableRowHover:dk ? '#1a2940' : '#F0FAFA',   // hover — light teal tint
+
     // Misc
     teal:         '#0F766E',
     tealL:        '#14B8A6',

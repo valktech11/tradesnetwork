@@ -165,9 +165,9 @@ export default function ClientsPage() {
               return (
                 <Link key={client.id} href={`/dashboard/clients/${client.id}`}
                   className="active:opacity-70 active:scale-[.99]"
-                  style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', borderTop: i > 0 ? `1px solid ${t.divider}` : 'none', textDecoration: 'none', transition: 'background 0.15s' }}
-                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = dk ? '#1a2940' : '#FAF9F6')}
-                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+                  style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', borderTop: i > 0 ? `1px solid ${t.divider}` : 'none', textDecoration: 'none', transition: 'background 0.15s', background: i % 2 === 1 ? t.tableRowAlt : 'transparent' }}
+                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = t.tableRowHover)}
+                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = i % 2 === 1 ? t.tableRowAlt : 'transparent')}
                 >
                   <div style={{ width: 44, height: 44, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, flexShrink: 0, background: bg, color: fg }}>
                     {initials(client.full_name)}

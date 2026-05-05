@@ -400,8 +400,11 @@ export default function EstimatesPage() {
                     key={est.id}
                     onClick={() => router.push(`/dashboard/estimates/${est.id}`)}
                     className={`w-full text-left transition-colors border-b last:border-b-0 ${
-                      dk ? 'border-[#334155] hover:bg-[#0F172A]' : 'border-[#E8E2D9] hover:bg-[#F9FAFB]'
+                      dk ? 'border-[#334155]' : 'border-[#E8E2D9]'
                     }`}
+                    style={{ background: i % 2 === 1 ? (dk ? '#1a2535' : '#F9F8F6') : 'transparent' }}
+                    onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = dk ? '#1a2940' : '#F0FAFA')}
+                    onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = i % 2 === 1 ? (dk ? '#1a2535' : '#F9F8F6') : 'transparent')}
                   >
                     {/* Mobile layout */}
                     <div className="flex items-center gap-3 px-4 py-3.5 md:hidden">
