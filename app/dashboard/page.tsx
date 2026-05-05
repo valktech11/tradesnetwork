@@ -386,17 +386,17 @@ export default function OverviewPage() {
                   {reviews.slice(0, 4).map(review => {
                     const s = sentiment(review.rating)
                     return (
-                      <div key={review.id} className="rounded-xl p-3" style={{ border: `1px solid ${cardBdr}`, backgroundColor: cardBg }}>
+                      <div key={review.id} className="rounded-xl p-4" style={{ border: `1px solid ${dk ? '#334155' : '#E2DDD8'}`, backgroundColor: dk ? '#0F172A' : '#FAFAF8' }}>
                         <div className="flex items-center gap-2 mb-1.5">
-                          <AvatarInitials name={review.reviewer_name || 'A'} size={30} />
+                          <AvatarInitials name={review.reviewer_name || 'A'} size={36} />
                           <div>
-                            <div className="text-[13px] font-semibold" style={{ color: textMain }}>{review.reviewer_name}</div>
-                            <Stars rating={review.rating} size={13} />
+                            <div className="text-[15px] font-bold" style={{ color: textMain }}>{review.reviewer_name}</div>
+                            <Stars rating={review.rating} size={16} />
                           </div>
-                          <div className="ml-auto text-[12px]" style={{ color: dk ? '#64748B' : '#6B7280' }}>{new Date(review.reviewed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+                          <div className="ml-auto text-[12px] font-medium" style={{ color: dk ? '#64748B' : '#6B7280' }}>{new Date(review.reviewed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
                         </div>
-                        {review.comment && <p className="text-[13px] line-clamp-2 mb-2 leading-snug" style={{ color: dk ? '#CBD5E1' : '#374151' }}>{review.comment}</p>}
-                        <span className="inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
+                        {review.comment && <p className="text-[14px] line-clamp-2 mb-2.5 leading-snug" style={{ color: dk ? '#CBD5E1' : '#374151' }}>{review.comment}</p>}
+                        <span className="inline-block text-[12px] font-semibold px-3 py-0.5 rounded-full"
                           style={{ backgroundColor: s.bg, color: s.color }}>{s.label}</span>
                       </div>
                     )
@@ -427,8 +427,8 @@ export default function OverviewPage() {
                       <div className="text-[12px] font-semibold" style={{ color: textMain }}>{c.name}</div>
                       <div className="text-[12px]" style={{ color: dk ? '#94A3B8' : '#4B5563' }}>{c.sub}</div>
                     </div>
-                    <button className="text-[11px] font-semibold px-3 py-1 rounded-lg"
-                      style={{ border: `1px solid ${cardBdr}`, color: textMain, backgroundColor: cardBg }}>Request</button>
+                    <button className="text-[12px] font-semibold px-4 py-1.5 rounded-xl"
+                      style={{ border: `1.5px solid #0F766E`, color: '#0F766E', backgroundColor: '#F0FDFA' }}>Request</button>
                   </div>
                 ))}
                 <button className="mt-3 text-[12px] font-semibold flex items-center gap-1" style={{ color: TEAL }}>

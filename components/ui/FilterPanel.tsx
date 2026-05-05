@@ -160,7 +160,7 @@ export default function FilterPanel({ open, filters, onChange, onClose, onClear,
     <div className="fixed inset-0 z-50" style={{ background: 'rgba(0,0,0,0.35)' }} onClick={onClose}>
       <div
         ref={panelRef}
-        className="absolute right-0 top-0 h-full flex flex-col shadow-2xl"
+        className="absolute right-0 top-0 h-full flex flex-col shadow-2xl overflow-hidden"
         style={{
           width: '360px',
           maxWidth: '95vw',
@@ -196,7 +196,7 @@ export default function FilterPanel({ open, filters, onChange, onClose, onClear,
         </div>
 
         {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6">
+        <div className="flex-1 overflow-y-auto px-5 pt-5 pb-4 space-y-6">
 
           {/* Stage */}
           <Section label="Stage" color={text}>
@@ -216,7 +216,7 @@ export default function FilterPanel({ open, filters, onChange, onClose, onClear,
                   >
                     <span
                       className="w-2 h-2 rounded-full"
-                      style={{ background: active ? STAGE_COLORS[s] : (STAGE_COLORS[s] + '66') }}
+                      style={{ background: active ? STAGE_COLORS[s] : (STAGE_COLORS[s] + '80') }}
                     />
                     {s}
                   </button>
@@ -342,15 +342,12 @@ export default function FilterPanel({ open, filters, onChange, onClose, onClear,
 
         </div>
 
-        {/* Footer — filters apply instantly, just show close */}
-        <div className="px-5 py-4 flex items-center justify-between" style={{ borderTop: `1px solid ${border}` }}>
-          <span className="text-[12px]" style={{ color: muted }}>
-            Filters apply instantly
-          </span>
+        {/* Footer — sticky, always visible */}
+        <div className="flex-shrink-0 px-5 py-3" style={{ borderTop: `1px solid ${border}`, background: card }}>
           <button
             onClick={onClose}
-            className="text-[13px] font-semibold px-4 py-2 rounded-xl transition-all hover:opacity-80"
-            style={{ background: '#F0FDFA', color: '#0F766E' }}
+            className="w-full py-3 rounded-2xl text-[14px] font-bold transition-all hover:opacity-90 active:scale-[.98]"
+            style={{ background: 'linear-gradient(135deg, #0F766E, #0D9488)', color: '#fff' }}
           >
             Done
           </button>
