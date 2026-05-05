@@ -219,7 +219,7 @@ function MoreDrawer({ open, onClose, session, nl }: { open: boolean; onClose: ()
       {/* Sheet */}
       <div className="absolute bottom-0 left-0 right-0 rounded-t-[32px] flex flex-col"
         style={{
-          background: 'linear-gradient(180deg,#102544 0%,#060C16 100%)',
+          background: 'linear-gradient(185deg,#0E2040 0%,#05090F 100%)',
           maxHeight: '92vh',
           boxShadow: '0 -8px 40px rgba(0,0,0,.6)',
           paddingBottom: 'env(safe-area-inset-bottom)',
@@ -233,29 +233,31 @@ function MoreDrawer({ open, onClose, session, nl }: { open: boolean; onClose: ()
         {/* User identity card */}
         {session && (
           <div className="mx-4 mt-3 mb-1 flex-shrink-0">
-            <div className="flex items-center gap-4 px-4 py-4 rounded-2xl"
+            <div className="flex items-center gap-4 px-4 py-5 rounded-2xl"
               style={{
-                background: 'linear-gradient(135deg, rgba(20,184,166,.18) 0%, rgba(255,255,255,.07) 100%)',
-                border: '1px solid rgba(20,184,166,.25)',
+                background: 'linear-gradient(135deg, rgba(20,184,166,.20) 0%, rgba(14,33,66,.6) 100%)',
+                border: '1px solid rgba(20,184,166,.30)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,.06)',
               }}>
-              {/* Avatar */}
-              <div className="flex-shrink-0">
-                <Av s={session} px={48} />
+              {/* Avatar with teal ring */}
+              <div className="flex-shrink-0 rounded-full p-[3px]"
+                style={{ background: 'linear-gradient(135deg, #2DD4BF, #0F766E)' }}>
+                <Av s={session} px={46} />
               </div>
               {/* Identity */}
               <div className="flex-1 min-w-0">
-                <div className="text-[17px] font-bold text-white leading-tight truncate">{session.name}</div>
+                <div className="font-bold text-white leading-tight truncate" style={{ fontSize: 18 }}>{session.name}</div>
                 {tradeCity && (
-                  <div className="text-[13px] mt-0.5 truncate" style={{ color: 'rgba(255,255,255,.65)' }}>{tradeCity}</div>
+                  <div className="mt-1 truncate" style={{ fontSize: 13, color: 'rgba(255,255,255,.68)' }}>{tradeCity}</div>
                 )}
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                    style={{ background: 'rgba(20,184,166,.15)', color: '#2DD4BF', border: '1px solid rgba(20,184,166,.25)' }}>
+                <div className="flex items-center gap-2 mt-2.5">
+                  <span className="font-bold rounded-full"
+                    style={{ fontSize: 10, padding: '3px 10px', background: 'rgba(20,184,166,.18)', color: '#2DD4BF', border: '1px solid rgba(20,184,166,.28)' }}>
                     {planLabel(session.plan)}
                   </span>
                   {!isPaidPlan(session.plan) && (
-                    <span className="text-[11px] font-bold px-3 py-1 rounded-full cursor-pointer"
-                      style={{ background: 'linear-gradient(135deg, rgba(251,191,36,.25), rgba(245,158,11,.2))', color: '#FCD34D', border: '1px solid rgba(251,191,36,.4)' }}>
+                    <span className="font-bold rounded-full cursor-pointer"
+                      style={{ fontSize: 12, padding: '4px 12px', background: 'linear-gradient(135deg, rgba(251,191,36,.3), rgba(245,158,11,.22))', color: '#FCD34D', border: '1px solid rgba(251,191,36,.45)', boxShadow: '0 0 12px rgba(251,191,36,.15)' }}>
                       Upgrade ↗
                     </span>
                   )}
@@ -268,12 +270,12 @@ function MoreDrawer({ open, onClose, session, nl }: { open: boolean; onClose: ()
         {/* Nav groups — scrollable */}
         <div className="flex-1 overflow-y-auto px-3 pt-3 pb-6" style={{ scrollbarWidth: 'none' }}>
           {buildNav(nl).map((g, gi) => (
-            <div key={g.title} className={gi > 0 ? 'mt-5' : ''}>
+            <div key={g.title} className={gi > 0 ? 'mt-7' : 'mt-1'}>
               {/* Section header with line */}
-              <div className="flex items-center gap-3 px-2 mb-1">
-                <span className="text-[11px] font-bold tracking-[.14em] uppercase flex-shrink-0"
-                  style={{ color: 'rgba(255,255,255,.38)' }}>{g.title}</span>
-                <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,.16)' }} />
+              <div className="flex items-center gap-3 px-2 mb-2">
+                <span className="text-[12px] font-bold tracking-[.12em] uppercase flex-shrink-0"
+                  style={{ color: 'rgba(255,255,255,.45)' }}>{g.title}</span>
+                <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,.18)' }} />
               </div>
               {/* Items */}
               {g.items.map(item => (
@@ -285,11 +287,11 @@ function MoreDrawer({ open, onClose, session, nl }: { open: boolean; onClose: ()
           ))}
 
           {/* Account section */}
-          <div className="mt-5">
-            <div className="flex items-center gap-3 px-2 mb-1">
-              <span className="text-[11px] font-bold tracking-[.14em] uppercase flex-shrink-0"
-                style={{ color: 'rgba(255,255,255,.38)' }}>ACCOUNT</span>
-              <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,.08)' }} />
+          <div className="mt-7">
+            <div className="flex items-center gap-3 px-2 mb-2">
+              <span className="text-[12px] font-bold tracking-[.12em] uppercase flex-shrink-0"
+                style={{ color: 'rgba(255,255,255,.45)' }}>ACCOUNT</span>
+              <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,.18)' }} />
             </div>
             <DrawerNavLink item={{ label: 'Profile', href: '/edit-profile', icon: icon.profile }} active={p === '/edit-profile'} onNav={onClose} />
             <DrawerNavLink item={{ label: 'Settings', href: '/dashboard/settings', icon: icon.settings, soon: true }} active={false} />
@@ -304,49 +306,56 @@ function MoreDrawer({ open, onClose, session, nl }: { open: boolean; onClose: ()
 function DrawerNavLink({ item, active, onNav }: { item: NavItem; active: boolean; onNav?: () => void }) {
   const row = (
     <div
-      className="relative flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-150 cursor-pointer mb-0.5"
-      style={
-        active ? {
-          background: 'rgba(20,184,166,0.22)',
-          boxShadow: 'inset 0 0 0 1.5px rgba(20,184,166,0.5)',
-        } : item.soon ? {
-          opacity: 0.4,
-          cursor: 'default',
-        } : {
-          background: 'transparent',
-        }
-      }
+      className="relative flex items-center gap-4 px-4 rounded-2xl transition-all duration-150 cursor-pointer mb-[2px]"
+      style={{
+        paddingTop: 13,
+        paddingBottom: 13,
+        background: active
+          ? 'rgba(20,184,166,0.26)'
+          : 'transparent',
+        boxShadow: active
+          ? 'inset 0 0 0 1.5px rgba(20,184,166,0.55)'
+          : 'none',
+      }}
     >
-      {/* Active left accent */}
+      {/* Active left accent — thicker, more visible */}
       {active && (
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[4px] h-7 rounded-r-full"
-          style={{ background: '#2DD4BF' }} />
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[4px] h-8 rounded-r-full"
+          style={{ background: '#2DD4BF', boxShadow: '0 0 8px rgba(45,212,191,0.6)' }} />
       )}
 
-      {/* Icon */}
-      <span className="flex-shrink-0 flex items-center justify-center w-[26px]"
-        style={{ color: active ? '#2DD4BF' : item.soon ? 'rgba(255,255,255,.25)' : 'rgba(255,255,255,.65)' }}>
+      {/* Icon — full opacity when active, 60% when available, 22% when soon */}
+      <span className="flex-shrink-0 flex items-center justify-center w-[28px]"
+        style={{ color: active ? '#2DD4BF' : item.soon ? 'rgba(255,255,255,.22)' : 'rgba(255,255,255,.60)' }}>
         {item.icon(active)}
       </span>
 
-      {/* Label */}
-      <span className="flex-1 text-[15px] font-semibold"
-        style={{ color: active ? '#ffffff' : item.soon ? 'rgba(255,255,255,.35)' : 'rgba(255,255,255,.82)' }}>
+      {/* Label — 16px bold, full white active, 85% available, 30% soon */}
+      <span className="flex-1 font-bold"
+        style={{
+          fontSize: 16,
+          color: active ? '#ffffff' : item.soon ? 'rgba(255,255,255,.30)' : 'rgba(255,255,255,.85)',
+          letterSpacing: '-0.01em',
+        }}>
         {item.label}
       </span>
 
       {/* Badge */}
       {(item.badge ?? 0) > 0 && (
-        <span className="flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full text-[11px] font-bold"
-          style={{ background: '#0F766E', color: '#fff' }}>
+        <span className="flex items-center justify-center h-[22px] min-w-[22px] px-1.5 rounded-full text-[11px] font-bold"
+          style={{ background: '#0F766E', color: '#fff', boxShadow: '0 0 8px rgba(15,118,110,0.5)' }}>
           {item.badge}
         </span>
       )}
 
-      {/* Soon pill */}
+      {/* Soon pill — styled intentionally, not as an error */}
       {item.soon && (
-        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
-          style={{ background: 'rgba(255,255,255,.08)', color: 'rgba(255,255,255,.4)', letterSpacing: '0.04em' }}>
+        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full flex-shrink-0 tracking-wider"
+          style={{
+            background: 'rgba(99,102,241,0.15)',
+            color: 'rgba(165,180,252,0.7)',
+            border: '1px solid rgba(99,102,241,0.2)',
+          }}>
           SOON
         </span>
       )}

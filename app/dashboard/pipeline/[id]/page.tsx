@@ -402,14 +402,14 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
 
         {/* Edit Lead Drawer */}
         {drawerOpen && (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex' }} onClick={() => setDrawerOpen(false)}>
-            <div style={{ flex: 1 }} />
-            <div style={{ width: 380, background: card, borderLeft: `1px solid ${border}`, height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }} onClick={() => setDrawerOpen(false)}>
+            <div style={{ flex: 1 }} className="hidden md:block" />
+            <div style={{ width: '100%', maxWidth: 420, background: card, borderLeft: `1px solid ${border}`, height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
               {/* Drawer header */}
               <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${border}`, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexShrink: 0 }}>
                 <div>
                   <div style={{ fontSize: 18, fontWeight: 700, color: tp }}>Edit Lead</div>
-                  <div style={{ fontSize: 13, color: ts, marginTop: 2 }}>{lead?.contact_name || 'Unknown'}</div>
+                  <div style={{ fontSize: 13, color: ts, marginTop: 2 }}>{(lead?.contact_name || 'Unknown').split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</div>
                 </div>
                 <button onClick={() => setDrawerOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: ts, fontSize: 22, lineHeight: 1, padding: 0, marginTop: 2 }}>×</button>
               </div>
@@ -418,44 +418,45 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
               <div style={{ padding: '20px 24px', flex: 1 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                   <div>
-                    <label style={{ fontSize: 12, color: ts, display: 'block', marginBottom: 5 }}>Phone</label>
+                    <label style={{ fontSize: 13, fontWeight: 500, color: ts, display: 'block', marginBottom: 6 }}>Phone</label>
                     <input value={dPhone} onChange={e => setDPhone(e.target.value)} style={inputStyle} />
                   </div>
                   <div>
-                    <label style={{ fontSize: 12, color: ts, display: 'block', marginBottom: 5 }}>Email</label>
+                    <label style={{ fontSize: 13, fontWeight: 500, color: ts, display: 'block', marginBottom: 6 }}>Email</label>
                     <input value={dEmail} onChange={e => setDEmail(e.target.value)} style={inputStyle} />
                   </div>
                   <div>
-                    <label style={{ fontSize: 12, color: ts, display: 'block', marginBottom: 5 }}>City</label>
+                    <label style={{ fontSize: 13, fontWeight: 500, color: ts, display: 'block', marginBottom: 6 }}>City</label>
                     <input value={dCity} onChange={e => setDCity(e.target.value)} placeholder="Jacksonville" style={inputStyle} />
                   </div>
                   <div>
-                    <label style={{ fontSize: 12, color: ts, display: 'block', marginBottom: 5 }}>State</label>
+                    <label style={{ fontSize: 13, fontWeight: 500, color: ts, display: 'block', marginBottom: 6 }}>State</label>
                     <input value={dState} onChange={e => setDState(e.target.value)} placeholder="FL" maxLength={2} style={inputStyle} />
                   </div>
                   <div>
-                    <label style={{ fontSize: 12, color: ts, display: 'block', marginBottom: 5 }}>Scheduled date</label>
+                    <label style={{ fontSize: 13, fontWeight: 500, color: ts, display: 'block', marginBottom: 6 }}>Scheduled date</label>
                     <input type="date" value={dScheduled} onChange={e => setDScheduled(e.target.value)} style={inputStyle} />
                   </div>
                   <div>
-                    <label style={{ fontSize: 12, color: ts, display: 'block', marginBottom: 5 }}>Follow-up date</label>
+                    <label style={{ fontSize: 13, fontWeight: 500, color: ts, display: 'block', marginBottom: 6 }}>Follow-up date</label>
                     <input type="date" value={dFollowUp} onChange={e => setDFollowUp(e.target.value)} style={inputStyle} />
                   </div>
                   <div>
-                    <label style={{ fontSize: 12, color: ts, display: 'block', marginBottom: 5 }}>Source</label>
+                    <label style={{ fontSize: 13, fontWeight: 500, color: ts, display: 'block', marginBottom: 6 }}>Source</label>
                     <select value={dSource} onChange={e => setDSource(e.target.value)} style={selectStyle}>
                       {SOURCE_OPTIONS.map(s => <option key={s}>{s}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label style={{ fontSize: 12, color: ts, display: 'block', marginBottom: 5 }}>Estimated value</label>
+                    <label style={{ fontSize: 13, fontWeight: 500, color: ts, display: 'block', marginBottom: 6 }}>Estimated value</label>
                     {leadEstimate ? (
                       <div>
                         <div style={{ ...inputStyle, background: dk ? '#0f172a' : '#f9fafb', color: '#0F766E', fontWeight: 600, cursor: 'default' }}>
                           ${leadEstimate.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                         </div>
                         <button onClick={() => router.push(`/dashboard/estimates/${leadEstimate.id}?from=pipeline&lead_id=${id}`)}
-                          style={{ fontSize: 11, color: '#0F766E', background: 'none', border: 'none', cursor: 'pointer', padding: '3px 0', textDecoration: 'underline' }}>
+                          style={{ fontSize: 12, color: '#0F766E', background: 'none', border: 'none', cursor: 'pointer', padding: '3px 0', textDecoration: 'underline', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2.5" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                           From estimate #{leadEstimate.estimate_number} →
                         </button>
                       </div>
@@ -464,27 +465,27 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                     )}
                   </div>
                   <div>
-                    <label style={{ fontSize: 12, color: ts, display: 'block', marginBottom: 5 }}>Lead status</label>
+                    <label style={{ fontSize: 13, fontWeight: 500, color: ts, display: 'block', marginBottom: 6 }}>Lead status</label>
                     <select value={dStatus} onChange={e => setDStatus(e.target.value as LeadStatus)} style={selectStyle}>
                       {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label style={{ fontSize: 12, color: ts, display: 'block', marginBottom: 5 }}>Lead owner</label>
+                    <label style={{ fontSize: 13, fontWeight: 500, color: ts, display: 'block', marginBottom: 6 }}>Lead owner</label>
                     <input value={session.name} disabled style={{ ...inputStyle, opacity: 0.6, cursor: 'not-allowed' }} />
                   </div>
                 </div>
 
                 <div style={{ marginTop: 14 }}>
                   <label style={{ fontSize: 12, color: ts, display: 'block', marginBottom: 5 }}>Notes</label>
-                  <textarea value={dNotes} onChange={e => setDNotes(e.target.value)} rows={4} maxLength={500} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }} />
-                  <div style={{ fontSize: 11, color: ts, textAlign: 'right', marginTop: 3 }}>{dNotes.length}/500</div>
+                  <textarea value={dNotes} onChange={e => setDNotes(e.target.value)} rows={3} maxLength={500} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, minHeight: 100 }} />
+                  <div style={{ fontSize: 12, color: ts, textAlign: 'right', marginTop: 3 }}>{dNotes.length}/500</div>
                 </div>
 
                 {/* Drawer footer buttons */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 20 }}>
-                  <button onClick={() => setDrawerOpen(false)} style={{ padding: '10px', borderRadius: 8, border: `1px solid ${border}`, background: 'none', color: ts, cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>Cancel</button>
-                  <button onClick={handleSaveDrawer} disabled={savingDrawer} style={{ padding: '10px', borderRadius: 8, border: 'none', background: '#0F766E', color: 'white', cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>
+                  <button onClick={() => setDrawerOpen(false)} style={{ padding: '12px', borderRadius: 10, border: `1.5px solid ${border}`, background: dk ? '#1E293B' : '#F3F4F6', color: tp, cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>Cancel</button>
+                  <button onClick={handleSaveDrawer} disabled={savingDrawer} style={{ padding: '12px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #0F766E, #0D9488)', color: 'white', cursor: 'pointer', fontSize: 14, fontWeight: 700, boxShadow: '0 4px 12px rgba(15,118,110,0.35)' }}>
                     {savingDrawer ? 'Saving…' : 'Save Changes'}
                   </button>
                 </div>
